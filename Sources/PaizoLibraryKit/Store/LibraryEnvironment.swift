@@ -23,16 +23,25 @@ public struct LibraryEnvironment: Sendable {
         self.settings = settings
     }
 
-    /// The real thing: URLSession, the Keychain and the user's Library folder.
+    /// The real thing: URLSession, the Keychain and the app's own folders.
+    ///
+    /// On a Mac downloads go into the Library folder unless the user chooses another place. On an
+    /// iPad they go into the app's Documents folder, which the Files app shows.
     public static func live() -> LibraryEnvironment {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? FileManager.default.homeDirectoryForCurrentUser.appending(path: "Library/Application Support")
-        return LibraryEnvironment(
+            ?? FileManager.default.temporaryDirectory
+        var environment = LibraryEnvironment(
             http: URLSessionHTTPClient(),
             credentials: KeychainCredentialStore(),
             dataDirectory: support.appending(path: "Paizo Library Manager", directoryHint: .isDirectory),
             settings: SettingsStore(suiteName: "")
         )
+        #if os(iOS)
+        if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            environment.defaultDownloadDirectory = documents
+        }
+        #endif
+        return environment
     }
 }
 
