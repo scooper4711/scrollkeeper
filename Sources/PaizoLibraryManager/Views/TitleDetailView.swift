@@ -86,6 +86,7 @@ private struct FactsGrid: View {
         let all: [(label: String, value: String)] = [
             ("Type", classification.productLine.label),
             ("Game", classification.gameSystem.label),
+            ("Author", item.author),
             ("Series", [classification.series, classification.part].filter { !$0.isEmpty }.joined(separator: ", ")),
             ("Number", classification.number.map(String.init) ?? ""),
             ("Level", classification.levelLabel),

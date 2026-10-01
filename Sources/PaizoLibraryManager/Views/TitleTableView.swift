@@ -6,44 +6,56 @@ struct TitleTableView: View {
     @Environment(LibraryStore.self) private var store
     @Binding var selection: LibraryTitle.ID?
 
+    private typealias Column = TableColumn<LibraryTitle, KeyPathComparator<LibraryTitle>, Text, Text>
+
     var body: some View {
         @Bindable var store = store
+        // A table takes at most ten columns directly, so they are given in two groups.
         Table(store.visibleItems, selection: $selection, sortOrder: $store.sortOrder) {
-            TableColumn("Title", value: \.titleSortKey) { item in
-                Text(item.title)
-                    .help(item.title)
-            }
-            .width(min: 220, ideal: 340)
-            TableColumn("Type", value: \.productLineLabel)
+            Group {
+                Column("Title", value: \LibraryTitle.titleSortKey) { (item: LibraryTitle) in Text(item.title) }
+                    .width(min: 220, ideal: 340)
+                Column("Author", value: \LibraryTitle.author) { (item: LibraryTitle) in Text(item.author) }
+                    .width(min: 80, ideal: 140)
+                Column("Type", value: \LibraryTitle.productLineLabel) { (item: LibraryTitle) in
+                    Text(item.productLineLabel)
+                }
                 .width(min: 80, ideal: 120)
-            TableColumn("Game", value: \.gameSystemLabel)
+                Column("Game", value: \LibraryTitle.gameSystemLabel) { (item: LibraryTitle) in
+                    Text(item.gameSystemLabel)
+                }
                 .width(min: 80, ideal: 105)
-            TableColumn("Series", value: \.series)
-                .width(min: 70, ideal: 140)
-            TableColumn("No.", value: \.numberSortKey) { item in
-                Text(item.classification.number.map(String.init) ?? "")
-                    .monospacedDigit()
+                Column("Series", value: \LibraryTitle.series) { (item: LibraryTitle) in Text(item.series) }
+                    .width(min: 70, ideal: 140)
             }
-            .width(40)
-            TableColumn("Level", value: \.levelSortKey) { item in
-                Text(item.classification.levelLabel)
-                    .monospacedDigit()
-            }
-            .width(48)
-            TableColumn("Pages", value: \.pageCount) { item in
-                Text(item.pageCount > 0 ? String(item.pageCount) : "")
-                    .monospacedDigit()
-            }
-            .width(48)
-            TableColumn("Formats", value: \.formatsLabel)
+            Group {
+                Column("No.", value: \LibraryTitle.numberSortKey) { (item: LibraryTitle) in
+                    Text(item.classification.number.map(String.init) ?? "").monospacedDigit()
+                }
+                .width(40)
+                Column("Level", value: \LibraryTitle.levelSortKey) { (item: LibraryTitle) in
+                    Text(item.classification.levelLabel).monospacedDigit()
+                }
+                .width(48)
+                Column("Pages", value: \LibraryTitle.pageCount) { (item: LibraryTitle) in
+                    Text(item.pageCount > 0 ? String(item.pageCount) : "").monospacedDigit()
+                }
+                .width(48)
+                Column("Formats", value: \LibraryTitle.formatsLabel) { (item: LibraryTitle) in
+                    Text(item.formatsLabel)
+                }
                 .width(min: 50, ideal: 70)
-            TableColumn("Added", value: \.dateAdded) { item in
-                Text(item.dateAdded == .distantPast ? "" : item.dateAdded.formatted(date: .numeric, time: .omitted))
-                    .monospacedDigit()
+                Column("Added", value: \LibraryTitle.dateAdded) { (item: LibraryTitle) in
+                    Text(Self.addedLabel(item)).monospacedDigit()
+                }
+                .width(min: 70, ideal: 86)
+                Column("Tags", value: \LibraryTitle.tagsLabel) { (item: LibraryTitle) in Text(item.tagsLabel) }
+                    .width(min: 60, ideal: 110)
             }
-            .width(min: 70, ideal: 86)
-            TableColumn("Tags", value: \.tagsLabel)
-                .width(min: 60, ideal: 110)
         }
+    }
+
+    private static func addedLabel(_ item: LibraryTitle) -> String {
+        item.dateAdded == .distantPast ? "" : item.dateAdded.formatted(date: .numeric, time: .omitted)
     }
 }
