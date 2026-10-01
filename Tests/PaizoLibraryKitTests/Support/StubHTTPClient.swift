@@ -26,6 +26,10 @@ final class StubHTTPClient: HTTPClient, @unchecked Sendable {
         on(fragment) { request in HTTPResponse(data: Data(text.utf8), statusCode: status, finalURL: request.url) }
     }
 
+    func on(_ fragment: String, data: Data) {
+        on(fragment) { request in HTTPResponse(data: data, finalURL: request.url) }
+    }
+
     func on(_ fragment: String, json: Any, status: Int = 200) {
         on(fragment, text: Fixtures.jsonString(json), status: status)
     }

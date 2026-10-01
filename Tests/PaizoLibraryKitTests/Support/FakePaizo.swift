@@ -11,7 +11,7 @@ struct FakePaizo {
     /// A signed-in store session: token requests succeed straight away.
     func installSignedInStore() {
         installSignIn()
-        http.on("/customer/current.jwt", text: Self.token)
+        http.on("GET https://store.paizo.com/customer/current.jwt", text: Self.token)
     }
 
     /// Sign-in that accepts `FakePaizo.account` and rejects everything else.
@@ -47,13 +47,6 @@ struct FakePaizo {
         http.on("POST https://app.paizo.com/api/library/download", json: ["data": "ticket-1"])
         http.on("GET https://app.paizo.com/api/library/download/ticket-1", json: ["data": "https://s3.example/signed"])
         http.on("https://s3.example/signed", text: contents)
-    }
-
-    func installAssets(packageID: String, assets: [[String: Any]]) {
-        let detail: [String: Any] = [
-            "data": ["DigitalPackageID": packageID, "DigitalPackage": ["AssetsData": assets]]
-        ]
-        http.on("/api/library/entitlement/customer/\(packageID)", json: detail)
     }
 
     /// The storefront home page and product query. `products` maps SKU to a product node.
