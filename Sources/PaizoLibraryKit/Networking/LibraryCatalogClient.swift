@@ -23,11 +23,6 @@ public struct RemoteFile: Sendable, Equatable {
         )
     }
 
-    public init(asset: PackageAsset, customerID: String) {
-        self.init(displayName: asset.displayName, fileName: asset.fileName, filePath: asset.filePath,
-                  customerID: customerID)
-    }
-
     public var isAvailable: Bool { !fileName.isEmpty && !filePath.isEmpty }
 
     var isLegacyStorage: Bool { filePath.contains(Entitlement.legacyStorageMarker) }
@@ -62,17 +57,6 @@ public struct LibraryCatalogClient: Sendable {
         return retried
     }
 
-    /// The individual files of a package, such as the chapters of a file-per-chapter edition.
-    public func fetchAssets(packageID: String) async throws -> [PackageAsset] {
-        let operation = "Loading the chapter list"
-        let url = try await appURL("/api/library/entitlement/customer/\(packageID)")
-        let response = try await http.send(.get(url)).validated(operation: operation)
-        guard let detail = try? JSONDecoder().decode(DetailResponse.self, from: response.data) else {
-            throw PaizoError.unexpectedResponse(operation: operation)
-        }
-        return detail.data.assets
-    }
-
     /// A signed URL that can be downloaded without further authentication.
     public func signedDownloadURL(for file: RemoteFile) async throws -> URL {
         guard file.isAvailable else { throw PaizoError.fileUnavailable(name: file.displayName) }
@@ -85,10 +69,6 @@ public struct LibraryCatalogClient: Sendable {
               let signed = answer.data.flatMap({ URL(string: $0.value) })
         else { throw PaizoError.unexpectedResponse(operation: operation) }
         return signed
-    }
-
-    private struct DetailResponse: Decodable {
-        let data: EntitlementRecord
     }
 
     private struct DownloadResponse: Decodable {

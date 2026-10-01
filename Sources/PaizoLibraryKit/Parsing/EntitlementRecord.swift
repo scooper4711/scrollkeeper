@@ -42,7 +42,6 @@ struct PackageRecord: Decodable {
     let digitalAssets: [FlexibleString]?
     let products: [ProductReferenceRecord]?
     let dateLastUpdated: String?
-    let assetsData: [AssetRecord]?
 
     enum CodingKeys: String, CodingKey {
         case file = "File"
@@ -51,33 +50,6 @@ struct PackageRecord: Decodable {
         case digitalAssets = "DigitalAssets"
         case products = "Products"
         case dateLastUpdated = "DateLastUpdated"
-        case assetsData = "AssetsData"
-    }
-}
-
-struct AssetRecord: Decodable {
-    let id: FlexibleString
-    let displayName: String?
-    let fileType: String?
-    let file: String?
-    let filepath: String?
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case displayName = "DisplayName"
-        case fileType = "FileType"
-        case file = "File"
-        case filepath = "Filepath"
-    }
-
-    var asset: PackageAsset {
-        PackageAsset(
-            id: id.value,
-            displayName: displayName ?? file ?? "",
-            fileType: fileType ?? "",
-            fileName: file ?? "",
-            filePath: filepath ?? ""
-        )
     }
 }
 
@@ -119,9 +91,5 @@ struct EntitlementRecord: Decodable {
         result.dateGranted = dateGranted.flatMap(PaizoDateParser.parse)
         result.dateUpdated = (dateUpdated ?? package?.dateLastUpdated).flatMap(PaizoDateParser.parse)
         return result
-    }
-
-    var assets: [PackageAsset] {
-        (package?.assetsData ?? []).map(\.asset)
     }
 }

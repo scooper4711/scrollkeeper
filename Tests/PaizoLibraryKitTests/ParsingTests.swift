@@ -131,7 +131,7 @@ import Testing
 }
 
 @Suite struct EntitlementRecordTests {
-    @Test func decodesNumericIdentifiersAndAssets() throws {
+    @Test func decodesNumericIdentifiers() throws {
         let json: [String: Any] = [
             "DigitalPackageID": 2_086_447,
             "CustomerID": 1001,
@@ -139,10 +139,7 @@ import Testing
             "DigitalPackage": [
                 "DisplayName": "Dark Archive",
                 "DateLastUpdated": "8/25/2022 15:22",
-                "AssetsData": [
-                    ["id": 7, "DisplayName": "Chapter 1", "FileType": "PDF", "File": "c1.pdf", "Filepath": "b/c1.pdf"],
-                    ["id": "x", "File": "c2.pdf"]
-                ]
+                "DigitalAssets": [7, "x"]
             ]
         ]
         let record = try JSONDecoder().decode(EntitlementRecord.self, from: Fixtures.jsonData(json))
@@ -155,9 +152,8 @@ import Testing
         #expect(entitlement.productImageURLs.count == 1)
         #expect(entitlement.dateUpdated != nil)
         #expect(!entitlement.hasFile)
-        #expect(record.assets.map(\.id) == ["7", "x"])
-        #expect(record.assets[1].displayName == "c2.pdf")
-        #expect(record.assets[0].fileExtension == "pdf")
+        #expect(entitlement.assetCount == 2)
+        #expect(!entitlement.isArchive)
     }
 
     @Test func undefinedSKUFallsBackToPackageProducts() {

@@ -24,6 +24,12 @@ public struct EntitlementGrouper: Sendable {
     public init() {}
 
     public func makeItems(from snapshot: CatalogSnapshot) -> [LibraryItem] {
+        makeItems(from: snapshot, reusing: [])
+    }
+
+    /// Builds the titles, reusing those in `previous` whose entitlements, metadata and tags are
+    /// unchanged. Classifying is the costly part, so this keeps rebuilds during a sync cheap.
+    public func makeItems(from snapshot: CatalogSnapshot, reusing previous: [LibraryItem]) -> [LibraryItem] {
         var order: [String] = []
         var groups: [String: [Entitlement]] = [:]
         for entitlement in snapshot.entitlements {
@@ -33,20 +39,56 @@ public struct EntitlementGrouper: Sendable {
             }
             groups[key, default: []].append(entitlement)
         }
-        return order.map { makeItem(id: $0, entitlements: groups[$0] ?? [], snapshot: snapshot) }
+        let reusable = Dictionary(previous.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return order.map { key in
+            let group = GroupInput(id: key, entitlements: groups[key] ?? [], snapshot: snapshot)
+            if let existing = reusable[key], group.matches(existing) {
+                return existing
+            }
+            return makeItem(group)
+        }
     }
 
-    private func makeItem(id: String, entitlements: [Entitlement], snapshot: CatalogSnapshot) -> LibraryItem {
-        let sku = entitlements.first?.resolvedSKU ?? ""
-        let title = makeTitle(entitlements)
-        var item = LibraryItem(id: id, sku: sku, title: title, editions: makeEditions(entitlements, title: title))
-        item.metadata = snapshot.metadata[sku] ?? .empty
-        item.tags = snapshot.tags[id] ?? []
-        let formats = Set(entitlements.map(\.fileExtension).filter { !$0.isEmpty }).sorted().map { $0.uppercased() }
-        item.classification = classifier.classify(
-            ClassificationInput(title: title, sku: sku, metadata: item.metadata, formats: formats)
+    /// Everything one title is built from.
+    private struct GroupInput {
+        let id: String
+        let entitlements: [Entitlement]
+        let sku: String
+        let metadata: ProductMetadata
+        let tags: [String]
+
+        init(id: String, entitlements: [Entitlement], snapshot: CatalogSnapshot) {
+            self.id = id
+            self.entitlements = entitlements
+            sku = entitlements.first?.resolvedSKU ?? ""
+            metadata = snapshot.metadata[sku] ?? .empty
+            tags = snapshot.tags[id] ?? []
+        }
+
+        func matches(_ item: LibraryItem) -> Bool {
+            guard item.metadata == metadata, item.tags == tags, item.editions.count == entitlements.count else {
+                return false
+            }
+            let previous = item.editions.map(\.entitlement).sorted { $0.packageID < $1.packageID }
+            return previous == entitlements.sorted { $0.packageID < $1.packageID }
+        }
+    }
+
+    private func makeItem(_ group: GroupInput) -> LibraryItem {
+        let title = makeTitle(group.entitlements)
+        var item = LibraryItem(
+            id: group.id, sku: group.sku, title: title, editions: makeEditions(group.entitlements, title: title)
         )
-        return item.rebuildingSearchText()
+        item.metadata = group.metadata
+        item.tags = group.tags
+        let extensions = Set(group.entitlements.map(\.fileExtension).filter { !$0.isEmpty })
+        item.classification = classifier.classify(
+            ClassificationInput(
+                title: title, sku: group.sku, metadata: item.metadata,
+                formats: extensions.sorted().map { $0.uppercased() }
+            )
+        )
+        return item.withDerivedText()
     }
 
     /// The product name when Paizo gives one, otherwise the shortest normalized entitlement name.

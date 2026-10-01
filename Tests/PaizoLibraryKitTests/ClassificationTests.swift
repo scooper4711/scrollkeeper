@@ -151,7 +151,8 @@ import Testing
 
         #expect(items.map(\.title) == ["Pathfinder NPC Core", "Pathfinder Flip-Mat: Carnival"])
         #expect(items[0].editions.map(\.label) == ["Single File", "File per Chapter"])
-        #expect(items[0].editions[1].hasChapters)
+        #expect(items[0].editions[1].isArchive)
+        #expect(!items[0].editions[0].isArchive)
         #expect(items[0].classification.formats == ["PDF", "ZIP"])
         #expect(items[0].formatsLabel == "PDF, ZIP")
         #expect(items[1].editions.map(\.label) == ["PDF"])

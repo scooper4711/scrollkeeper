@@ -48,6 +48,26 @@ enum Fixtures {
         return "<!DOCTYPE html><html><body>" + scripts.joined() + "</body></html>"
     }
 
+    /// The bytes of a zip archive holding the given files, made with the system's `ditto`.
+    static func zipArchive(files: [String: String]) throws -> Data {
+        let workspace = TemporaryDirectory()
+        let source = workspace.url.appending(path: "source", directoryHint: .isDirectory)
+        for (name, contents) in files {
+            let file = source.appending(path: name)
+            try FileManager.default.createDirectory(
+                at: file.deletingLastPathComponent(), withIntermediateDirectories: true
+            )
+            try Data(contents.utf8).write(to: file)
+        }
+        let archive = workspace.url.appending(path: "archive.zip")
+        let process = Process()
+        process.executableURL = URL(filePath: "/usr/bin/ditto")
+        process.arguments = ["-c", "-k", source.path, archive.path]
+        try process.run()
+        process.waitUntilExit()
+        return try Data(contentsOf: archive)
+    }
+
     static func jsonString(_ value: Any) -> String {
         let data = (try? JSONSerialization.data(withJSONObject: value, options: [.fragmentsAllowed])) ?? Data()
         return String(bytes: data, encoding: .utf8) ?? ""

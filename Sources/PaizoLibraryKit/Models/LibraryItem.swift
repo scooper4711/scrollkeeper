@@ -34,8 +34,8 @@ public struct Edition: Sendable, Equatable, Identifiable {
 
     public var id: String { entitlement.packageID }
 
-    /// True when the package holds several individual files that can be fetched one by one.
-    public var hasChapters: Bool { entitlement.assetCount > 1 }
+    /// True when the edition arrives as a zip archive that is unpacked after download.
+    public var isArchive: Bool { entitlement.isArchive }
 }
 
 /// One product: all entitlements that come from the same SKU.
@@ -50,6 +50,8 @@ public struct LibraryItem: Sendable, Equatable, Identifiable {
     public var dateAdded: Date
     /// Lowercased text the search field matches against.
     public var searchText: String
+    /// The title in a form that sorts naturally with plain string comparison: `#2` before `#10`.
+    public var titleSortKey: String
 
     public init(id: String, sku: String, title: String, editions: [Edition]) {
         self.id = id
@@ -61,6 +63,7 @@ public struct LibraryItem: Sendable, Equatable, Identifiable {
         tags = []
         dateAdded = editions.compactMap(\.entitlement.dateGranted).max() ?? .distantPast
         searchText = ""
+        titleSortKey = ""
     }
 
     // Sort keys for the column view.
@@ -78,12 +81,34 @@ public struct LibraryItem: Sendable, Equatable, Identifiable {
         editions.lazy.compactMap(\.entitlement.productImageURLs.first).first ?? ""
     }
 
-    func rebuildingSearchText() -> LibraryItem {
+    /// Fills in the derived search text and sort key once the item is complete.
+    func withDerivedText() -> LibraryItem {
         var copy = self
         let parts = [title, sku, classification.series, metadata.summary, classification.productLine.label,
                      classification.gameSystem.label]
             + editions.map(\.entitlement.displayName) + tags
         copy.searchText = parts.joined(separator: " ").lowercased()
+        copy.titleSortKey = Self.naturalSortKey(title)
         return copy
+    }
+
+    /// Lowercases and pads every run of digits to six places.
+    static func naturalSortKey(_ text: String) -> String {
+        var key = ""
+        var digits = ""
+        for character in text.lowercased() {
+            if character.isASCII, character.isNumber {
+                digits.append(character)
+                continue
+            }
+            key += padded(digits)
+            digits = ""
+            key.append(character)
+        }
+        return key + padded(digits)
+    }
+
+    private static func padded(_ digits: String) -> String {
+        digits.isEmpty ? "" : String(repeating: "0", count: max(0, 6 - digits.count)) + digits
     }
 }

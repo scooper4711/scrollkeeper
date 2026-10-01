@@ -140,29 +140,6 @@ import Testing
         }
     }
 
-    @Test func fetchesChapterAssets() async throws {
-        let client = makeClient()
-        paizo.installAssets(packageID: "pkg", assets: [
-            ["id": "a1", "DisplayName": "00 Cover", "FileType": "Printable PDF", "File": "cover.pdf", "Filepath": "u1"],
-            ["id": "a2", "DisplayName": "01 Intro", "FileType": "Printable PDF", "File": "intro.pdf", "Filepath": "u2"]
-        ])
-
-        let assets = try await client.fetchAssets(packageID: "pkg")
-        #expect(assets.map(\.displayName) == ["00 Cover", "01 Intro"])
-        #expect(assets[0].fileType == "Printable PDF")
-    }
-
-    @Test func assetFailuresNameTheOperation() async {
-        let client = makeClient()
-        paizo.http.on("/api/library/entitlement/customer/bad", text: "[]")
-        await #expect(throws: PaizoError.unexpectedResponse(operation: "Loading the chapter list")) {
-            try await client.fetchAssets(packageID: "bad")
-        }
-        await #expect(throws: PaizoError.http(operation: "Loading the chapter list", status: 404)) {
-            try await client.fetchAssets(packageID: "missing")
-        }
-    }
-
     @Test func signsDownloadForNewStorageByFileName() async throws {
         let client = makeClient()
         paizo.installDownloads()
@@ -209,8 +186,7 @@ import Testing
 
     @Test func reportsMalformedAnswers() async {
         let client = makeClient()
-        let file = RemoteFile(asset: PackageAsset(id: "a", displayName: "C", fileType: "PDF", fileName: "c.pdf",
-                                                  filePath: "u"), customerID: "1")
+        let file = RemoteFile(entitlement: Fixtures.entitlement("Book"))
         paizo.http.on("POST https://app.paizo.com/api/library/download", text: "<html>")
         await #expect(throws: PaizoError.unexpectedResponse(operation: "Requesting the download")) {
             try await client.signedDownloadURL(for: file)

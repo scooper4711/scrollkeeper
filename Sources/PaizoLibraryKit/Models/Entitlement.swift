@@ -44,6 +44,9 @@ public struct Entitlement: Codable, Sendable, Equatable, Identifiable {
 
     public var isLegacyStorage: Bool { filePath.contains(Self.legacyStorageMarker) }
 
+    /// True when the file is a zip archive holding the files the user actually wants.
+    public var isArchive: Bool { fileExtension == "zip" }
+
     /// Lowercased file extension without the dot, or an empty string.
     public var fileExtension: String {
         (fileName as NSString).pathExtension.lowercased()
@@ -51,27 +54,6 @@ public struct Entitlement: Codable, Sendable, Equatable, Identifiable {
 
     private static func isUsableSKU(_ sku: String) -> Bool {
         !sku.isEmpty && sku.lowercased() != "undefined"
-    }
-}
-
-/// One individual file inside a package, such as a chapter.
-public struct PackageAsset: Codable, Sendable, Equatable, Identifiable {
-    public var id: String
-    public var displayName: String
-    public var fileType: String
-    public var fileName: String
-    public var filePath: String
-
-    public init(id: String, displayName: String, fileType: String, fileName: String, filePath: String) {
-        self.id = id
-        self.displayName = displayName
-        self.fileType = fileType
-        self.fileName = fileName
-        self.filePath = filePath
-    }
-
-    public var fileExtension: String {
-        (fileName as NSString).pathExtension.lowercased()
     }
 }
 
