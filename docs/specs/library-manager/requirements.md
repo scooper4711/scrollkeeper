@@ -145,3 +145,24 @@ searching, classification, tagging and downloading in a native macOS app.
 9.2 No account data, tokens or credentials are written to logs or committed to
     the repository.
 9.3 The app does not change anything on the Paizo account.
+
+## 10. iPad
+
+10.1 The app also runs on iPad (iPadOS 17 or later) with the same catalog
+     sync, artwork, grouping, classification, search, filters, three views,
+     detail pane and tags as on the Mac.
+10.2 The account is kept in the iPad's Keychain and the sign-in fields support
+     Password AutoFill.
+10.3 Downloaded files are kept in the app's Documents folder, so they also
+     appear in the Files app under "On My iPad".
+10.4 "Open" shows a downloaded file in a preview inside the app. "Share" hands
+     it to the share sheet, which lists every app that accepts the file; this
+     takes the place of "Open With" on the Mac.
+10.5 A zip that the app does not keep (5.2a) is downloaded and then handed to
+     the share sheet, from where it can be saved to Files or sent to another
+     app.
+10.6 Tags are kept in the app. iPadOS does not let an app set the Files app's
+     tags on a file, so 8.3 and 8.4 apply to the Mac only.
+10.7 Settings are reached from a button in the toolbar.
+10.8 The Mac and the iPad each sync with Paizo on their own; catalog, tags and
+     downloads are not shared between devices.

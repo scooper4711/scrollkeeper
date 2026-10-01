@@ -2,15 +2,31 @@
 
 ## Overview
 
-A Swift package with two targets:
+A Swift package with three targets, plus an Xcode project for the iPad app:
 
 | Target | Kind | Contents |
 |---|---|---|
-| `PaizoLibraryKit` | library | Models, Paizo clients, sync, classification, persistence, downloads, the observable `LibraryStore`. Fully unit tested. |
-| `PaizoLibraryManager` | executable | SwiftUI views only. They render `LibraryStore` state and forward user actions to it. |
+| `PaizoLibraryKit` | library | Models, Paizo clients, sync, classification, persistence, downloads, the observable `LibraryStore`. Fully unit tested. Builds for macOS and iPadOS. |
+| `PaizoLibraryUI` | library | SwiftUI views and the `App` itself. They render `LibraryStore` state and forward user actions to it. Builds for macOS and iPadOS; the few differences are behind `#if os(...)`. |
+| `PaizoLibraryManager` | executable | The macOS entry point: one file that starts the shared `App`. |
 
-`scripts/build-app.sh` wraps the executable in an ad-hoc signed `.app` bundle.
-The package has no third-party dependencies.
+`scripts/build-app.sh` wraps the macOS executable in an ad-hoc signed `.app`
+bundle. `ios/PaizoLibraryManager.xcodeproj` builds the iPad app from the same
+package: its only source file starts the shared `App`.
+
+The package depends on ZIPFoundation for unpacking archives, because iPadOS has
+no command-line tools to call.
+
+### Platform differences
+
+| | Mac | iPad |
+|---|---|---|
+| Downloads folder | `~/Library/Application Support/…/Files`, changeable | the app's Documents folder, shown in the Files app |
+| Open | default application (`NSWorkspace`) | Quick Look preview in the app |
+| Other applications | "Open With" menu | share sheet |
+| Zips the app does not keep | save panel, downloaded straight to the chosen place | downloaded to a temporary folder, then the share sheet |
+| File tags | Finder tags, both directions | none; tags live in the app |
+| Settings | Settings window | sheet opened from the toolbar |
 
 ## How the Paizo library works
 
