@@ -29,7 +29,7 @@ enum ViewMode: String, CaseIterable, Identifiable {
 struct LibraryWindow: View {
     @Environment(LibraryStore.self) private var store
     @AppStorage("viewMode") private var viewMode = ViewMode.covers
-    @AppStorage("showInspector") private var showInspector = true
+    @AppStorage("showInspector") private var showInspector = LibraryWindow.showsInspectorAtFirst
     @State private var selection: LibraryTitle.ID?
     /// Raised each time a search or filter change leaves nothing to show while filters are set.
     @State private var filterPulse = 0
@@ -46,14 +46,18 @@ struct LibraryWindow: View {
                 .navigationTitle(title)
             #if os(macOS)
                 .navigationSubtitle(subtitle)
+            #else
+                .navigationBarTitleDisplayMode(.inline)
             #endif
+                // The toolbar and search field belong to the library, not to the split view:
+                // iPadOS only shows toolbar items that are attached inside a navigation column.
+                .toolbar { toolbar }
+                .searchable(text: $store.query.searchText, prompt: "Title, author, SKU, series or tag")
+                .inspector(isPresented: $showInspector) {
+                    TitleDetailView(item: store.item(id: selection))
+                        .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
+                }
         }
-        .searchable(text: $store.query.searchText, prompt: "Title, SKU, series, summary or tag")
-        .inspector(isPresented: $showInspector) {
-            TitleDetailView(item: store.item(id: selection))
-                .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
-        }
-        .toolbar { toolbar }
         #if !os(macOS)
         .sheet(isPresented: $showSettings) {
             NavigationStack {
@@ -64,12 +68,29 @@ struct LibraryWindow: View {
             .environment(store)
         }
         #endif
+        #if !os(macOS)
+        // On the iPad the details cover part of the library, so they open when a title is chosen.
+        .onChange(of: selection) { _, chosen in
+            if chosen != nil {
+                showInspector = true
+            }
+        }
+        #endif
         .onChange(of: filtersLeaveNothing) { _, leavesNothing in
             if leavesNothing {
                 filterPulse += 1
             }
         }
     }
+
+    // On the iPad the middle of the bar holds the title, so the view picker sits with the buttons.
+    #if os(macOS)
+    private static let showsInspectorAtFirst = true
+    private static let viewPickerPlacement = ToolbarItemPlacement.principal
+    #else
+    private static let showsInspectorAtFirst = false
+    private static let viewPickerPlacement = ToolbarItemPlacement.topBarLeading
+    #endif
 
     /// True when nothing is shown and a filter is set, so clearing the filters may bring titles back.
     private var filtersLeaveNothing: Bool {
@@ -91,7 +112,7 @@ struct LibraryWindow: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        ToolbarItem(placement: .principal) {
+        ToolbarItem(placement: Self.viewPickerPlacement) {
             Picker("View", selection: $viewMode) {
                 ForEach(ViewMode.allCases) { mode in
                     Label(mode.label, systemImage: mode.symbolName).tag(mode)

@@ -53,9 +53,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A10000000000000000000006 /* PaizoLibraryManager */ = {
+		A10000000000000000000006 /* PaizoLibraryManager-iPad */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A10000000000000000000010 /* Build configuration list for PBXNativeTarget "PaizoLibraryManager" */;
+			buildConfigurationList = A10000000000000000000010 /* Build configuration list for PBXNativeTarget "PaizoLibraryManager-iPad" */;
 			buildPhases = (
 				A10000000000000000000007 /* Sources */,
 				A10000000000000000000003 /* Frameworks */,
@@ -68,11 +68,11 @@
 			fileSystemSynchronizedGroups = (
 				A10000000000000000000002 /* App */,
 			);
-			name = PaizoLibraryManager;
+			name = "PaizoLibraryManager-iPad";
 			packageProductDependencies = (
 				A1000000000000000000000B /* PaizoLibraryUI */,
 			);
-			productName = PaizoLibraryManager;
+			productName = "PaizoLibraryManager-iPad";
 			productReference = A10000000000000000000001 /* Paizo Library Manager.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -108,7 +108,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A10000000000000000000006 /* PaizoLibraryManager */,
+				A10000000000000000000006 /* PaizoLibraryManager-iPad */,
 			);
 		};
 /* End PBXProject section */
@@ -242,7 +242,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A10000000000000000000010 /* Build configuration list for PBXNativeTarget "PaizoLibraryManager" */ = {
+		A10000000000000000000010 /* Build configuration list for PBXNativeTarget "PaizoLibraryManager-iPad" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A10000000000000000000013 /* Debug */,
