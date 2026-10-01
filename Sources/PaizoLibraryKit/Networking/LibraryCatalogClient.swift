@@ -50,20 +50,33 @@ public struct LibraryCatalogClient: Sendable {
 
     /// One page of fifty entitlements, newest first. Pages start at 1.
     public func fetchPage(_ number: Int) async throws -> LibraryPage {
-        let page = try await requestPage(number, token: session.customerToken())
+        let token = try await session.customerToken()
+        let page = try await requestPage(number, token: token)
         guard page.tokenExpired else { return page }
-        let retried = try await requestPage(number, token: session.renewedCustomerToken())
+        let retried = try await requestPage(number, token: session.renewedCustomerToken(replacing: token))
         guard !retried.tokenExpired else { throw PaizoError.tokenExpired }
         return retried
     }
 
-    /// A signed URL that can be downloaded without further authentication.
+    /// A signed URL that can be downloaded without further authentication. Paizo answers with a
+    /// server error when the token has lapsed, so a failed request is tried once more with a
+    /// renewed token.
     public func signedDownloadURL(for file: RemoteFile) async throws -> URL {
         guard file.isAvailable else { throw PaizoError.fileUnavailable(name: file.displayName) }
-        let operation = "Requesting the download"
         let token = try await session.customerToken()
+        do {
+            return try await requestSignedURL(for: file, token: token)
+        } catch PaizoError.http {
+            return try await requestSignedURL(for: file, token: session.renewedCustomerToken(replacing: token))
+        }
+    }
+
+    private func requestSignedURL(for file: RemoteFile, token: String) async throws -> URL {
+        let operation = "Requesting the download link"
         let ticket = try await requestTicket(for: file, token: token)
-        let url = try await appURL("/api/library/download/\(ticket)")
+        let url = await session.currentEndpoints().appURL(
+            "/api/library/download/\(ticket)", query: [URLQueryItem(name: "token", value: token)]
+        )
         let response = try await http.send(.get(url)).validated(operation: operation)
         guard let answer = try? JSONDecoder().decode(DownloadResponse.self, from: response.data),
               let signed = answer.data.flatMap({ URL(string: $0.value) })
@@ -84,7 +97,7 @@ public struct LibraryCatalogClient: Sendable {
     }
 
     private func requestTicket(for file: RemoteFile, token: String) async throws -> String {
-        let operation = "Requesting the download"
+        let operation = "Requesting the download ticket"
         // The order of these fields matters: Paizo reads them by position.
         let fields = [
             (name: "key", value: file.downloadKey),
@@ -104,10 +117,5 @@ public struct LibraryCatalogClient: Sendable {
             throw PaizoError.unexpectedResponse(operation: operation)
         }
         return ticket
-    }
-
-    private func appURL(_ path: String) async throws -> URL {
-        let token = try await session.customerToken()
-        return await session.currentEndpoints().appURL(path, query: [URLQueryItem(name: "token", value: token)])
     }
 }

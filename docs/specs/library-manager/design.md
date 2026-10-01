@@ -24,8 +24,24 @@ documented API, so every step is isolated behind a small client type.
    `login_pass`. Success redirects to `/account.php…`; failure returns to
    `/login.php`.
 3. `GET /customer/current.jwt?app_client_id=<appId>` returns a JSON Web Token
-   that identifies the customer to the library app. It is valid for 15 minutes.
-   The app id is published in the HTML of `/library/`.
+   that identifies the customer to the library app. The app id is published in
+   the HTML of `/library/`.
+
+The token behaves in ways that shaped `PaizoSession`:
+
+- It is valid for 15 minutes, and the store hands out the **same** token to
+  every request, from every session of that customer, until it has expired.
+  Only then is the next one issued. A token can therefore arrive with seconds
+  left to live, and signing in again does not produce a newer one.
+- The library app answers a request that carries an expired token with a
+  server error (status 500 or 501), not with an authentication error.
+- Signing in ends the customer's other store sessions; a token request on an
+  ended session is answered with 404.
+
+`PaizoSession` therefore reads the expiry from the token itself, stops using a
+token 45 seconds before it lapses, and when the store returns one that is about
+to lapse it waits until it has and asks again. A token request that fails is
+followed by a new sign-in.
 
 ### Catalog (app.paizo.com, Next.js)
 
@@ -78,7 +94,7 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
 - `HTTPClient` — protocol with `send(_:)` and `download(_:to:progress:)`.
   `URLSessionHTTPClient` is the production implementation; tests use a stub.
 - `PaizoSession` — actor. Signs in and hands out customer tokens, reusing one
-  for ten minutes.
+  until shortly before the expiry it carries.
 - `FlightPayloadParser` — extracts the `LibraryPage` from library page HTML.
   It scans for the chunk string literals rather than matching them with a
   regular expression: a single chunk can be several hundred kilobytes, which
@@ -109,7 +125,9 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
 - **Full**: page 1, then all remaining pages with six concurrent requests.
 - **Refresh**: pages in order, stopping at the first page that contains no
   unknown entitlement.
-- Each page is tried twice. A token reported as expired is refreshed once.
+- Each page is tried twice. A token reported as expired is renewed once, and a
+  download request that fails with a server error is repeated once with a
+  renewed token.
 
 `MetadataSynchronizer` fetches storefront metadata for a batch of ten SKUs and
 downloads each cover into the cover cache. `LibraryStore` queues the SKUs that

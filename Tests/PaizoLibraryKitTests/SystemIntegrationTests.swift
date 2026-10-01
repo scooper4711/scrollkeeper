@@ -69,6 +69,8 @@ final class StubURLProtocol: URLProtocol {
         let agent = configuration.httpAdditionalHeaders?["User-Agent"] as? String
         #expect(agent?.contains("PaizoLibraryManager") == true)
         #expect(configuration.httpCookieAcceptPolicy == .always)
+        #expect(configuration.urlCache == nil)
+        #expect(configuration.requestCachePolicy == .reloadIgnoringLocalCacheData)
     }
 }
 

@@ -13,6 +13,9 @@ public final class URLSessionHTTPClient: HTTPClient {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.httpCookieAcceptPolicy = .always
         configuration.httpShouldSetCookies = true
+        // Tokens and library pages must never be answered from a cache.
+        configuration.urlCache = nil
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         configuration.timeoutIntervalForRequest = 180
         configuration.httpAdditionalHeaders = ["User-Agent": userAgent]
         return configuration

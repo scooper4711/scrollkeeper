@@ -8,6 +8,17 @@ struct FakePaizo {
 
     let http = StubHTTPClient()
 
+    /// A token in JSON Web Token form that expires at the given time.
+    static func makeToken(expiresAt expiry: Date, label: String = "t") -> String {
+        // Written by hand so that the same claims always give the same token.
+        let claims = #"{"exp":\#(Int(expiry.timeIntervalSince1970)),"label":"\#(label)"}"#
+        let payload = Data(claims.utf8).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+        return "header.\(payload).signature"
+    }
+
     /// A signed-in store session: token requests succeed straight away.
     func installSignedInStore() {
         installSignIn()

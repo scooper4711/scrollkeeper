@@ -5,9 +5,10 @@ import Testing
 @Suite struct PaizoSessionTests {
     private let paizo = FakePaizo()
 
-    private func makeSession(stored: Credentials? = FakePaizo.account, now: @escaping @Sendable () -> Date = { Date() })
-        -> PaizoSession {
-        PaizoSession(http: paizo.http, credentials: MemoryCredentialStore(stored), now: now)
+    /// A session whose clock is `clock`; sleeping moves that clock forward instead of waiting.
+    private func makeSession(stored: Credentials? = FakePaizo.account, clock: Clock = Clock()) -> PaizoSession {
+        let timing = SessionTiming(now: { clock.now }, sleep: { clock.advance(by: $0) })
+        return PaizoSession(http: paizo.http, credentials: MemoryCredentialStore(stored), timing: timing)
     }
 
     @Test func signInPostsFormEncodedCredentials() async throws {
@@ -37,18 +38,106 @@ import Testing
         #expect(endpoints.appID == "abc123")
     }
 
-    @Test func tokenIsReusedUntilItAges() async throws {
+    /// A store that, like Paizo's, hands out one token until it has expired and then the next.
+    private func installCachingStore(clock: Clock) -> Counter {
+        paizo.installSignIn()
+        let requests = Counter()
+        let start = clock.now
+        paizo.http.on("/customer/current.jwt") { request in
+            requests.increment()
+            let period = Int(clock.now.timeIntervalSince(start) / 900)
+            let expiry = start.addingTimeInterval(Double(period + 1) * 900)
+            let token = FakePaizo.makeToken(expiresAt: expiry, label: "period \(period)")
+            return HTTPResponse(data: Data(token.utf8), finalURL: request.url)
+        }
+        return requests
+    }
+
+    @Test func tokenIsReusedWhileItHasLifeLeft() async throws {
+        let clock = Clock()
+        let requests = installCachingStore(clock: clock)
+        let session = makeSession(clock: clock)
+
+        let first = try await session.customerToken()
+        clock.advance(by: 900 - PaizoSession.minimumUsableLife - 1)
+        #expect(try await session.customerToken() == first)
+        #expect(requests.current == 1)
+        #expect(paizo.http.count(of: "action=check_login") == 0)
+    }
+
+    @Test func waitsOutATokenThatIsAboutToExpire() async throws {
+        let clock = Clock()
+        let requests = installCachingStore(clock: clock)
+        let session = makeSession(clock: clock)
+        let first = try await session.customerToken()
+
+        clock.advance(by: 880)
+        let second = try await session.customerToken()
+
+        #expect(second != first)
+        #expect(TokenClaims.expiry(of: second) == TokenClaims.expiry(of: first)?.addingTimeInterval(900))
+        // One request returned the dying token, the next one, after the wait, its successor.
+        #expect(requests.current == 3)
+        #expect(clock.now.timeIntervalSince(TokenClaims.expiry(of: first) ?? .distantPast) == 2)
+    }
+
+    @Test func aTokenThatArrivesAlmostExpiredIsWaitedOutToo() async throws {
+        let clock = Clock()
+        _ = installCachingStore(clock: clock)
+        clock.advance(by: 890)
+
+        let token = try await makeSession(clock: clock).customerToken()
+
+        #expect((TokenClaims.expiry(of: token) ?? .distantPast).timeIntervalSince(clock.now) > 800)
+    }
+
+    @Test func renewalReturnsTheSameTokenWhileTheStoreHasNoNewerOne() async throws {
+        let clock = Clock()
+        let requests = installCachingStore(clock: clock)
+        let session = makeSession(clock: clock)
+        let token = try await session.customerToken()
+
+        #expect(try await session.renewedCustomerToken(replacing: token) == token)
+        #expect(requests.current == 2)
+        #expect(paizo.http.count(of: "action=check_login") == 0)
+    }
+
+    @Test func callersHoldingAnOlderTokenGetTheCurrentOneWithoutAsking() async throws {
+        let clock = Clock()
+        let requests = installCachingStore(clock: clock)
+        let session = makeSession(clock: clock)
+        let current = try await session.customerToken()
+
+        #expect(try await session.renewedCustomerToken(replacing: "an.older.token") == current)
+        #expect(requests.current == 1)
+    }
+
+    @Test func tokenWithUnreadableExpiryIsRenewedAfterTheFallbackLifetime() async throws {
         paizo.installSignedInStore()
         let clock = Clock()
-        let session = makeSession(now: { clock.now })
+        let session = makeSession(clock: clock)
+        _ = try await session.customerToken()
 
-        #expect(try await session.customerToken() == FakePaizo.token)
+        clock.advance(by: PaizoSession.fallbackLifetime - PaizoSession.minimumUsableLife - 1)
         _ = try await session.customerToken()
         #expect(paizo.http.count(of: "current.jwt") == 1)
 
-        clock.advance(by: PaizoSession.tokenLifetime + 1)
+        clock.advance(by: 2)
         _ = try await session.customerToken()
         #expect(paizo.http.count(of: "current.jwt") == 2)
+    }
+
+    @Test func liveTimingUsesTheRealClock() async {
+        let before = Date()
+        await SessionTiming.live.sleep(0.01)
+        #expect(SessionTiming.live.now() >= before.addingTimeInterval(0.01))
+    }
+
+    @Test func readsTheExpiryClaimOfAToken() {
+        let expiry = Date(timeIntervalSince1970: 1_800_000_900)
+        #expect(TokenClaims.expiry(of: FakePaizo.makeToken(expiresAt: expiry)) == expiry)
+        #expect(TokenClaims.expiry(of: "header.payload.signature") == nil)
+        #expect(TokenClaims.expiry(of: "not a token") == nil)
     }
 
     @Test func signsInWithStoredCredentialsWhenStoreSessionIsMissing() async throws {
@@ -84,134 +173,9 @@ import Testing
     @Test func concurrentCallersShareOneRenewal() async throws {
         paizo.installSignedInStore()
         let session = makeSession()
-        async let first = session.renewedCustomerToken()
-        async let second = session.renewedCustomerToken()
+        async let first = session.renewedCustomerToken(replacing: "")
+        async let second = session.renewedCustomerToken(replacing: "")
         #expect(try await [first, second] == [FakePaizo.token, FakePaizo.token])
-        #expect(paizo.http.count(of: "current.jwt") <= 2)
-    }
-}
-
-@Suite struct LibraryCatalogClientTests {
-    private let paizo = FakePaizo()
-
-    private func makeClient() -> LibraryCatalogClient {
-        paizo.installSignedInStore()
-        let session = PaizoSession(http: paizo.http, credentials: MemoryCredentialStore(FakePaizo.account))
-        return LibraryCatalogClient(http: paizo.http, session: session)
-    }
-
-    @Test func fetchesRequestedPageWithToken() async throws {
-        let client = makeClient()
-        paizo.installLibrary(records: (1...5).map { Fixtures.record(id: "p\($0)", name: "Book \($0)") })
-
-        let page = try await client.fetchPage(3)
-        #expect(page.entitlements.map(\.packageID) == ["p5"])
-        #expect(page.totalCount == 5)
-        #expect(paizo.http.count(of: "customer-library?token=\(FakePaizo.token)&page=3") == 1)
-    }
-
-    @Test func renewsTokenOnceWhenPageReportsItExpired() async throws {
-        let client = makeClient()
-        let attempts = Counter()
-        paizo.http.on("https://app.paizo.com/customer-library") { request in
-            let expired = attempts.increment() == 1
-            let html = Fixtures.libraryPageHTML(records: [], count: 0, tokenExpired: expired)
-            return HTTPResponse(data: Data(html.utf8), finalURL: request.url)
-        }
-
-        #expect(try await client.fetchPage(1).tokenExpired == false)
-        #expect(paizo.http.count(of: "current.jwt") == 2)
-    }
-
-    @Test func failsWhenTokenStaysExpired() async {
-        let client = makeClient()
-        paizo.http.on(
-            "https://app.paizo.com/customer-library",
-            text: Fixtures.libraryPageHTML(records: [], count: 0, tokenExpired: true)
-        )
-        await #expect(throws: PaizoError.tokenExpired) { try await client.fetchPage(1) }
-    }
-
-    @Test func reportsHTTPFailureWithOperation() async {
-        let client = makeClient()
-        paizo.http.on("https://app.paizo.com/customer-library", text: "busy", status: 503)
-        await #expect(throws: PaizoError.http(operation: "Loading library page 2", status: 503)) {
-            try await client.fetchPage(2)
-        }
-    }
-
-    @Test func signsDownloadForNewStorageByFileName() async throws {
-        let client = makeClient()
-        paizo.installDownloads()
-        let file = RemoteFile(displayName: "Book", fileName: "abc-Book One.pdf",
-                              filePath: "https://bucket.example/abc-Book%20One.pdf", customerID: "1001")
-
-        #expect(try await client.signedDownloadURL(for: file).absoluteString == "https://s3.example/signed")
-        #expect(try ticketRequestBody() == [
-            "key": "abc-Book One.pdf", "legacy": "false", "token": FakePaizo.token, "customer": "1001"
-        ])
-        // Paizo reads the fields by position, so their order is part of the contract.
-        #expect(try ticketRequestText() == """
-        {"key":"abc-Book One.pdf","legacy":"false","token":"header.payload.signature","customer":"1001"}
-        """)
-    }
-
-    @Test func signsDownloadForLegacyStorageByDecodedPath() async throws {
-        let client = makeClient()
-        paizo.installDownloads()
-        let path = "https://s3.us-west-2.amazonaws.com/com.paizo.downloads.raw/PaizoPublishing%2CLLC/T/T.epub?X-Amz=1"
-        let file = RemoteFile(displayName: "Tale", fileName: "T.epub", filePath: path, customerID: "1001")
-
-        _ = try await client.signedDownloadURL(for: file)
-        let body = try ticketRequestBody()
-        #expect(body["key"] == "PaizoPublishing,LLC/T/T.epub")
-        #expect(try ticketRequestText().hasPrefix(#"{"key":"PaizoPublishing,LLC/T/T.epub","legacy":"true","#))
-        #expect(body["legacy"] == "true")
-    }
-
-    @Test func refusesFilesPaizoHasNotAttached() async {
-        let client = makeClient()
-        let file = RemoteFile(entitlement: Fixtures.entitlement("Unreleased Scenario", file: ""))
-        await #expect(throws: PaizoError.fileUnavailable(name: "Unreleased Scenario")) {
-            try await client.signedDownloadURL(for: file)
-        }
-    }
-
-    @Test(arguments: [
-        (["error": "Not entitled"] as [String: String], PaizoError.downloadRefused(reason: "Not entitled")),
-        (["data": ""], PaizoError.unexpectedResponse(operation: "Requesting the download")),
-        ([:], PaizoError.unexpectedResponse(operation: "Requesting the download"))
-    ])
-    func reportsTicketProblems(answer: [String: String], expected: PaizoError) async {
-        let client = makeClient()
-        paizo.http.on("POST https://app.paizo.com/api/library/download", json: answer)
-        let file = RemoteFile(entitlement: Fixtures.entitlement("Book"))
-        await #expect(throws: expected) { try await client.signedDownloadURL(for: file) }
-    }
-
-    @Test func reportsMalformedAnswers() async {
-        let client = makeClient()
-        let file = RemoteFile(entitlement: Fixtures.entitlement("Book"))
-        paizo.http.on("POST https://app.paizo.com/api/library/download", text: "<html>")
-        await #expect(throws: PaizoError.unexpectedResponse(operation: "Requesting the download")) {
-            try await client.signedDownloadURL(for: file)
-        }
-        paizo.installDownloads()
-        paizo.http.on("GET https://app.paizo.com/api/library/download/ticket-1", json: ["data": NSNull()])
-        await #expect(throws: PaizoError.unexpectedResponse(operation: "Requesting the download")) {
-            try await client.signedDownloadURL(for: file)
-        }
-    }
-
-    private func ticketRequestText() throws -> String {
-        let request = try #require(paizo.http.requests.last(where: {
-            $0.httpMethod == "POST" && $0.url?.path == "/api/library/download"
-        }))
-        return String(bytes: request.httpBody ?? Data(), encoding: .utf8) ?? ""
-    }
-
-    private func ticketRequestBody() throws -> [String: String] {
-        let object = try JSONSerialization.jsonObject(with: Data(try ticketRequestText().utf8))
-        return object as? [String: String] ?? [:]
+        #expect(paizo.http.count(of: "current.jwt") == 1)
     }
 }
