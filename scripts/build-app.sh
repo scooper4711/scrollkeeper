@@ -22,6 +22,7 @@ fi
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BINARY" "$APP/Contents/MacOS/$EXECUTABLE"
+cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -34,6 +35,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <string>Paizo Library Manager</string>
     <key>CFBundleExecutable</key>
     <string>$EXECUTABLE</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
     <string>io.github.scooper4711.PaizoLibraryManager</string>
     <key>CFBundleInfoDictionaryVersion</key>

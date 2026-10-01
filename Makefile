@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run dmg clean
+.PHONY: build test lint coverage app run dmg icon clean
 
 build:
 	swift build
@@ -20,6 +20,10 @@ run: app
 
 dmg: app
 	scripts/make-dmg.sh
+
+# Redraws Resources/AppIcon.icns from scripts/make-icon.swift.
+icon:
+	swift scripts/make-icon.swift
 
 clean:
 	rm -rf .build build
