@@ -1,0 +1,9 @@
+tmp/
+.env
+.build/
+build/
+.DS_Store
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+__pycache__/
