@@ -88,6 +88,7 @@ public final class LibraryStore {
     /// fetched to the end, starts a full sync.
     public func start() async {
         snapshot = await repository.load()
+        discardOutdatedMetadata()
         rebuildItems()
         importFinderTags()
         if let stored = environment.credentials.load(), stored.isComplete {
@@ -121,6 +122,14 @@ public final class LibraryStore {
         environment.settings.downloadDirectoryPath = ""
         locator = FileLocator(root: environment.defaultDownloadDirectory)
         refreshDownloadedItems()
+    }
+
+    /// Metadata fetched by a version that knew fewer fields is dropped so it is fetched again.
+    /// Cover artwork is kept; only the storefront details are asked for anew.
+    private func discardOutdatedMetadata() {
+        guard environment.settings.metadataVersion != ProductMetadata.schemaVersion else { return }
+        snapshot.metadata = [:]
+        environment.settings.metadataVersion = ProductMetadata.schemaVersion
     }
 
     /// Rebuilds titles from the snapshot after entitlements, metadata or tags changed.

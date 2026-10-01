@@ -84,6 +84,7 @@ public struct LibraryTitle: Sendable, Equatable, Identifiable {
     public var numberSortKey: Int { classification.number ?? Int.max }
     public var levelSortKey: Int { classification.levelRange?.lowerBound ?? Int.max }
     public var pageCount: Int { metadata.pageCount }
+    public var author: String { metadata.author }
     public var formatsLabel: String { classification.formats.joined(separator: ", ") }
     public var tagsLabel: String { tags.joined(separator: ", ") }
 
@@ -95,8 +96,8 @@ public struct LibraryTitle: Sendable, Equatable, Identifiable {
     /// Fills in the derived search text and sort key once the item is complete.
     func withDerivedText() -> LibraryTitle {
         var copy = self
-        let parts = [title, sku, classification.series, metadata.summary, classification.productLine.label,
-                     classification.gameSystem.label]
+        let parts = [title, sku, classification.series, metadata.author, metadata.summary,
+                     classification.productLine.label, classification.gameSystem.label]
             + editions.map(\.entitlement.displayName) + tags
         copy.searchText = parts.joined(separator: " ").lowercased()
         copy.titleSortKey = Self.naturalSortKey(title)

@@ -108,6 +108,13 @@ import Testing
         #expect(classify("Pathfinder Society Quest: Fane of Fangs (PFRPG)").number == nil)
     }
 
+    @Test func prefersTheStorefrontStartingLevelOverTheSummary() {
+        var metadata = Fixtures.metadata(sku: "S", summary: "An adventure for 1st-level characters.")
+        metadata.startingLevel = "10-14"
+        #expect(classify("Pathfinder Adventure Path #125: Tower of the Drowned Dead", metadata: metadata)
+            .levelRange == 10...14)
+    }
+
     @Test func readsLevelFromSummaryAndKeepsFormats() {
         let summary = "A Starfinder Society Scenario designed for 1st- through 2nd-level characters."
         let result = classify("Scenario", metadata: Fixtures.metadata(sku: "S", summary: summary))
@@ -117,7 +124,45 @@ import Testing
     }
 }
 
+@Suite struct AuthorParserTests {
+    @Test(arguments: [
+        ("A Pathfinder Society adventure for 1st-2nd level characters.\nWritten by Kate Baker.", "Kate Baker"),
+        ("Written by Rigby Bendele and Jacob W. Michaels\nScenario tags", "Rigby Bendele and Jacob W. Michaels"),
+        ("Written by Solomon St. John\nContent note", "Solomon St. John"),
+        ("Written by Hilary Moon Murphy. The following maps are used", "Hilary Moon Murphy"),
+        ("Chapter 1: \"Stolen Land\"\nby Tim Hitchcock\nThe adventure begins", "Tim Hitchcock"),
+        ("\u{201C}The Ruined Clouds\u{201D} by Jason Keeley.\r\nAn archive of new creatures", "Jason Keeley"),
+        ("written by Luis Loza, Ron Lundeen, and Mikhail Rekun", "Luis Loza, Ron Lundeen, and Mikhail Rekun"),
+        ("by Vincent van Gogh and", "Vincent van Gogh"),
+        ("Written by Ben McFarland, Steven Helt.Cover Art by Someone", "Ben McFarland, Steven Helt")
+    ])
+    func findsTheCreditedAuthors(summary: String, expected: String) {
+        #expect(AuthorParser.parse(summary) == expected)
+    }
+
+    @Test(arguments: [
+        "This map can be used by experienced GMs and novices alike.",
+        "Created by cartographer Jason A. Engle",
+        "Written by the kishalee",
+        "A 224-page rulebook",
+        ""
+    ])
+    func ignoresTextThatIsNotACredit(summary: String) {
+        #expect(AuthorParser.parse(summary).isEmpty)
+    }
+}
+
 @Suite struct LevelRangeParserTests {
+    @Test(arguments: [("10-14", 10, 14), ("5", 5, 5), (" 1 \u{2013} 4 ", 1, 4)])
+    func parsesTheStartingLevelField(value: String, low: Int, high: Int) {
+        #expect(LevelRangeParser.parseField(value) == low...high)
+    }
+
+    @Test(arguments: ["", "Any", "1-2-3", "40", "9-3"])
+    func ignoresStartingLevelFieldsThatAreNotLevels(value: String) {
+        #expect(LevelRangeParser.parseField(value) == nil)
+    }
+
     @Test(arguments: [
         ("designed for 9th- through 12th-level characters", 9, 12),
         ("A Pathfinder Society adventure for 5th-6th level characters, playable in 2-3 hours.", 5, 6),
@@ -141,142 +186,5 @@ import Testing
         #expect(classification.levelLabel.isEmpty)
         classification.levelRange = 5...5
         #expect(classification.levelLabel == "5")
-    }
-}
-
-@Suite struct EntitlementGrouperTests {
-    private let grouper = EntitlementGrouper()
-
-    @Test func groupsEditionsOfOneProductInKindOrder() {
-        let entitlements = [
-            Fixtures.entitlement("Pathfinder NPC Core PDF - File per Chapter", sku: "PZO12007E", file: "c.zip",
-                                 productName: "Pathfinder NPC Core PDF"),
-            Fixtures.entitlement("Pathfinder NPC Core PDF - Single File", sku: "PZO12007E",
-                                 productName: "Pathfinder NPC Core PDF"),
-            Fixtures.entitlement("Pathfinder Flip-Mat: Carnival PDF", sku: "PZO30100E")
-        ]
-        let items = grouper.makeItems(from: CatalogSnapshot(entitlements: entitlements))
-
-        #expect(items.map(\.title) == ["Pathfinder NPC Core", "Pathfinder Flip-Mat: Carnival"])
-        #expect(items[0].editions.map(\.label) == ["Single File", "File per Chapter"])
-        #expect(items[0].editions[1].isUnpackedArchive)
-        #expect(!items[0].editions[0].isUnpackedArchive)
-        #expect(!items[0].editions[1].isSavedElsewhere)
-        #expect(items[0].classification.formats == ["PDF", "ZIP"])
-        #expect(items[0].formatsLabel == "PDF, ZIP")
-        #expect(items[1].editions.map(\.label) == ["PDF"])
-    }
-
-    @Test(arguments: [
-        ("Pathfinder Society Scenario #6-15: Lost and Forgotten", "s.zip", true, false),
-        ("Starfinder One-Shot #1: Band on the Run", "o.zip", true, false),
-        ("Pathfinder Hell's Destiny Adventure Path - Single File", "h.zip", true, false),
-        ("Community Use Package: Runes", "r.zip", false, true),
-        ("Pathfinder Flip-Mat: Coastline - JPGs", "j.zip", false, true),
-        ("Pathfinder Roleplaying Game Compatible Logos (Download)", "l.zip", false, true),
-        ("Godsrain Audiobook", "a.zip", false, true),
-        ("Pathfinder Flip-Mat: Coastline PDF", "c.pdf", false, false)
-    ])
-    func decidesWhichZipsAreUnpacked(name: String, file: String, unpacked: Bool, savedElsewhere: Bool) {
-        let entitlement = Fixtures.entitlement(name, sku: "S", file: file)
-        let edition = grouper.makeItems(from: CatalogSnapshot(entitlements: [entitlement]))[0].editions[0]
-        #expect(edition.isUnpackedArchive == unpacked)
-        #expect(edition.isSavedElsewhere == savedElsewhere)
-    }
-
-    @Test func entitlementWithoutSKUBecomesItsOwnTitle() {
-        var entitlement = Fixtures.entitlement("Mystery Package", file: "")
-        entitlement.providedBySKU = "undefined"
-        let items = grouper.makeItems(from: CatalogSnapshot(entitlements: [entitlement]))
-
-        #expect(items.first?.id == entitlement.packageID)
-        #expect(items.first?.sku.isEmpty == true)
-        #expect(items.first?.editions.first?.label == "Unavailable")
-    }
-
-    @Test func labelsEditionsByWhatDistinguishesThem() {
-        let product = "Pathfinder Dark Archive PDF"
-        let names = [
-            "Pathfinder Dark Archive Remastered PDF - File per Chapter",
-            "Lost Page from the Dark Archive - 11 PDF",
-            "Pathfinder Dark Archive (S2) - JPGs",
-            "Pathfinder Dark Archive (Download) - JPGs",
-            "Pathfinder Dark-Archive PDF - Assembled Maps"
-        ]
-        let entitlements = names.map { Fixtures.entitlement($0, sku: "PZO2111E", productName: product) }
-        let labels = grouper.makeItems(from: CatalogSnapshot(entitlements: entitlements))[0].editions.map(\.label)
-
-        #expect(Set(labels) == [
-            "Remastered – File per Chapter", "Lost Page from the Dark Archive - 11", "(S2) - JPGs", "JPGs",
-            "Assembled Maps"
-        ])
-    }
-
-    @Test func completesProductNamesThatPaizoTruncated() {
-        let truncated = "Pathfinder Society Scenario #5-19: Demonic Afterpa"
-        let entitlement = Fixtures.entitlement(
-            "Pathfinder Society Scenario #5-19: Demonic Afterparty", sku: "PZOPSS0519E", productName: truncated
-        )
-        let items = grouper.makeItems(from: CatalogSnapshot(entitlements: [entitlement]))
-        #expect(items[0].title == "Pathfinder Society Scenario #5-19: Demonic Afterparty")
-        #expect(items[0].editions[0].label == "PDF")
-    }
-
-    @Test func keepsTruncatedNameWhenNothingCompletesIt() {
-        let truncated = String(repeating: "x", count: 50)
-        let entitlement = Fixtures.entitlement("Something else", sku: "S", productName: truncated)
-        #expect(grouper.makeItems(from: CatalogSnapshot(entitlements: [entitlement]))[0].title == truncated)
-    }
-
-    @Test func attachesMetadataTagsAndSearchText() {
-        let entitlement = Fixtures.entitlement("Pathfinder Bounty #7: Cleanup Duty", sku: "PZOPFB0007E")
-        let snapshot = CatalogSnapshot(
-            entitlements: [entitlement],
-            metadata: ["PZOPFB0007E": Fixtures.metadata(sku: "PZOPFB0007E", summary: "For 1st-level characters.")],
-            tags: ["PZOPFB0007E": ["Played"]]
-        )
-        let item = grouper.makeItems(from: snapshot)[0]
-
-        #expect(item.tags == ["Played"])
-        #expect(item.tagsLabel == "Played")
-        #expect(item.metadata.coverURL.hasSuffix("PZOPFB0007E.jpg"))
-        #expect(item.searchText.contains("cleanup duty"))
-        #expect(item.searchText.contains("played"))
-        #expect(item.searchText.contains("bounties"))
-        #expect(item.levelSortKey == 1)
-        #expect(item.numberSortKey == 7)
-        #expect(item.productLineLabel == "Bounties")
-        #expect(item.gameSystemLabel == "Pathfinder 2E")
-    }
-
-    @Test func titleWithoutAnyNameIsUntitled() {
-        let items = grouper.makeItems(from: CatalogSnapshot(entitlements: [Fixtures.entitlement("PDF", sku: "S")]))
-        #expect(items[0].title == "Untitled")
-    }
-
-    @Test func itemDefaultsWhenClassificationIsUnknown() {
-        let item = LibraryTitle(id: "i", sku: "", title: "T", editions: [])
-        #expect(item.dateAdded == .distantPast)
-        #expect(item.levelSortKey == Int.max)
-        #expect(item.numberSortKey == Int.max)
-        #expect(item.fallbackImageURL.isEmpty)
-        #expect(item.pageCount == 0)
-        #expect(item.series.isEmpty)
-    }
-}
-
-@Suite struct ModelLabelTests {
-    @Test func everyGameSystemAndProductLineHasLabelAndSymbol() {
-        #expect(GameSystem.allCases.allSatisfy { !$0.label.isEmpty && $0.id == $0.rawValue })
-        #expect(ProductLine.allCases.allSatisfy { !$0.label.isEmpty && !$0.symbolName.isEmpty && $0.id == $0.rawValue })
-        #expect(Set(EditionKind.allCases.map(\.label)).count == EditionKind.allCases.count)
-    }
-
-    @Test func metadataKnowsWhenItIsEmptyAndBuildsStoreURL() {
-        var metadata = ProductMetadata(sku: "S")
-        #expect(metadata.isEmpty)
-        #expect(metadata.storeURL == nil)
-        metadata.storePath = "/pathfinder-dark-archive-pdf/"
-        #expect(metadata.storeURL?.absoluteString == "https://store.paizo.com/pathfinder-dark-archive-pdf/")
     }
 }

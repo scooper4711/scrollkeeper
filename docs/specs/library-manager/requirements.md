@@ -58,7 +58,11 @@ searching, classification, tagging and downloading in a native macOS app.
 3.2 This runs concurrently with the catalog sync and has its own progress
     indication.
 3.3 Other metadata the storefront offers is kept as well: game edition (brand),
-    category path, page count and the link to the store page.
+    category path, page count, starting level, author and the link to the store
+    page. The author is the storefront's author field when there is one, and
+    otherwise the credit in the summary ("Written by …", or a "by …" line).
+3.3a Metadata stored by a version of the app that kept fewer fields is fetched
+    again; cover artwork is not downloaded again.
 3.4 Artwork and metadata are cached on disk and not fetched again for titles
     that already have them.
 3.5 A title that the storefront does not know is still shown. Its cover is the
@@ -101,9 +105,11 @@ searching, classification, tagging and downloading in a native macOS app.
 6.2 The column view can be sorted by clicking a column header. The chosen sort
     order also applies to the other two views.
 6.3 A search field filters titles as the user types. It matches the title, SKU,
-    edition names, series, summary and tags. All words must match.
+    edition names, series, author, summary and tags. All words must match.
 6.4 Titles can be filtered by game system, product type, format, tag and
     whether they are downloaded.
+6.4a When the search and filters match nothing and a filter is set, the empty
+    view offers to clear the filters and the filter button pulses briefly.
 6.5 Selecting a title shows its details: cover, summary, metadata, editions
     with their download actions, and tags.
 
@@ -118,8 +124,9 @@ searching, classification, tagging and downloading in a native macOS app.
 7.3 Adventure path volumes record the campaign name, the volume number and the
     part within the campaign.
 7.4 Society scenarios record their season (or year) and scenario number.
-7.5 Where the title or summary states the character levels an adventure is
-    written for, the level range is recorded.
+7.5 The level range an adventure is written for is recorded: from the
+    storefront's starting level when it gives one, otherwise from the title or
+    summary.
 7.6 The file formats of a title (PDF, ZIP, ePub) are recorded.
 
 ## 8. Tags

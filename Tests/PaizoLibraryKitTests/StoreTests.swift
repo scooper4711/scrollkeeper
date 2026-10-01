@@ -36,6 +36,19 @@ import Testing
         #expect(harness.paizo.http.requests.count == requestsBefore)
     }
 
+    @Test func metadataFromAnOlderVersionIsFetchedAgainButCoversAreKept() async {
+        _ = await harness.makeSyncedStore()
+        let lookups = harness.paizo.http.count(of: "POST https://store.paizo.com/graphql")
+        harness.environment.settings.metadataVersion = ProductMetadata.schemaVersion - 1
+
+        let relaunched = await harness.makeSyncedStore()
+
+        #expect(harness.paizo.http.count(of: "POST https://store.paizo.com/graphql") == lookups + 1)
+        #expect(harness.paizo.http.count(of: "https://cdn.example/PZO1E.jpg") == 1)
+        #expect(relaunched.item(id: "PZO1E")?.metadata.pageCount == 64)
+        #expect(harness.environment.settings.metadataVersion == ProductMetadata.schemaVersion)
+    }
+
     @Test func withoutAccountNothingIsFetched() async {
         let signedOut = StoreHarness(account: nil)
         let store = await signedOut.makeSyncedStore()

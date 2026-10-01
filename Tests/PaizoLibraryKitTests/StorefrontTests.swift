@@ -22,6 +22,23 @@ import Testing
         #expect(metadata[0].storeURL?.absoluteString == "https://store.paizo.com/pzo1e/")
     }
 
+    @Test func takesAuthorFromTheCustomFieldOrTheSummary() async throws {
+        var novel = FakePaizo.productNode(sku: "NOVEL", name: "Lord of Penance ePub")
+        novel["customFields"] = ["edges": [
+            ["node": ["name": "Author(s)", "value": " Richard Lee Byers "]],
+            ["node": ["name": "Starting Level", "value": "10-14"]]
+        ]]
+        var scenario = FakePaizo.productNode(sku: "SCENARIO", name: "Scenario #6-06")
+        scenario["plainTextDescription"] = "For 1st-4th level characters.\nWritten by Josh Foster\nScenario tags"
+        paizo.installStorefront(products: ["NOVEL": novel, "SCENARIO": scenario])
+
+        let metadata = try await StorefrontClient(http: paizo.http).fetchMetadata(skus: ["NOVEL", "SCENARIO"])
+
+        #expect(metadata.map(\.author) == ["Richard Lee Byers", "Josh Foster"])
+        #expect(metadata.map(\.startingLevel) == ["10-14", ""])
+        #expect(metadata.map(\.pageCount) == [0, 64])
+    }
+
     @Test func sendsAnonymousTokenAndReusesIt() async throws {
         paizo.installStorefront(products: [:])
         let client = StorefrontClient(http: paizo.http)
@@ -65,6 +82,7 @@ import Testing
         #expect(query.contains("query Products($s0: String!, $s1: String!)"))
         #expect(query.contains("p1: product(sku: $s1) { ...Details }"))
         #expect(query.contains("url(width: 480)"))
+        #expect(query.contains("customFields(first: 30)"))
     }
 }
 

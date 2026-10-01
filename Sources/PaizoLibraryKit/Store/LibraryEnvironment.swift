@@ -57,10 +57,17 @@ public struct SettingsStore: Sendable {
         nonmutating set { defaults.set(newValue, forKey: Self.completedFullSyncKey) }
     }
 
+    /// The `ProductMetadata.schemaVersion` the stored metadata was fetched with.
+    public var metadataVersion: Int {
+        get { defaults.integer(forKey: Self.metadataVersionKey) }
+        nonmutating set { defaults.set(newValue, forKey: Self.metadataVersionKey) }
+    }
+
     private var defaults: UserDefaults {
         (suiteName.isEmpty ? nil : UserDefaults(suiteName: suiteName)) ?? .standard
     }
 
     private static let downloadDirectoryKey = "downloadDirectoryPath"
     private static let completedFullSyncKey = "hasCompletedFullSync"
+    private static let metadataVersionKey = "metadataVersion"
 }
