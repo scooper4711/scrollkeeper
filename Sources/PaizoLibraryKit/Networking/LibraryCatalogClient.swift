@@ -85,14 +85,15 @@ public struct LibraryCatalogClient: Sendable {
 
     private func requestTicket(for file: RemoteFile, token: String) async throws -> String {
         let operation = "Requesting the download"
-        let body = [
-            "key": file.downloadKey,
-            "legacy": file.isLegacyStorage ? "true" : "false",
-            "token": token,
-            "customer": file.customerID
+        // The order of these fields matters: Paizo reads them by position.
+        let fields = [
+            (name: "key", value: file.downloadKey),
+            (name: "legacy", value: file.isLegacyStorage ? "true" : "false"),
+            (name: "token", value: token),
+            (name: "customer", value: file.customerID)
         ]
         let url = await session.currentEndpoints().appURL("/api/library/download")
-        let response = try await http.send(.postJSON(url, body: body)).validated(operation: operation)
+        let response = try await http.send(.postJSON(url, orderedFields: fields)).validated(operation: operation)
         guard let answer = try? JSONDecoder().decode(DownloadResponse.self, from: response.data) else {
             throw PaizoError.unexpectedResponse(operation: operation)
         }

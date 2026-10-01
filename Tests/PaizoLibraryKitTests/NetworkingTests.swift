@@ -150,6 +150,10 @@ import Testing
         #expect(try ticketRequestBody() == [
             "key": "abc-Book One.pdf", "legacy": "false", "token": FakePaizo.token, "customer": "1001"
         ])
+        // Paizo reads the fields by position, so their order is part of the contract.
+        #expect(try ticketRequestText() == """
+        {"key":"abc-Book One.pdf","legacy":"false","token":"header.payload.signature","customer":"1001"}
+        """)
     }
 
     @Test func signsDownloadForLegacyStorageByDecodedPath() async throws {
@@ -161,6 +165,7 @@ import Testing
         _ = try await client.signedDownloadURL(for: file)
         let body = try ticketRequestBody()
         #expect(body["key"] == "PaizoPublishing,LLC/T/T.epub")
+        #expect(try ticketRequestText().hasPrefix(#"{"key":"PaizoPublishing,LLC/T/T.epub","legacy":"true","#))
         #expect(body["legacy"] == "true")
     }
 
@@ -198,11 +203,15 @@ import Testing
         }
     }
 
-    private func ticketRequestBody() throws -> [String: String] {
+    private func ticketRequestText() throws -> String {
         let request = try #require(paizo.http.requests.last(where: {
             $0.httpMethod == "POST" && $0.url?.path == "/api/library/download"
         }))
-        let object = try JSONSerialization.jsonObject(with: request.httpBody ?? Data())
+        return String(bytes: request.httpBody ?? Data(), encoding: .utf8) ?? ""
+    }
+
+    private func ticketRequestBody() throws -> [String: String] {
+        let object = try JSONSerialization.jsonObject(with: Data(try ticketRequestText().utf8))
         return object as? [String: String] ?? [:]
     }
 }

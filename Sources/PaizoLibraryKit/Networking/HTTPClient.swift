@@ -36,11 +36,14 @@ extension URLRequest {
         URLRequest(url: url)
     }
 
-    static func postJSON(_ url: URL, body: [String: String]) -> URLRequest {
+    /// A JSON object whose members appear in the given order. Paizo's download API reads the
+    /// members by position, so a dictionary, which has no order, cannot be used.
+    static func postJSON(_ url: URL, orderedFields fields: [(name: String, value: String)]) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        let members = fields.map { "\(jsonString($0.name)):\(jsonString($0.value))" }
+        request.httpBody = Data("{\(members.joined(separator: ","))}".utf8)
         return request
     }
 
@@ -51,6 +54,12 @@ extension URLRequest {
         let pairs = fields.map { "\(formEncode($0.name))=\(formEncode($0.value))" }
         request.httpBody = Data(pairs.joined(separator: "&").utf8)
         return request
+    }
+
+    private static func jsonString(_ text: String) -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.withoutEscapingSlashes]
+        return (try? encoder.encode(text)).flatMap { String(bytes: $0, encoding: .utf8) } ?? "\"\""
     }
 
     private static func formEncode(_ text: String) -> String {

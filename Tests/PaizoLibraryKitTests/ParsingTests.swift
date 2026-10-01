@@ -110,6 +110,43 @@ import Testing
         #expect(page.entitlements[0].dateGranted != nil)
     }
 
+    @Test func parsesAPageDeliveredAsOneVeryLargeChunk() throws {
+        // Paizo sometimes sends the whole listing as a single chunk of several hundred kilobytes.
+        let summary = String(repeating: "A long description with \"quotes\" and back\\slashes. ", count: 40)
+        let records = (1...400).map { Fixtures.record(id: "p\($0)", name: "Book \($0) " + summary) }
+        let row = "4:" + Fixtures.jsonString(["$", "$Lb", NSNull(), ["entitlements": records, "count": 400]])
+        let html = "<script>self.__next_f.push([1,\(Fixtures.jsonString(row + "\n"))])</script>"
+        #expect(html.utf8.count > 500_000)
+
+        let page = try parser.parsePage(html: html)
+        #expect(page.entitlements.count == 400)
+        #expect(page.entitlements[399].displayName.hasSuffix("back\\slashes. "))
+    }
+
+    @Test func joinsAnEscapeSequenceSplitAcrossChunks() throws {
+        let properties: [String: Any] = [
+            "entitlements": [["DigitalPackageID": "a", "PackageDisplayName": "Dice \u{1F3B2} Tower"]], "count": 1
+        ]
+        let row = "4:" + Fixtures.jsonString(["$", "$Lb", NSNull(), properties]) + "\n"
+        // The die is written as a surrogate pair, and the chunk boundary falls between its halves.
+        let literal = String(Fixtures.jsonString(row).dropFirst().dropLast())
+            .replacingOccurrences(of: "\u{1F3B2}", with: #"\ud83c\udfb2"#)
+        let halves = literal.components(separatedBy: #"\udfb2"#)
+        let html = """
+        <script>self.__next_f.push([1,"\(halves[0])"])</script>
+        <script>self.__next_f.push([1,"\\udfb2\(halves[1])"])</script>
+        """
+
+        let page = try parser.parsePage(html: html)
+        #expect(page.entitlements.first?.displayName == "Dice \u{1F3B2} Tower")
+    }
+
+    @Test func unterminatedChunkIsIgnored() {
+        #expect(throws: PayloadError.entitlementsMissing) {
+            try parser.parsePage(html: #"<script>self.__next_f.push([1,"4:[\"entitlements\"#)
+        }
+    }
+
     @Test func reportsExpiredToken() throws {
         let page = try parser.parsePage(html: Fixtures.libraryPageHTML(records: [], count: 0, tokenExpired: true))
         #expect(page.tokenExpired)
