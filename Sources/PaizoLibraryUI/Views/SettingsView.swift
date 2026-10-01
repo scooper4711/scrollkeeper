@@ -1,17 +1,29 @@
-import AppKit
 import PaizoLibraryKit
 import SwiftUI
 
-/// Account and download folder settings.
+#if os(macOS)
+import AppKit
+#endif
+
+/// Account and download folder settings: a tabbed window on the Mac, one form on the iPad.
 struct SettingsView: View {
     var body: some View {
+        #if os(macOS)
         TabView {
-            AccountSettings()
+            Form { AccountSettings() }
+                .formStyle(.grouped)
                 .tabItem { Label("Account", systemImage: "person.crop.circle") }
-            DownloadSettings()
+            Form { DownloadSettings() }
+                .formStyle(.grouped)
                 .tabItem { Label("Downloads", systemImage: "arrow.down.circle") }
         }
         .frame(width: 520)
+        #else
+        Form {
+            AccountSettings()
+            DownloadSettings()
+        }
+        #endif
     }
 }
 
@@ -21,40 +33,44 @@ private struct AccountSettings: View {
     @State private var password = ""
 
     var body: some View {
-        Form {
-            Section {
-                TextField("Email", text: $email)
-                    .textContentType(.username)
-                SecureField("Password", text: $password)
-                    .textContentType(.password)
-                    .onSubmit(signIn)
-            } header: {
-                Text("Paizo Account")
-            } footer: {
-                Text("""
-                The fields accept Password AutoFill from the Passwords app. The password is stored in your \
-                Keychain and is only sent to store.paizo.com.
-                """)
-                .foregroundStyle(.secondary)
-            }
-            Section {
-                HStack {
-                    status
-                    Spacer()
-                    if store.account != .signedOut {
-                        Button("Remove Account", role: .destructive) {
-                            store.signOut()
-                            password = ""
-                        }
+        Section {
+            TextField("Email", text: $email)
+                .textContentType(.username)
+            #if !os(macOS)
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+            #endif
+            SecureField("Password", text: $password)
+                .textContentType(.password)
+                .onSubmit(signIn)
+        } header: {
+            Text("Paizo Account")
+        } footer: {
+            Text("""
+            The fields accept Password AutoFill from the Passwords app. The password is stored in your \
+            Keychain and is only sent to store.paizo.com.
+            """)
+            .foregroundStyle(.secondary)
+        }
+        .onAppear { email = store.storedEmail }
+        Section {
+            HStack {
+                status
+                Spacer()
+                if store.account != .signedOut {
+                    Button("Remove Account", role: .destructive) {
+                        store.signOut()
+                        password = ""
                     }
-                    Button("Sign In", action: signIn)
-                        .keyboardShortcut(.defaultAction)
-                        .disabled(email.isEmpty || password.isEmpty || store.account == .verifying)
+                    .buttonStyle(.borderless)
                 }
+                Button("Sign In", action: signIn)
+                    .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(email.isEmpty || password.isEmpty || store.account == .verifying)
             }
         }
-        .formStyle(.grouped)
-        .onAppear { email = store.storedEmail }
     }
 
     @ViewBuilder private var status: some View {
@@ -86,30 +102,50 @@ private struct DownloadSettings: View {
     @Environment(LibraryStore.self) private var store
 
     var body: some View {
-        Form {
-            Section {
-                LabeledContent("Folder") {
-                    Text(store.downloadDirectory.path(percentEncoded: false))
-                        .textSelection(.enabled)
-                        .lineLimit(3)
-                        .multilineTextAlignment(.trailing)
-                }
-                HStack {
-                    Spacer()
-                    Button("Show in Finder") { showInFinder() }
-                    Button("Use Default") { store.resetDownloadDirectory() }
-                    Button("Choose…") { chooseFolder() }
-                }
-            } header: {
-                Text("Downloaded Files")
-            } footer: {
-                Text("Files already downloaded stay where they are; move them yourself if you change the folder.")
-                    .foregroundStyle(.secondary)
+        Section {
+            #if os(macOS)
+            LabeledContent("Folder") {
+                Text(store.downloadDirectory.path(percentEncoded: false))
+                    .textSelection(.enabled)
+                    .lineLimit(3)
+                    .multilineTextAlignment(.trailing)
             }
+            HStack {
+                Spacer()
+                Button(PlatformText.showInFileBrowser) { showFolder() }
+                Button("Use Default") { store.resetDownloadDirectory() }
+                Button("Choose…") { chooseFolder() }
+            }
+            #else
+            LabeledContent("Folder", value: "Files › On My iPad › Paizo Library")
+            Button(PlatformText.showInFileBrowser) { showFolder() }
+            #endif
+        } header: {
+            Text("Downloaded Files")
+        } footer: {
+            Text(footer)
+                .foregroundStyle(.secondary)
         }
-        .formStyle(.grouped)
     }
 
+    private var footer: String {
+        #if os(macOS)
+        "Files already downloaded stay where they are; move them yourself if you change the folder."
+        #else
+        "Downloads are kept on this iPad and also appear in the Files app."
+        #endif
+    }
+
+    private func showFolder() {
+        try? FileManager.default.createDirectory(at: store.downloadDirectory, withIntermediateDirectories: true)
+        #if os(macOS)
+        NSWorkspace.shared.open(store.downloadDirectory)
+        #else
+        FileOpener.reveal(store.downloadDirectory)
+        #endif
+    }
+
+    #if os(macOS)
     private func chooseFolder() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
@@ -121,9 +157,5 @@ private struct DownloadSettings: View {
             store.setDownloadDirectory(url)
         }
     }
-
-    private func showInFinder() {
-        try? FileManager.default.createDirectory(at: store.downloadDirectory, withIntermediateDirectories: true)
-        NSWorkspace.shared.open(store.downloadDirectory)
-    }
+    #endif
 }
