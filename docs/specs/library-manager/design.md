@@ -38,9 +38,8 @@ documented API, so every step is isolated behind a small client type.
   requested in parallel. The sync therefore fetches page 1 to learn the count
   and then fetches the remaining pages six at a time.
 - `GET /api/library/entitlement/customer/<packageId>?token=<jwt>` returns one
-  entitlement with `DigitalPackage.AssetsData`: the individual files of the
-  package (the chapters). It answers in about a second and is called only when
-  the user asks for the chapters of an edition.
+  entitlement with the individual files of its package. The app does not use
+  it: an archive is downloaded whole and unpacked instead.
 
 ### Downloads
 
@@ -68,7 +67,7 @@ complexity budget; ten products per request fits.
 Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCatalogClient ─┐
               │                    │                                     ├─► PaizoSession ─► HTTPClient
               │                    └─────────────► StorefrontClient ─────┘
-              ├──► DownloadManager ──► LibraryCatalogClient, HTTPClient, FinderTagger
+              ├──► FileLocator, ArchiveExtractor, FinderTagger
               ├──► LibraryRepository (JSON files)
               ├──► CredentialStore (Keychain)
               └──► LibraryQuery, EntitlementGrouper, Classifier (pure)
@@ -81,7 +80,7 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
 - `PaizoSession` — actor. Signs in and hands out customer tokens, reusing one
   for ten minutes.
 - `FlightPayloadParser` — extracts the `LibraryPage` from library page HTML.
-- `LibraryCatalogClient` — pages, package details and download URL signing.
+- `LibraryCatalogClient` — pages and download URL signing.
 - `StorefrontClient` — anonymous token and batched product metadata.
 
 ### Catalog model
@@ -109,10 +108,10 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
   unknown entitlement.
 - Each page is tried twice. A token reported as expired is refreshed once.
 
-`MetadataSynchronizer` fetches storefront metadata for SKUs that have none, in
-batches of ten, then downloads each cover into the cover cache. It is started
-for every page as it arrives, so artwork fills in while the catalog is still
-loading.
+`MetadataSynchronizer` fetches storefront metadata for a batch of ten SKUs and
+downloads each cover into the cover cache. `LibraryStore` queues the SKUs that
+have no metadata as each page arrives and works through the queue in the
+background, so artwork fills in while the catalog is still loading.
 
 ### Persistence
 
@@ -126,16 +125,26 @@ loading.
 | `userdata.json` | tags by title id |
 | `Covers/<sku>.jpg` | cover artwork |
 
-Titles are derived from these at load time (grouping and classification of
-3,000 entitlements takes milliseconds), so improving the classifier never needs
-a migration.
+Titles are derived from these at load time, so improving the classifier never
+needs a migration. Classifying a few thousand titles takes a few hundred
+milliseconds, so rebuilds reuse every title whose entitlements, metadata and
+tags are unchanged.
 
 ### Downloads
 
-`DownloadManager` signs the URL, downloads to a temporary file and moves it to
-`<download folder>/<title>/<edition name>.<ext>`; chapters go into a
-`Chapters` subfolder. A file counts as downloaded when it exists at that path,
-so there is no separate download database to fall out of step.
+`LibraryStore` asks `LibraryCatalogClient` for a signed URL and downloads to
+`<path>.download`. `FileLocator` decides the final path:
+
+- a plain file goes to `<download folder>/<title>/<edition name>.<ext>`;
+- an archive is unpacked by `ArchiveExtractor` (the system's `ditto`) into
+  `<download folder>/<title>/<edition name>/` and the zip is removed. The
+  folder only appears once unpacking has finished.
+
+A file counts as downloaded when it exists at that path, so there is no
+separate download database to fall out of step.
+
+Opening is done by the views with `NSWorkspace`: "Open" uses the default
+application, "Open With" lists `urlsForApplications(toOpen:)`.
 
 ### Tags
 
@@ -156,7 +165,7 @@ user fill them with Password AutoFill.
 - `LibraryWindow` — `NavigationSplitView`: sidebar of filters, content in the
   chosen view mode, detail pane.
 - `CoverGridView`, `TitleListView`, `TitleTableView` — the three view modes.
-- `TitleDetailView` — cover, summary, metadata, editions, chapters, tags.
+- `TitleDetailView` — cover, summary, metadata, editions and their files, tags.
 - `SyncStatusBar` — progress bars for catalog and artwork.
 - `SettingsView` — credentials and download folder.
 

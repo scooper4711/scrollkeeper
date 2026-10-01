@@ -16,7 +16,8 @@ searching, classification, tagging and downloading in a native macOS app.
   same product SKU.
 - **Edition**: one entitlement shown inside its title (single file, file per
   chapter, lite single file, ePub, and so on).
-- **Chapter**: one individual file inside a file-per-chapter edition.
+- **Archive**: an edition that Paizo delivers as a zip file, such as a
+  file-per-chapter edition or a set of map images.
 - **Sync**: fetching the list of entitlements from Paizo.
 
 ## 1. Credentials
@@ -73,13 +74,16 @@ searching, classification, tagging and downloading in a native macOS app.
 ## 5. Downloading
 
 5.1 The user can download any edition of a title.
-5.2 For a file-per-chapter edition the user can download the zip of all
-    chapters or any individual chapter.
+5.2 A zip file is only the means of delivery. When an edition is an archive,
+    the app downloads the zip, unpacks it into a folder for that edition,
+    removes the zip and keeps the unpacked files. The individual files
+    (chapters) are then listed under the edition.
 5.3 Downloads show progress and can run several at a time.
 5.4 A downloaded file is kept on disk. Its location is a folder inside the
     user's Library directory by default and can be changed in Settings.
-5.5 Once a file is downloaded, the app offers "Open" and "Show in Finder"
-    instead of "Download".
+5.5 Once a file is downloaded, the app offers "Open", "Open With" and "Show in
+    Finder" instead of "Download". "Open With" lists every application that
+    has registered itself for the file's type.
 5.6 The user can delete a downloaded file from within the app.
 5.7 An entitlement that has no file attached on Paizo's side is shown as
     unavailable.
