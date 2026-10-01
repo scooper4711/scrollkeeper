@@ -23,13 +23,13 @@ public struct EntitlementGrouper: Sendable {
 
     public init() {}
 
-    public func makeItems(from snapshot: CatalogSnapshot) -> [LibraryItem] {
+    public func makeItems(from snapshot: CatalogSnapshot) -> [LibraryTitle] {
         makeItems(from: snapshot, reusing: [])
     }
 
     /// Builds the titles, reusing those in `previous` whose entitlements, metadata and tags are
     /// unchanged. Classifying is the costly part, so this keeps rebuilds during a sync cheap.
-    public func makeItems(from snapshot: CatalogSnapshot, reusing previous: [LibraryItem]) -> [LibraryItem] {
+    public func makeItems(from snapshot: CatalogSnapshot, reusing previous: [LibraryTitle]) -> [LibraryTitle] {
         var order: [String] = []
         var groups: [String: [Entitlement]] = [:]
         for entitlement in snapshot.entitlements {
@@ -65,7 +65,7 @@ public struct EntitlementGrouper: Sendable {
             tags = snapshot.tags[id] ?? []
         }
 
-        func matches(_ item: LibraryItem) -> Bool {
+        func matches(_ item: LibraryTitle) -> Bool {
             guard item.metadata == metadata, item.tags == tags, item.editions.count == entitlements.count else {
                 return false
             }
@@ -74,9 +74,9 @@ public struct EntitlementGrouper: Sendable {
         }
     }
 
-    private func makeItem(_ group: GroupInput) -> LibraryItem {
+    private func makeItem(_ group: GroupInput) -> LibraryTitle {
         let title = makeTitle(group.entitlements)
-        var item = LibraryItem(
+        var item = LibraryTitle(
             id: group.id, sku: group.sku, title: title, editions: makeEditions(group.entitlements, title: title)
         )
         item.metadata = group.metadata

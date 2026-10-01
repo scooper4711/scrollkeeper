@@ -1,5 +1,16 @@
 import Foundation
 
+/// A title that needs metadata, and the image to use when the storefront has no cover for it.
+public struct MetadataRequest: Sendable, Equatable {
+    public var sku: String
+    public var fallbackImageURL: String
+
+    public init(sku: String, fallbackImageURL: String = "") {
+        self.sku = sku
+        self.fallbackImageURL = fallbackImageURL
+    }
+}
+
 /// Fetches storefront metadata and cover artwork for batches of SKUs.
 public struct MetadataSynchronizer: Sendable {
     private let storefront: StorefrontClient
@@ -12,14 +23,21 @@ public struct MetadataSynchronizer: Sendable {
         self.covers = covers
     }
 
-    /// Metadata for every requested SKU; SKUs the storefront does not know get an empty record
-    /// so they are not asked for again. Returns nothing when the storefront cannot be reached,
-    /// so that the batch is tried again later.
-    public func fetch(skus: [String]) async -> [ProductMetadata] {
-        guard let found = try? await storefront.fetchMetadata(skus: skus) else { return [] }
-        await downloadCovers(for: found)
-        let known = Set(found.map(\.sku))
-        return found + skus.filter { !known.contains($0) }.map { ProductMetadata(sku: $0) }
+    /// Metadata for every requested SKU. A SKU the storefront does not know gets a record with
+    /// only the fallback image, so it is not asked for again. Returns nothing when the storefront
+    /// cannot be reached, so that the batch is tried again later.
+    public func fetch(_ requests: [MetadataRequest]) async -> [ProductMetadata] {
+        guard let found = try? await storefront.fetchMetadata(skus: requests.map(\.sku)) else { return [] }
+        let bySKU = Dictionary(found.map { ($0.sku, $0) }, uniquingKeysWith: { first, _ in first })
+        let metadata = requests.map { request in
+            var product = bySKU[request.sku] ?? ProductMetadata(sku: request.sku)
+            if product.coverURL.isEmpty {
+                product.coverURL = request.fallbackImageURL
+            }
+            return product
+        }
+        await downloadCovers(for: metadata)
+        return metadata
     }
 
     private func downloadCovers(for metadata: [ProductMetadata]) async {

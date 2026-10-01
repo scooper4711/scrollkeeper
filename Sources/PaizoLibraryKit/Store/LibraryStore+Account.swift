@@ -16,7 +16,7 @@ extension LibraryStore {
             try await session.signIn(with: credentials)
             try environment.credentials.save(credentials)
             account = .signedIn(email: credentials.email)
-            if snapshot.entitlements.isEmpty {
+            if !environment.settings.hasCompletedFullSync {
                 startFullSync()
             }
         } catch {

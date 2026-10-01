@@ -9,7 +9,7 @@ extension LibraryStore {
                 await seen.insert(page.entitlements.map(\.packageID))
                 await store.merge(page)
             }
-            await store.removeEntitlements(notIn: seen.all)
+            await store.completeFullSync(seen: seen.all)
         }
     }
 
@@ -80,8 +80,9 @@ extension LibraryStore {
         enqueueMissingMetadata()
     }
 
-    private func removeEntitlements(notIn seen: Set<String>) {
-        guard !seen.isEmpty else { return }
+    /// Called when every page has been fetched: drops what Paizo no longer lists.
+    private func completeFullSync(seen: Set<String>) {
+        environment.settings.hasCompletedFullSync = true
         snapshot.entitlements.removeAll { !seen.contains($0.packageID) }
         rebuildItems()
     }
@@ -110,7 +111,7 @@ extension LibraryStore {
         while !pendingSKUs.isEmpty, !Task.isCancelled {
             let batch = Array(pendingSKUs.prefix(StorefrontClient.batchSize))
             pendingSKUs.removeFirst(batch.count)
-            for metadata in await metadataSynchronizer.fetch(skus: batch) {
+            for metadata in await metadataSynchronizer.fetch(metadataRequests(for: batch)) {
                 snapshot.metadata[metadata.sku] = metadata
             }
             artwork.done += batch.count
@@ -124,6 +125,11 @@ extension LibraryStore {
         saveMetadata()
         artwork = ArtworkProgress()
         metadataTask = nil
+    }
+
+    private func metadataRequests(for skus: [String]) -> [MetadataRequest] {
+        let fallbacks = Dictionary(items.map { ($0.sku, $0.fallbackImageURL) }, uniquingKeysWith: { first, _ in first })
+        return skus.map { MetadataRequest(sku: $0, fallbackImageURL: fallbacks[$0] ?? "") }
     }
 
     private func saveMetadata() {

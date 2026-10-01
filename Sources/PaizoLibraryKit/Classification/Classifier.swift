@@ -106,7 +106,10 @@ enum ProductLineRules {
         Rule(.cards, #"Adventure Card|\bCards\b|\bDeck\b"#),
         Rule(.pawns, #"\bPawns?\b"#),
         Rule(.maps, #"Flip-Mat|Flip-Tiles|Map Pack|Poster Map|Map Folio|Interactive Maps|\bMaps?\b"#),
-        Rule(.societyScenario, #"Society.*(Scenario|Special|Intro)|Playtest Scenario"#),
+        Rule(
+            .societyScenario,
+            #"Society.*(Scenario|Special|Intro)|\bScenario #?\d|Pathfinder Special|Playtest Scenario"#
+        ),
         Rule(.quest, #"\bQuest\b"#),
         Rule(.bounty, #"\bBounty\b"#),
         Rule(.oneShot, #"One-Shot"#),
@@ -135,7 +138,7 @@ enum GameSystemRules {
         if title.localizedCaseInsensitiveContains("Adventure Card") {
             return .cardGame
         }
-        if let system = systemFromSKUPrefix(sku) ?? systemFromBrand(brand) {
+        if let system = systemFromBrand(brand) ?? systemFromSKUPrefix(sku) {
             return system
         }
         if title.localizedCaseInsensitiveContains("Starfinder") {
@@ -151,12 +154,18 @@ enum GameSystemRules {
         skuPrefixes.first(where: { sku.hasPrefix($0.prefix) })?.system
     }
 
+    /// Brands such as "Pathfinder Society 2E" or "Starfinder 1E" name the edition; plain
+    /// "Pathfinder" and "Starfinder" do not, so those are left to the other rules.
     private static func systemFromBrand(_ brand: String) -> GameSystem? {
-        switch brand.lowercased() {
-        case "pathfinder 2e": .pathfinder2
-        case "starfinder 2e": .starfinder2
-        default: nil
+        let name = brand.lowercased()
+        let isStarfinder = name.contains("starfinder")
+        if name.contains("2e") {
+            return isStarfinder ? .starfinder2 : .pathfinder2
         }
+        if name.contains("1e") {
+            return isStarfinder ? .starfinder1 : .pathfinder1
+        }
+        return nil
     }
 
     private static func isSecondEditionStarfinder(title: String, sku: String) -> Bool {

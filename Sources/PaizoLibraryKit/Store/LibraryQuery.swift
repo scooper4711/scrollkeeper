@@ -36,7 +36,7 @@ public struct LibraryQuery: Equatable, Sendable {
         downloadedOnly = false
     }
 
-    public func filter(_ items: [LibraryItem], downloadedIDs: Set<String>) -> [LibraryItem] {
+    public func filter(_ items: [LibraryTitle], downloadedIDs: Set<String>) -> [LibraryTitle] {
         let words = searchText.lowercased().split(separator: " ").map(String.init)
         return items.filter { item in
             let isDownloaded = downloadedIDs.contains(item.id)
@@ -46,7 +46,7 @@ public struct LibraryQuery: Equatable, Sendable {
         }
     }
 
-    private func matchesScope(_ item: LibraryItem, isDownloaded: Bool) -> Bool {
+    private func matchesScope(_ item: LibraryTitle, isDownloaded: Bool) -> Bool {
         switch scope {
         case .all: true
         case .downloaded: isDownloaded
@@ -56,7 +56,7 @@ public struct LibraryQuery: Equatable, Sendable {
         }
     }
 
-    private func matchesFilters(_ item: LibraryItem, isDownloaded: Bool) -> Bool {
+    private func matchesFilters(_ item: LibraryTitle, isDownloaded: Bool) -> Bool {
         let classification = item.classification
         return (gameSystem == nil || classification.gameSystem == gameSystem)
             && (productLine == nil || classification.productLine == productLine)
@@ -77,7 +77,7 @@ public struct LibraryFacets: Equatable, Sendable {
 
     public init() {}
 
-    public init(items: [LibraryItem], downloadedIDs: Set<String>) {
+    public init(items: [LibraryTitle], downloadedIDs: Set<String>) {
         total = items.count
         downloaded = items.filter { downloadedIDs.contains($0.id) }.count
         var formatSet = Set<String>()

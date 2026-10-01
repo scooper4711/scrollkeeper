@@ -18,6 +18,8 @@ import Testing
         ("Pathfinder Society Scenario #3-25: Storming the Diamond Gate", .societyScenario),
         ("Starfinder Society Special #5-99: Battle for the Bulwark", .societyScenario),
         ("Starfinder Second Edition Playtest Scenario 2: It Came from the Vast!", .societyScenario),
+        ("Starfinder Scenario #2-16: A Scoured Home", .societyScenario),
+        ("Pathfinder Special: Race for the Runecarved Key", .societyScenario),
         ("Pathfinder Quest (Series 2) #17: Escorting a Mirage", .quest),
         ("Pathfinder Bounty #7: Cleanup Duty", .bounty),
         ("Starfinder One-Shot #1: Band on the Run", .oneShot),
@@ -49,6 +51,11 @@ import Testing
         ("Starfinder Society Scenario #2-05: File Corrupted", "PZO260205E", "", .starfinder2),
         ("Starfinder Flip-Mat: Cantina (S2)", "", "", .starfinder2),
         ("Starfinder Pact Worlds", "PZO7107E", "Starfinder", .starfinder1),
+        ("Starfinder Armory", "PZO7108E", "Starfinder 1E", .starfinder1),
+        ("Pathfinder Society Scenario #8-06: Falling Sparks", "PZO160806E", "Pathfinder Society 2E", .pathfinder2),
+        ("Pathfinder Society Scenario #8-06: Falling Sparks", "X", "Pathfinder Society 1E", .pathfinder1),
+        ("Pathfinder Player Core", "PZO12001E", "Pathfinder 2E Remaster", .pathfinder2),
+        ("Starfinder Society Scenario #1-01", "X", "Starfinder Society 2E", .starfinder2),
         ("Pathfinder Dark Archive", "PZO2111E", "Pathfinder 2E", .pathfinder2),
         ("Starfinder Galactic Ancestries", "X", "Starfinder 2E", .starfinder2),
         ("Pathfinder Adventure Path #169: Kindled Magic (Strength of Thousands 1 of 6)", "PZO90169E", "", .pathfinder2),
@@ -113,6 +120,7 @@ import Testing
 @Suite struct LevelRangeParserTests {
     @Test(arguments: [
         ("designed for 9th- through 12th-level characters", 9, 12),
+        ("A Pathfinder Society adventure for 5th-6th level characters, playable in 2-3 hours.", 5, 6),
         ("An adventure for 1st to 4th level characters", 1, 4),
         ("Pathfinder Society Scenario for Levels 5-8", 5, 8),
         ("Tier 1\u{2013}5", 1, 5),
@@ -151,11 +159,29 @@ import Testing
 
         #expect(items.map(\.title) == ["Pathfinder NPC Core", "Pathfinder Flip-Mat: Carnival"])
         #expect(items[0].editions.map(\.label) == ["Single File", "File per Chapter"])
-        #expect(items[0].editions[1].isArchive)
-        #expect(!items[0].editions[0].isArchive)
+        #expect(items[0].editions[1].isUnpackedArchive)
+        #expect(!items[0].editions[0].isUnpackedArchive)
+        #expect(!items[0].editions[1].isSavedElsewhere)
         #expect(items[0].classification.formats == ["PDF", "ZIP"])
         #expect(items[0].formatsLabel == "PDF, ZIP")
         #expect(items[1].editions.map(\.label) == ["PDF"])
+    }
+
+    @Test(arguments: [
+        ("Pathfinder Society Scenario #6-15: Lost and Forgotten", "s.zip", true, false),
+        ("Starfinder One-Shot #1: Band on the Run", "o.zip", true, false),
+        ("Pathfinder Hell's Destiny Adventure Path - Single File", "h.zip", true, false),
+        ("Community Use Package: Runes", "r.zip", false, true),
+        ("Pathfinder Flip-Mat: Coastline - JPGs", "j.zip", false, true),
+        ("Pathfinder Roleplaying Game Compatible Logos (Download)", "l.zip", false, true),
+        ("Godsrain Audiobook", "a.zip", false, true),
+        ("Pathfinder Flip-Mat: Coastline PDF", "c.pdf", false, false)
+    ])
+    func decidesWhichZipsAreUnpacked(name: String, file: String, unpacked: Bool, savedElsewhere: Bool) {
+        let entitlement = Fixtures.entitlement(name, sku: "S", file: file)
+        let edition = grouper.makeItems(from: CatalogSnapshot(entitlements: [entitlement]))[0].editions[0]
+        #expect(edition.isUnpackedArchive == unpacked)
+        #expect(edition.isSavedElsewhere == savedElsewhere)
     }
 
     @Test func entitlementWithoutSKUBecomesItsOwnTitle() {
@@ -229,7 +255,7 @@ import Testing
     }
 
     @Test func itemDefaultsWhenClassificationIsUnknown() {
-        let item = LibraryItem(id: "i", sku: "", title: "T", editions: [])
+        let item = LibraryTitle(id: "i", sku: "", title: "T", editions: [])
         #expect(item.dateAdded == .distantPast)
         #expect(item.levelSortKey == Int.max)
         #expect(item.numberSortKey == Int.max)

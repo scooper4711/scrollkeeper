@@ -53,7 +53,7 @@ import Testing
 
     private var locator: FileLocator { FileLocator(root: directory.url) }
 
-    private func makeItem() -> LibraryItem {
+    private func makeItem() -> LibraryTitle {
         let entitlements = [
             Fixtures.entitlement("Core: Rules PDF - Single File", sku: "PZO1E", productName: "Core: Rules PDF"),
             Fixtures.entitlement("Core: Rules PDF - File per Chapter", sku: "PZO1E", file: "x.zip",
@@ -95,6 +95,21 @@ import Testing
         #expect(locator.files(in: target).map(\.lastPathComponent) == ["2 Classes.pdf", "10 Appendix.pdf"])
         #expect(locator.isDownloaded(target))
         #expect(locator.localFiles(for: item).count == 2)
+    }
+
+    @Test func otherZipsAreSavedWhereTheUserChooses() {
+        let entitlement = Fixtures.entitlement("Community Use Package: Runes", sku: "PZOCUP1E", file: "runes.zip")
+        let item = EntitlementGrouper().makeItems(from: CatalogSnapshot(entitlements: [entitlement]))[0]
+        let edition = item.editions[0]
+        let destination = URL(filePath: "/Users/someone/Desktop/Runes.zip")
+
+        #expect(edition.isSavedElsewhere)
+        #expect(!edition.isUnpackedArchive)
+        #expect(locator.suggestedFileName(for: edition, in: item) == "Community Use Package- Runes.zip")
+        let target = locator.exportTarget(for: edition, in: item, destination: destination)
+        #expect(target.localURL == destination)
+        #expect(!target.isArchive)
+        #expect(target.partialURL.lastPathComponent == "Runes.zip.download")
     }
 
     @Test func editionsSharingANameGetDistinctFiles() {
@@ -145,7 +160,9 @@ import Testing
 
     @Test func unpacksAnArchiveAndReplacesEarlierContents() throws {
         let archive = directory.url.appending(path: "chapters.zip.download")
-        try Fixtures.zipArchive(files: ["01 Intro.pdf": "intro", "Maps/02 Map.pdf": "map"]).write(to: archive)
+        let prefixed = "beb8a193-ea1d-4e13-8808-263547a7f362-PZO1E Maps.pdf"
+        try Fixtures.zipArchive(files: ["01 Intro.pdf": "intro", "Maps/02 Map.pdf": "map", prefixed: "maps"])
+            .write(to: archive)
         let destination = directory.url.appending(path: "Chapters", directoryHint: .isDirectory)
         try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
         try Data("stale".utf8).write(to: destination.appending(path: "stale.pdf"))
@@ -154,6 +171,7 @@ import Testing
 
         #expect(try String(contentsOf: destination.appending(path: "01 Intro.pdf"), encoding: .utf8) == "intro")
         #expect(try String(contentsOf: destination.appending(path: "Maps/02 Map.pdf"), encoding: .utf8) == "map")
+        #expect(try String(contentsOf: destination.appending(path: "PZO1E Maps.pdf"), encoding: .utf8) == "maps")
         #expect(!FileManager.default.fileExists(atPath: destination.appending(path: "stale.pdf").path))
     }
 
@@ -173,7 +191,7 @@ import Testing
 }
 
 @Suite struct LibraryQueryTests {
-    private let items: [LibraryItem]
+    private let items: [LibraryTitle]
 
     init() {
         var bounty = Fixtures.entitlement("Pathfinder Bounty #7: Cleanup Duty", sku: "PZOPFB0007E")
@@ -250,9 +268,9 @@ import Testing
     }
 
     @Test func titlesSortNaturally() {
-        let keys = ["Bounty #10", "Bounty #2", "bounty #1"].map(LibraryItem.naturalSortKey).sorted()
+        let keys = ["Bounty #10", "Bounty #2", "bounty #1"].map(LibraryTitle.naturalSortKey).sorted()
         #expect(keys == ["bounty #000001", "bounty #000002", "bounty #000010"])
-        #expect(LibraryItem.naturalSortKey("Year 1234567") == "year 1234567")
+        #expect(LibraryTitle.naturalSortKey("Year 1234567") == "year 1234567")
     }
 }
 

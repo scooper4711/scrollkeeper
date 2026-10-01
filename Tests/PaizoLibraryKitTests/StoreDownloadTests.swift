@@ -89,6 +89,23 @@ import Testing
         #expect(store.files(in: target).isEmpty)
     }
 
+    @Test func otherZipIsSavedWhereAskedAndNotKeptInTheLibrary() async throws {
+        let records = [Fixtures.record(id: "runes", name: "Community Use Package: Runes", sku: "PZOCUP1E",
+                                       file: "runes.zip")]
+        let community = StoreHarness(records: records)
+        let store = await community.makeSyncedStore()
+        let item = try #require(store.item(id: "PZOCUP1E"))
+        let destination = community.directory.url.appending(path: "Desktop/Runes.zip")
+
+        let target = store.export(item.editions[0], of: item, to: destination)
+        await store.waitForDownloads()
+
+        #expect(try String(contentsOf: destination, encoding: .utf8) == "%PDF-fake")
+        #expect(store.downloads[target.id] == nil)
+        #expect(store.downloadedItemIDs.isEmpty)
+        #expect(store.locator.localFiles(for: item).isEmpty)
+    }
+
     @Test func damagedArchiveIsReportedAndRemoved() async throws {
         let store = await harness.makeSyncedStore()
         harness.paizo.http.on("https://s3.example/signed", text: "not a zip")

@@ -19,7 +19,7 @@ enum LevelRangeParser {
 
     private static let ordinal = #"(\d{1,2})(?:st|nd|rd|th)?"#
     private static let rangePatterns = [
-        TextPattern(ordinal + #"[\s-]+(?:through|to)[\s-]+"# + ordinal + #"[\s-]+level"#),
+        TextPattern(ordinal + #"[\s-]*(?:-|through|to)[\s-]*"# + ordinal + #"[\s-]+level"#),
         TextPattern(#"\b(?:levels?|tiers?)\s+(\d{1,2})\s*(?:-|to|through)\s*(\d{1,2})\b"#)
     ]
     private static let singlePattern = TextPattern(

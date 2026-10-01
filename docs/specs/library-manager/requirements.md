@@ -34,8 +34,9 @@ searching, classification, tagging and downloading in a native macOS app.
 
 ## 2. Catalog sync
 
-2.1 When valid credentials exist and no catalog has been stored yet, the app
-    starts a full sync automatically.
+2.1 When valid credentials exist and the library has never been fetched to the
+    end, the app starts a full sync automatically. This also restarts a first
+    sync that was interrupted.
 2.2 A full sync downloads every entitlement of the account.
 2.3 While a sync runs, the app shows a progress bar with the number of
     entitlements fetched and the total.
@@ -60,8 +61,9 @@ searching, classification, tagging and downloading in a native macOS app.
     category path, page count and the link to the store page.
 3.4 Artwork and metadata are cached on disk and not fetched again for titles
     that already have them.
-3.5 A title that the storefront does not know is still shown, with a
-    placeholder cover.
+3.5 A title that the storefront does not know is still shown. Its cover is the
+    product image Paizo lists with the entitlement when there is one, and a
+    placeholder otherwise.
 
 ## 4. Grouping
 
@@ -74,10 +76,14 @@ searching, classification, tagging and downloading in a native macOS app.
 ## 5. Downloading
 
 5.1 The user can download any edition of a title.
-5.2 A zip file is only the means of delivery. When an edition is an archive,
-    the app downloads the zip, unpacks it into a folder for that edition,
-    removes the zip and keeps the unpacked files. The individual files
-    (chapters) are then listed under the edition.
+5.2 For documents a zip file is only the means of delivery. When an edition
+    arrives as a zip (a file-per-chapter edition, a single-file edition
+    bundled with its maps, a scenario with handouts), the app downloads the
+    zip, unpacks it into a folder for that edition, removes the zip and keeps
+    the unpacked files. The individual files are then listed under the edition.
+5.2a A zip of material that is not for reading in the app is not kept by the
+    app: community use packages, image sets (JPG, PNG), logos, icons and
+    audio. Downloading one asks where to save the zip and saves it there.
 5.3 Downloads show progress and can run several at a time.
 5.4 A downloaded file is kept on disk. Its location is a folder inside the
     user's Library directory by default and can be changed in Settings.

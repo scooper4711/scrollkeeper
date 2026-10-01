@@ -4,19 +4,19 @@ extension LibraryStore {
     /// Every tag in use, for suggestions.
     public var allTags: [String] { facets.sortedTags }
 
-    public func addTag(_ tag: String, to itemID: LibraryItem.ID) {
+    public func addTag(_ tag: String, to itemID: LibraryTitle.ID) {
         let name = tag.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, let item = item(id: itemID), !item.tags.contains(name) else { return }
         setTags(item.tags + [name], for: item)
     }
 
-    public func removeTag(_ tag: String, from itemID: LibraryItem.ID) {
+    public func removeTag(_ tag: String, from itemID: LibraryTitle.ID) {
         guard let item = item(id: itemID), item.tags.contains(tag) else { return }
         setTags(item.tags.filter { $0 != tag }, for: item)
     }
 
     /// Stores the tags and writes them to the title's downloaded files as Finder tags.
-    private func setTags(_ tags: [String], for item: LibraryItem) {
+    private func setTags(_ tags: [String], for item: LibraryTitle) {
         snapshot.tags[item.id] = tags.isEmpty ? nil : tags
         for file in locator.localFiles(for: item) {
             try? tagger.setTags(tags, on: file)

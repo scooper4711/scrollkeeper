@@ -21,6 +21,7 @@ import Testing
         #expect(adventure.classification.levelRange == 3...5)
         #expect(store.coverURL(for: adventure) != nil)
         #expect(store.coverURL(for: try #require(store.item(id: "PZO2E"))) == nil)
+        #expect(try #require(store.item(id: "PZO2E")).metadata.isEmpty)
         #expect(store.facets.total == 2)
     }
 
@@ -83,6 +84,26 @@ import Testing
         #expect(store.items.count == 2)
     }
 
+    @Test func interruptedFirstSyncIsStartedAgainAtNextLaunch() async {
+        let repaired = Flag()
+        let secondPage = Fixtures.libraryPageHTML(records: [StoreHarness.records[2]], count: 3)
+        harness.paizo.http.on("customer-library?token=\(FakePaizo.token)&page=2") { request in
+            let status = repaired.isSet ? 200 : 500
+            return HTTPResponse(data: Data(secondPage.utf8), statusCode: status, finalURL: request.url)
+        }
+        let interrupted = await harness.makeSyncedStore()
+        #expect(interrupted.items.count == 1)
+        #expect(!interrupted.sync.failure.isEmpty)
+        #expect(!harness.environment.settings.hasCompletedFullSync)
+
+        repaired.set()
+        let relaunched = await harness.makeSyncedStore()
+
+        #expect(relaunched.items.count == 2)
+        #expect(relaunched.sync.failure.isEmpty)
+        #expect(harness.environment.settings.hasCompletedFullSync)
+    }
+
     @Test func cancelledSyncEndsQuietly() async {
         let store = await harness.makeSyncedStore()
         store.startFullSync()
@@ -97,7 +118,7 @@ import Testing
         let store = await harness.makeSyncedStore()
         #expect(store.visibleItems.map(\.id) == ["PZO1E", "PZO2E"])
 
-        store.sortOrder = [KeyPathComparator(\LibraryItem.titleSortKey, order: .reverse)]
+        store.sortOrder = [KeyPathComparator(\LibraryTitle.titleSortKey, order: .reverse)]
         #expect(store.visibleItems.map(\.id) == ["PZO2E", "PZO1E"])
 
         store.query.searchText = "carnival"

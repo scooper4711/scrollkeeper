@@ -37,8 +37,8 @@ public enum DownloadState: Equatable, Sendable {
 @MainActor
 @Observable
 public final class LibraryStore {
-    public internal(set) var items: [LibraryItem] = []
-    public internal(set) var visibleItems: [LibraryItem] = []
+    public internal(set) var items: [LibraryTitle] = []
+    public internal(set) var visibleItems: [LibraryTitle] = []
     public internal(set) var facets = LibraryFacets()
     public internal(set) var sync = SyncProgress()
     public internal(set) var artwork = ArtworkProgress()
@@ -51,7 +51,7 @@ public final class LibraryStore {
         didSet { refreshVisibleItems() }
     }
 
-    public var sortOrder = [KeyPathComparator(\LibraryItem.titleSortKey)] {
+    public var sortOrder = [KeyPathComparator(\LibraryTitle.titleSortKey)] {
         didSet { refreshVisibleItems() }
     }
 
@@ -84,7 +84,8 @@ public final class LibraryStore {
         locator = FileLocator(root: Self.downloadDirectory(in: environment))
     }
 
-    /// Loads the stored catalog and, when an account exists but no catalog does, starts a full sync.
+    /// Loads the stored catalog and, when an account exists but the library has never been
+    /// fetched to the end, starts a full sync.
     public func start() async {
         snapshot = await repository.load()
         rebuildItems()
@@ -93,17 +94,17 @@ public final class LibraryStore {
             account = .signedIn(email: stored.email)
         }
         enqueueMissingMetadata()
-        if account != .signedOut, snapshot.entitlements.isEmpty {
+        if account != .signedOut, !environment.settings.hasCompletedFullSync {
             startFullSync()
         }
     }
 
-    public func item(id: LibraryItem.ID?) -> LibraryItem? {
+    public func item(id: LibraryTitle.ID?) -> LibraryTitle? {
         id.flatMap { wanted in items.first(where: { $0.id == wanted }) }
     }
 
     /// The cached cover of a title, or nil when none has been downloaded.
-    public func coverURL(for item: LibraryItem) -> URL? {
+    public func coverURL(for item: LibraryTitle) -> URL? {
         covers.hasCover(sku: item.sku) ? covers.url(sku: item.sku) : nil
     }
 

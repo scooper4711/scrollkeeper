@@ -10,8 +10,8 @@ extension LibraryStore {
         locator.files(in: target)
     }
 
-    /// Starts downloading the file unless it is already on its way. An archive is unpacked into
-    /// its folder and then removed.
+    /// Starts downloading the file unless it is already on its way. The zip of a PDF edition is
+    /// unpacked into its folder and then removed.
     public func download(_ target: DownloadTarget) {
         if case .inProgress = downloads[target.id] {
             return
@@ -24,6 +24,14 @@ extension LibraryStore {
 
     public func cancelDownload(_ target: DownloadTarget) {
         downloadTasks[target.id]?.cancel()
+    }
+
+    /// Downloads an edition to a place the user chose. The app keeps no copy of it.
+    @discardableResult
+    public func export(_ edition: Edition, of item: LibraryTitle, to destination: URL) -> DownloadTarget {
+        let target = locator.exportTarget(for: edition, in: item, destination: destination)
+        download(target)
+        return target
     }
 
     /// Removes a downloaded file, or the unpacked contents of an archive, from disk.

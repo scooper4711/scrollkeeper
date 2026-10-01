@@ -123,19 +123,27 @@ private actor PageLog {
     @Test func returnsMetadataForEverySKUAndCachesCovers() async {
         paizo.installStorefront(products: ["PZO1E": FakePaizo.productNode(sku: "PZO1E", name: "Adventure One")])
 
-        let metadata = await makeSynchronizer().fetch(skus: ["PZO1E", "PZOGONE"])
+        let metadata = await makeSynchronizer().fetch([
+            MetadataRequest(sku: "PZO1E", fallbackImageURL: "https://cdn.example/sample.jpg"),
+            MetadataRequest(sku: "PZOGONE"),
+            MetadataRequest(sku: "PZOOLD", fallbackImageURL: "https://cdn.example/old-sample.jpg")
+        ])
 
-        #expect(metadata.map(\.sku) == ["PZO1E", "PZOGONE"])
+        #expect(metadata.map(\.sku) == ["PZO1E", "PZOGONE", "PZOOLD"])
+        #expect(metadata[0].coverURL == "https://cdn.example/PZO1E.jpg")
         #expect(metadata[1].isEmpty)
+        #expect(metadata[2].isEmpty)
+        #expect(metadata[2].coverURL == "https://cdn.example/old-sample.jpg")
         #expect(covers.hasCover(sku: "PZO1E"))
         #expect(!covers.hasCover(sku: "PZOGONE"))
+        #expect(covers.hasCover(sku: "PZOOLD"))
         #expect((try? Data(contentsOf: covers.url(sku: "PZO1E"))) == Data("jpeg-bytes".utf8))
     }
 
     @Test func doesNotDownloadACoverTwice() async {
         paizo.installStorefront(products: ["PZO1E": FakePaizo.productNode(sku: "PZO1E", name: "Adventure One")])
-        _ = await makeSynchronizer().fetch(skus: ["PZO1E"])
-        _ = await makeSynchronizer().fetch(skus: ["PZO1E"])
+        _ = await makeSynchronizer().fetch([MetadataRequest(sku: "PZO1E")])
+        _ = await makeSynchronizer().fetch([MetadataRequest(sku: "PZO1E")])
         #expect(paizo.http.count(of: "https://cdn.example/PZO1E.jpg") == 1)
     }
 
@@ -143,11 +151,11 @@ private actor PageLog {
         paizo.installStorefront(products: ["PZO1E": FakePaizo.productNode(sku: "PZO1E", name: "Adventure One")])
         paizo.http.on("https://cdn.example/", text: "gone", status: 404)
 
-        #expect(await makeSynchronizer().fetch(skus: ["PZO1E"]).first?.name == "Adventure One")
+        #expect(await makeSynchronizer().fetch([MetadataRequest(sku: "PZO1E")]).first?.name == "Adventure One")
         #expect(!covers.hasCover(sku: "PZO1E"))
     }
 
     @Test func returnsNothingWhenTheStorefrontIsUnreachable() async {
-        #expect(await makeSynchronizer().fetch(skus: ["PZO1E"]).isEmpty)
+        #expect(await makeSynchronizer().fetch([MetadataRequest(sku: "PZO1E")]).isEmpty)
     }
 }

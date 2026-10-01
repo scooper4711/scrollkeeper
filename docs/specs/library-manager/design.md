@@ -80,6 +80,9 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
 - `PaizoSession` — actor. Signs in and hands out customer tokens, reusing one
   for ten minutes.
 - `FlightPayloadParser` — extracts the `LibraryPage` from library page HTML.
+  It scans for the chunk string literals rather than matching them with a
+  regular expression: a single chunk can be several hundred kilobytes, which
+  the regular expression engine gives up on without reporting an error.
 - `LibraryCatalogClient` — pages and download URL signing.
 - `StorefrontClient` — anonymous token and batched product metadata.
 
@@ -87,7 +90,7 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
 
 - `Entitlement` — decoded leniently from Paizo's JSON; unknown or missing
   fields never fail the page.
-- `EntitlementGrouper` — groups entitlements into `LibraryItem`s by SKU. The
+- `EntitlementGrouper` — groups entitlements into `LibraryTitle`s by SKU. The
   SKU is `ProvidedByProductSku`, else the embedded product's SKU, else the
   package's first product SKU; the literal `undefined` counts as missing.
 - `EditionKind` — parsed from the entitlement name, tolerant of the spelling
@@ -136,9 +139,18 @@ tags are unchanged.
 `<path>.download`. `FileLocator` decides the final path:
 
 - a plain file goes to `<download folder>/<title>/<edition name>.<ext>`;
-- an archive is unpacked by `ArchiveExtractor` (the system's `ditto`) into
-  `<download folder>/<title>/<edition name>/` and the zip is removed. The
-  folder only appears once unpacking has finished.
+- a zip of documents (`Edition.isUnpackedArchive`) is unpacked by `ArchiveExtractor` (the system's
+  `ditto`) into `<download folder>/<title>/<edition name>/` and the zip is
+  removed. The folder only appears once unpacking has finished, and the
+  upload identifiers Paizo prefixes to file names are stripped;
+- a zip whose name marks it as an asset pack (`Edition.isSavedElsewhere`:
+  community use, JPG or PNG sets, logos, icons, audio) is downloaded to a
+  location the user picks in a save panel (`LibraryStore.export`) and is not
+  tracked afterwards.
+
+Paizo's download API reads the members of the request body by position, so
+the body is written with its members in the order the web library uses:
+`key`, `legacy`, `token`, `customer`.
 
 A file counts as downloaded when it exists at that path, so there is no
 separate download database to fall out of step.

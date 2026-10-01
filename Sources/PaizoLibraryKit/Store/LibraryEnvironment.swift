@@ -51,9 +51,16 @@ public struct SettingsStore: Sendable {
         nonmutating set { defaults.set(newValue, forKey: Self.downloadDirectoryKey) }
     }
 
+    /// False until a full sync has run to the end, so an interrupted first sync is started again.
+    public var hasCompletedFullSync: Bool {
+        get { defaults.bool(forKey: Self.completedFullSyncKey) }
+        nonmutating set { defaults.set(newValue, forKey: Self.completedFullSyncKey) }
+    }
+
     private var defaults: UserDefaults {
         (suiteName.isEmpty ? nil : UserDefaults(suiteName: suiteName)) ?? .standard
     }
 
     private static let downloadDirectoryKey = "downloadDirectoryPath"
+    private static let completedFullSyncKey = "hasCompletedFullSync"
 }

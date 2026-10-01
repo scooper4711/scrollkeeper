@@ -34,12 +34,23 @@ public struct Edition: Sendable, Equatable, Identifiable {
 
     public var id: String { entitlement.packageID }
 
-    /// True when the edition arrives as a zip archive that is unpacked after download.
-    public var isArchive: Bool { entitlement.isArchive }
+    /// A zip that is only the means of delivering documents, such as the chapters of a book or a
+    /// scenario with its maps: unpacked after download so the files can be opened.
+    public var isUnpackedArchive: Bool { entitlement.isArchive && !isSavedElsewhere }
+
+    /// A zip of material that is not for reading in the app, such as a community use package or a
+    /// set of images: saved where the user chooses and not kept by the app.
+    public var isSavedElsewhere: Bool {
+        entitlement.isArchive && Self.assetPackName.matches(entitlement.displayName)
+    }
+
+    private static let assetPackName = TextPattern(
+        #"Community Use|\bJPE?Gs?\b|\bPNGs?\b|\bLogos?\b|\bIcons?\b|Audiobook"#
+    )
 }
 
 /// One product: all entitlements that come from the same SKU.
-public struct LibraryItem: Sendable, Equatable, Identifiable {
+public struct LibraryTitle: Sendable, Equatable, Identifiable {
     public var id: String
     public var sku: String
     public var title: String
@@ -82,7 +93,7 @@ public struct LibraryItem: Sendable, Equatable, Identifiable {
     }
 
     /// Fills in the derived search text and sort key once the item is complete.
-    func withDerivedText() -> LibraryItem {
+    func withDerivedText() -> LibraryTitle {
         var copy = self
         let parts = [title, sku, classification.series, metadata.summary, classification.productLine.label,
                      classification.gameSystem.label]

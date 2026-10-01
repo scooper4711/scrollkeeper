@@ -25,7 +25,7 @@ public struct ProductMetadata: Codable, Sendable, Equatable {
     public static let empty = ProductMetadata(sku: "")
 
     /// True when the storefront did not know the product.
-    public var isEmpty: Bool { name.isEmpty && coverURL.isEmpty && summary.isEmpty }
+    public var isEmpty: Bool { name.isEmpty && summary.isEmpty }
 
     public var storeURL: URL? {
         storePath.isEmpty ? nil : URL(string: "https://store.paizo.com" + storePath)

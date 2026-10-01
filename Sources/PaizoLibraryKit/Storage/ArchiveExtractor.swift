@@ -14,7 +14,8 @@ public struct ArchiveExtractor: Sendable {
     public init() {}
 
     /// Unpacks `archive` into `directory`, replacing it. The directory only appears once the
-    /// whole archive has been unpacked.
+    /// whole archive has been unpacked. Paizo prefixes file names with an upload identifier
+    /// (`beb8a193-…-PZO15223E.pdf`); the prefix is removed.
     public func extract(_ archive: URL, to directory: URL) throws {
         let staging = directory.deletingLastPathComponent()
             .appending(path: "." + directory.lastPathComponent + ".unpacking", directoryHint: .isDirectory)
@@ -22,6 +23,7 @@ public struct ArchiveExtractor: Sendable {
         try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
         do {
             try runDitto(arguments: ["-x", "-k", archive.path, staging.path], archiveName: archive.lastPathComponent)
+            removeUploadPrefixes(in: staging)
             _ = try? FileManager.default.removeItem(at: directory)
             try FileManager.default.moveItem(at: staging, to: directory)
         } catch {
@@ -29,6 +31,21 @@ public struct ArchiveExtractor: Sendable {
             throw error
         }
     }
+
+    private func removeUploadPrefixes(in directory: URL) {
+        let enumerator = FileManager.default.enumerator(at: directory, includingPropertiesForKeys: nil)
+        let files = enumerator?.compactMap { $0 as? URL } ?? []
+        for file in files {
+            let name = file.lastPathComponent
+            let tidy = Self.uploadPrefix.removingMatches(in: name)
+            let renamed = file.deletingLastPathComponent().appending(path: tidy)
+            if tidy != name, !tidy.isEmpty, !FileManager.default.fileExists(atPath: renamed.path) {
+                try? FileManager.default.moveItem(at: file, to: renamed)
+            }
+        }
+    }
+
+    private static let uploadPrefix = TextPattern(#"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-"#)
 
     private func runDitto(arguments: [String], archiveName: String) throws {
         let process = Process()
