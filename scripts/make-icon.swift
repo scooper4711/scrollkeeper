@@ -1,4 +1,5 @@
-// Draws the app icon and writes Resources/AppIcon.icns.
+// Draws the app icon and writes Resources/AppIcon.icns for the Mac and the full-bleed
+// ios/App/Assets.xcassets/AppIcon.appiconset/icon-1024.png for the iPad.
 // Usage: swift scripts/make-icon.swift
 //
 // The artwork is original: a shelf of books and a twenty-sided die. It uses no Paizo logos,
@@ -100,7 +101,8 @@ func drawDie(_ context: CGContext, center: CGPoint, radius: CGFloat) {
     text.draw(at: CGPoint(x: center.x - size.width / 2, y: center.y - size.height / 2 - radius * 0.05))
 }
 
-func drawIcon() -> NSBitmapImageRep? {
+/// The Mac icon is a rounded plate with a margin; iPadOS wants a full square and rounds it itself.
+func drawIcon(fullBleed: Bool) -> NSBitmapImageRep? {
     guard let bitmap = NSBitmapImageRep(
         bitmapDataPlanes: nil, pixelsWide: Int(canvas), pixelsHigh: Int(canvas), bitsPerSample: 8,
         samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0
@@ -111,13 +113,22 @@ func drawIcon() -> NSBitmapImageRep? {
     // The standard macOS icon shape: 824 points square on a 1024 canvas.
     let plate = CGRect(x: 100, y: 100, width: 824, height: 824)
     let platePath = CGPath(roundedRect: plate, cornerWidth: 186, cornerHeight: 186, transform: nil)
-    context.saveGState()
-    context.setShadow(offset: CGSize(width: 0, height: -12), blur: 28, color: color(0x000000, alpha: 0.35))
-    context.addPath(platePath)
-    context.setFillColor(color(0x1B1E4B))
-    context.fillPath()
-    context.restoreGState()
-    fillGradient(context, in: platePath, from: 0x3B3F96, to: 0x14163A)
+    if fullBleed {
+        let square = CGPath(rect: CGRect(x: 0, y: 0, width: canvas, height: canvas), transform: nil)
+        fillGradient(context, in: square, from: 0x3B3F96, to: 0x14163A)
+        // Enlarge the artwork about the centre so that it fills the square as it fills the plate.
+        context.translateBy(x: canvas / 2, y: canvas / 2)
+        context.scaleBy(x: canvas / plate.width, y: canvas / plate.height)
+        context.translateBy(x: -canvas / 2, y: -canvas / 2)
+    } else {
+        context.saveGState()
+        context.setShadow(offset: CGSize(width: 0, height: -12), blur: 28, color: color(0x000000, alpha: 0.35))
+        context.addPath(platePath)
+        context.setFillColor(color(0x1B1E4B))
+        context.fillPath()
+        context.restoreGState()
+        fillGradient(context, in: platePath, from: 0x3B3F96, to: 0x14163A)
+    }
 
     context.saveGState()
     context.addPath(platePath)
@@ -140,14 +151,27 @@ func drawIcon() -> NSBitmapImageRep? {
     return bitmap
 }
 
+/// PNG data without an alpha channel, which is what an iPadOS icon must be.
+func opaquePNG(_ bitmap: NSBitmapImageRep) -> Data? {
+    guard let image = bitmap.cgImage, let context = CGContext(
+        data: nil, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 0,
+        space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+    ) else { return nil }
+    context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+    return context.makeImage().flatMap { NSBitmapImageRep(cgImage: $0).representation(using: .png, properties: [:]) }
+}
+
 let root = URL(filePath: FileManager.default.currentDirectoryPath)
 let iconset = root.appending(path: "build/AppIcon.iconset", directoryHint: .isDirectory)
 try? FileManager.default.removeItem(at: iconset)
 try FileManager.default.createDirectory(at: iconset, withIntermediateDirectories: true)
 
-guard let master = drawIcon(), let png = master.representation(using: .png, properties: [:]) else {
+guard let master = drawIcon(fullBleed: false), let png = master.representation(using: .png, properties: [:]),
+      let square = drawIcon(fullBleed: true), let squarePNG = opaquePNG(square)
+else {
     fatalError("Drawing the icon failed: no bitmap context.")
 }
+try squarePNG.write(to: root.appending(path: "ios/App/Assets.xcassets/AppIcon.appiconset/icon-1024.png"))
 let masterURL = iconset.appending(path: "icon_512x512@2x.png")
 try png.write(to: masterURL)
 
@@ -169,4 +193,4 @@ for (name, pixels) in [
 }
 try FileManager.default.createDirectory(at: root.appending(path: "Resources"), withIntermediateDirectories: true)
 try run("/usr/bin/iconutil", ["-c", "icns", iconset.path, "-o", root.appending(path: "Resources/AppIcon.icns").path])
-print("Wrote Resources/AppIcon.icns")
+print("Wrote Resources/AppIcon.icns and the iPad icon")
