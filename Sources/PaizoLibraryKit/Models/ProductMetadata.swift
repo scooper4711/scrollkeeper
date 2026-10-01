@@ -5,7 +5,6 @@ public struct ProductMetadata: Codable, Sendable, Equatable {
     public var sku: String
     public var name: String
     public var storePath: String
-    public var descriptionHTML: String
     public var summary: String
     public var coverURL: String
     public var brand: String
@@ -16,7 +15,6 @@ public struct ProductMetadata: Codable, Sendable, Equatable {
         self.sku = sku
         name = ""
         storePath = ""
-        descriptionHTML = ""
         summary = ""
         coverURL = ""
         brand = ""
