@@ -21,12 +21,6 @@ download.
 
 ![Scrollkeeper on the Mac: adventure paths shown as covers, with the details of the selected title](docs/images/mac-library.png)
 
-## Supporting the project
-
-The app is free and always will be. If it saves you time and you would like to
-say thanks, you can leave a tip on [Ko-fi](https://ko-fi.com/coop207627). A
-donation is entirely optional and unlocks nothing.
-
 ## Features
 
 - Signs in with your Paizo account; credentials are kept in the macOS Keychain
@@ -46,9 +40,23 @@ donation is entirely optional and unlocks nothing.
 
 ## Requirements
 
-- macOS 14 or later, or iPadOS 17 or later
-- Xcode 16 or later (Swift 6 toolchain) to build; for the iPad app, Xcode's iOS
-  platform component as well (Xcode › Settings › Components)
+macOS 14 or later, or iPadOS 17 or later.
+
+## Installing a release
+
+Download the disk image from the
+[releases page](https://github.com/scooper4711/scrollkeeper/releases), open it
+and drag Scrollkeeper to Applications.
+
+The app is not notarized by Apple, so the first time you open it macOS will
+refuse. Right-click the app and choose Open, or allow it under System Settings ›
+Privacy & Security. After that it opens normally.
+
+## Supporting the project
+
+The app is free and always will be. If it saves you time and you would like to
+say thanks, you can leave a tip on [Ko-fi](https://ko-fi.com/coop207627). A
+donation is entirely optional and unlocks nothing.
 
 ## Building
 
@@ -61,15 +69,15 @@ make coverage # runs the tests and enforces the coverage threshold
 make dmg      # packages the app into a disk image
 ```
 
-The app is ad-hoc signed, not notarized. On a Mac other than the one that built
-it, open it the first time with right-click → Open (or allow it under System
-Settings → Privacy & Security). After a rebuild, macOS may ask for permission
-to use the saved Keychain item again.
+Building needs Xcode 16 or later (Swift 6 toolchain). The app is ad-hoc signed;
+after a rebuild, macOS may ask again for permission to use the saved Keychain
+item.
 
 ## Building for iPad
 
-The iPad app is built from `ios/Scrollkeeper.xcodeproj`, which uses the
-same Swift package as the Mac app.
+The iPad app is built from `ios/Scrollkeeper.xcodeproj`, which uses the same
+Swift package as the Mac app. It also needs Xcode's iOS platform component
+(Xcode › Settings › Components).
 
 1. Add your Apple ID to Xcode under Settings › Accounts. A free Apple ID works;
    an app signed that way runs for seven days before it has to be installed
@@ -94,13 +102,6 @@ On the iPad, downloads appear in the Files app under On My iPad. Opening a file
 shows a preview; the share button offers every app that accepts the file. The
 Files app's tags cannot be set by an app, so tags stay inside the app. The Mac
 and the iPad each keep their own catalog, tags and downloads.
-
-## Installing a release
-
-Download the disk image from the
-[releases page](https://github.com/scooper4711/scrollkeeper/releases),
-open it and drag the app to Applications. A disk image is built and attached
-automatically for every version tag.
 
 ## Where things are stored
 
