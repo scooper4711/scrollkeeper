@@ -3,7 +3,7 @@ import Foundation
 /// What the public storefront knows about a product.
 public struct ProductMetadata: Codable, Sendable, Equatable {
     /// Raised whenever a field is added, so that metadata stored by an older version is fetched again.
-    public static let schemaVersion = 3
+    public static let schemaVersion = 4
 
     public var sku: String
     public var name: String
@@ -16,6 +16,8 @@ public struct ProductMetadata: Codable, Sendable, Equatable {
     public var author: String
     /// The storefront's "Starting Level" field, such as `10-14`.
     public var startingLevel: String
+    /// The day of release as noon UTC, for the few products whose store page gives one.
+    public var releaseDate: Date?
 
     public init(sku: String) {
         self.sku = sku
@@ -43,6 +45,7 @@ public struct ProductMetadata: Codable, Sendable, Equatable {
         pageCount = try container.decodeIfPresent(Int.self, forKey: .pageCount) ?? 0
         author = try container.decodeIfPresent(String.self, forKey: .author) ?? ""
         startingLevel = try container.decodeIfPresent(String.self, forKey: .startingLevel) ?? ""
+        releaseDate = try container.decodeIfPresent(Date.self, forKey: .releaseDate)
     }
 
     public static let empty = ProductMetadata(sku: "")

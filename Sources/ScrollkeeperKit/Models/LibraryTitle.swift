@@ -85,6 +85,12 @@ public struct LibraryTitle: Sendable, Equatable, Identifiable {
     public var levelSortKey: Int { classification.levelRange?.lowerBound ?? Int.max }
     public var pageCount: Int { metadata.pageCount }
     public var author: String { metadata.author }
+
+    /// The release day ready for display, or an empty string when Paizo gives none.
+    public var releasedLabel: String {
+        guard let released = metadata.releaseDate else { return "" }
+        return released.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted, timeZone: .gmt))
+    }
     public var formatsLabel: String { classification.formats.joined(separator: ", ") }
     public var tagsLabel: String { tags.joined(separator: ", ") }
 

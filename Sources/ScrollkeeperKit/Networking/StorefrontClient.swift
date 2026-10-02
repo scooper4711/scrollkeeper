@@ -133,6 +133,7 @@ struct ProductNode: Decodable {
         metadata.categoryPath = categories?.nodes.first?.breadcrumbs?.nodes.compactMap(\.name) ?? []
         metadata.pageCount = Int(customField("Page Count")) ?? 0
         metadata.startingLevel = customField("Starting Level")
+        metadata.releaseDate = PaizoDateParser.parseReleaseDay(customField("Release Date"))
         let credited = customField("Author(s)")
         metadata.author = credited.isEmpty ? AuthorParser.parse(metadata.summary) : credited
         return metadata

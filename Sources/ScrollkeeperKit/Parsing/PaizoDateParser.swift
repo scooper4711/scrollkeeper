@@ -9,6 +9,32 @@ enum PaizoDateParser {
         return formats.lazy.compactMap { makeFormatter($0).date(from: withoutZoneName) }.first
     }
 
+    /// Parses the storefront's "Release Date" field, `6/26/2024 7:00:00 AM` or `8/4/2011`, to the
+    /// calendar day of release, returned as noon UTC of that day.
+    ///
+    /// Values with a time are midnight at Paizo's offices given in UTC, so the day is read in
+    /// Pacific time. Storing noon UTC lets the day be shown the same in every time zone.
+    static func parseReleaseDay(_ text: String) -> Date? {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        var calendar = Calendar(identifier: .gregorian)
+        if let moment = makeFormatter("M/d/yyyy h:mm:ss a").date(from: value) {
+            calendar.timeZone = TimeZone(identifier: "America/Los_Angeles") ?? .gmt
+            let day = calendar.dateComponents([.year, .month, .day], from: moment)
+            return noonUTC(day)
+        }
+        guard let midnight = makeFormatter("M/d/yyyy").date(from: value) else { return nil }
+        calendar.timeZone = .gmt
+        return noonUTC(calendar.dateComponents([.year, .month, .day], from: midnight))
+    }
+
+    private static func noonUTC(_ day: DateComponents) -> Date? {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .gmt
+        var components = day
+        components.hour = 12
+        return calendar.date(from: components)
+    }
+
     private static let formats = ["EEE MMM dd yyyy HH:mm:ss 'GMT'Z", "yyyy-MM-dd HH:mm:ss", "M/d/yyyy HH:mm"]
 
     private static func makeFormatter(_ format: String) -> DateFormatter {
