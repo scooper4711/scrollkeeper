@@ -16,12 +16,12 @@ app:
 	scripts/build-app.sh
 
 run: app
-	open "build/Paizo Library Manager.app"
+	open "build/Scrollkeeper.app"
 
 # Copies the built app into /Applications, replacing an earlier copy.
 install: app
-	rm -rf "/Applications/Paizo Library Manager.app"
-	ditto "build/Paizo Library Manager.app" "/Applications/Paizo Library Manager.app"
+	rm -rf "/Applications/Scrollkeeper.app"
+	ditto "build/Scrollkeeper.app" "/Applications/Scrollkeeper.app"
 
 dmg: app
 	scripts/make-dmg.sh

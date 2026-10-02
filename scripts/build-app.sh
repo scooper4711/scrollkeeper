@@ -1,5 +1,5 @@
 #!/bin/sh
-# Builds "build/Paizo Library Manager.app" from the Swift package.
+# Builds "build/Scrollkeeper.app" from the Swift package.
 #
 # VERSION    version written to the bundle (default 0.0.0)
 # UNIVERSAL  set to 1 to build for both Apple silicon and Intel
@@ -8,8 +8,8 @@ set -eu
 cd "$(dirname "$0")/.."
 
 VERSION="${VERSION:-0.0.0}"
-APP="build/Paizo Library Manager.app"
-EXECUTABLE="PaizoLibraryManager"
+APP="build/Scrollkeeper.app"
+EXECUTABLE="Scrollkeeper"
 
 if [ "${UNIVERSAL:-0}" = "1" ]; then
     swift build -c release --arch arm64 --arch x86_64
@@ -32,17 +32,17 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleDisplayName</key>
-    <string>Paizo Library Manager</string>
+    <string>Scrollkeeper</string>
     <key>CFBundleExecutable</key>
     <string>$EXECUTABLE</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
-    <string>io.github.scooper4711.PaizoLibraryManager</string>
+    <string>io.github.scooper4711.Scrollkeeper</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
-    <string>Paizo Library Manager</string>
+    <string>Scrollkeeper</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>

@@ -35,6 +35,6 @@ jobs:
 
       - name: Build the iPad app
         run: |
-          xcodebuild -project ios/PaizoLibraryManager.xcodeproj -scheme PaizoLibraryManager-iPad \
+          xcodebuild -project ios/Scrollkeeper.xcodeproj -scheme Scrollkeeper-iPad \
             -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build \
             CODE_SIGNING_ALLOWED=NO build | tail -n 3

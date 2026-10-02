@@ -1,11 +1,14 @@
-# Paizo Library Manager — Requirements
+# Scrollkeeper — Requirements
+
+Scrollkeeper is an unofficial library manager for a customer's Paizo purchases.
+The name deliberately contains no Paizo trademark; Paizo is named only to say
+what the app works with.
 
 ## Purpose
 
 Paizo's web library (`https://store.paizo.com/library/`) takes about fifteen
 seconds to load each page of fifty items and searching is just as slow. A
-customer with a few thousand titles cannot browse it comfortably. Paizo Library
-Manager keeps a local copy of the customer's catalog and offers fast browsing,
+customer with a few thousand titles cannot browse it comfortably. Scrollkeeper keeps a local copy of the customer's catalog and offers fast browsing,
 searching, classification, tagging and downloading in a native macOS app.
 
 ## Glossary
@@ -179,3 +182,5 @@ searching, classification, tagging and downloading in a native macOS app.
      iPad app does not, because Apple restricts links to outside payment pages.
 11.4 Cover images and product descriptions are shown unmodified. The app icon
      and other artwork of the app itself use no Paizo material.
+11.5 The licence notices of included third-party software are part of the app
+     (Settings › About) and of the repository (`THIRD-PARTY-NOTICES.md`).
