@@ -43,6 +43,37 @@ import Testing
         #expect(store.locator.localFiles(for: try #require(store.item(id: "PZO1E"))).isEmpty)
     }
 
+    @Test func updateAvailableIsFlaggedAndClearedByDownloadingAgain() async throws {
+        let updated = "Wed Sep 02 2020 20:52:57 GMT+0000 (Coordinated Universal Time)"
+        let records = [
+            Fixtures.record(Fixtures.RecordFields(id: "core", name: "Core Rules PDF", sku: "PZO9E", updated: updated)),
+            Fixtures.record(id: "map", name: "Flip-Mat PDF", sku: "PZO8E", file: "map.pdf")
+        ]
+        let updating = StoreHarness(records: records)
+        let store = await updating.makeSyncedStore()
+        let item = try #require(store.item(id: "PZO9E"))
+        let target = store.locator.target(for: item.editions[0], in: item)
+
+        store.download(target)
+        await store.waitForDownloads()
+        #expect(!store.isOutdated(target))
+        #expect(store.outdatedItemIDs.isEmpty)
+
+        // Pretend the copy was downloaded before Paizo updated the file.
+        let earlier = Date(timeIntervalSince1970: 1_500_000_000)
+        try FileManager.default.setAttributes([.creationDate: earlier], ofItemAtPath: target.localURL.path)
+        store.refreshDownloadedItems()
+        #expect(store.isOutdated(target))
+        #expect(store.outdatedItemIDs == ["PZO9E"])
+        store.query.download = .updateAvailable
+        #expect(store.visibleItems.map(\.id) == ["PZO9E"])
+
+        store.download(target)
+        await store.waitForDownloads()
+        #expect(!store.isOutdated(target))
+        #expect(store.visibleItems.isEmpty)
+    }
+
     @Test func deletingADownloadRemovesItFromDisk() async throws {
         let store = await harness.makeSyncedStore()
         let target = try singleFileTarget(in: store)
@@ -195,6 +226,6 @@ import Testing
         let relaunched = await harness.makeSyncedStore()
 
         #expect(relaunched.item(id: "PZO1E")?.tags == ["From Finder"])
-        #expect(relaunched.query.filter(relaunched.items, downloadedIDs: []).count == 2)
+        #expect(relaunched.query.filter(relaunched.items, downloads: LibraryDownloads()).count == 2)
     }
 }

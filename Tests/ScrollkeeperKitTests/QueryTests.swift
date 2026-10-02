@@ -20,10 +20,15 @@ import Testing
         items = EntitlementGrouper().makeItems(from: snapshot)
     }
 
-    private func titles(_ configure: (inout LibraryQuery) -> Void, downloaded: Set<String> = []) -> [String] {
+    private func titles(
+        _ configure: (inout LibraryQuery) -> Void,
+        downloaded: Set<String> = [],
+        outdated: Set<String> = []
+    ) -> [String] {
         var query = LibraryQuery()
         configure(&query)
-        return query.filter(items, downloadedIDs: downloaded).map(\.sku)
+        let downloads = LibraryDownloads(downloaded: downloaded, outdated: outdated)
+        return query.filter(items, downloads: downloads).map(\.sku)
     }
 
     @Test func scopesSelectPartsOfTheLibrary() {
@@ -43,6 +48,9 @@ import Testing
         #expect(titles({ $0.download = .downloaded }, downloaded: ["PZO8500E"]) == ["PZO8500E"])
         #expect(titles({ $0.download = .notDownloaded }, downloaded: ["PZO8500E"]) == ["PZOPFB0007E", "PZO7300E"])
         #expect(titles({ $0.download = .any }, downloaded: ["PZO8500E"]).count == 3)
+        #expect(titles({ $0.download = .updateAvailable }, downloaded: ["PZO8500E", "PZO7300E"],
+                       outdated: ["PZO7300E"]) == ["PZO7300E"])
+        #expect(titles({ $0.download = .updateAvailable }, downloaded: ["PZO8500E"]).isEmpty)
         // The use it is meant for: what in a category is still missing.
         #expect(titles({ $0.scope = .tag("Played"); $0.download = .notDownloaded }, downloaded: ["PZO7300E"])
             == ["PZOPFB0007E"])
@@ -71,7 +79,7 @@ import Testing
     }
 
     @Test func downloadFilterLabelsAreDistinct() {
-        #expect(Set(DownloadFilter.allCases.map(\.label)).count == 3)
+        #expect(Set(DownloadFilter.allCases.map(\.label)).count == 4)
         #expect(DownloadFilter.allCases.allSatisfy { $0.id == $0.rawValue })
     }
 

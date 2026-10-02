@@ -48,7 +48,13 @@ private struct CoverCell: View {
     }
 
     @ViewBuilder private var downloadedBadge: some View {
-        if store.downloadedItemIDs.contains(item.id) {
+        if store.outdatedItemIDs.contains(item.id) {
+            Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(.white, .orange)
+                .padding(4)
+                .help("Downloaded; Paizo has a newer version")
+        } else if store.downloadedItemIDs.contains(item.id) {
             Image(systemName: "arrow.down.circle.fill")
                 .symbolRenderingMode(.palette)
                 .foregroundStyle(.white, .green)

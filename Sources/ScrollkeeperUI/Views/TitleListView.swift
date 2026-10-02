@@ -44,13 +44,15 @@ private struct TitleRow: View {
             Text(item.formatsLabel)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            Image(systemName: "arrow.down.circle.fill")
-                .foregroundStyle(.green)
+            Image(systemName: isOutdated ? "arrow.triangle.2.circlepath.circle.fill" : "arrow.down.circle.fill")
+                .foregroundStyle(isOutdated ? .orange : .green)
                 .opacity(store.downloadedItemIDs.contains(item.id) ? 1 : 0)
-                .help("Downloaded")
+                .help(isOutdated ? "Downloaded; Paizo has a newer version" : "Downloaded")
         }
         .padding(.vertical, 2)
     }
+
+    private var isOutdated: Bool { store.outdatedItemIDs.contains(item.id) }
 
     private var details: String {
         let level = item.classification.levelLabel.isEmpty ? "" : "Level \(item.classification.levelLabel)"

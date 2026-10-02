@@ -148,6 +148,39 @@ import Testing
         #expect(locator.downloadedItemIDs(among: [item]) == ["PZO1E"])
     }
 
+    @Test func downloadIsOutOfDateWhenPaizoUpdatedTheFileLater() throws {
+        var entitlement = Fixtures.entitlement("Rules PDF", sku: "PZO1E")
+        entitlement.dateUpdated = Date(timeIntervalSince1970: 1_750_000_000)
+        let item = EntitlementGrouper().makeItems(from: CatalogSnapshot(entitlements: [entitlement]))[0]
+        let target = locator.target(for: item.editions[0], in: item)
+        #expect(target.remoteUpdated == entitlement.dateUpdated)
+        #expect(locator.downloadDate(of: target) == nil)
+        #expect(!locator.isOutdated(target))
+
+        try write(target.localURL)
+        let before = Date(timeIntervalSince1970: 1_740_000_000)
+        try FileManager.default.setAttributes([.creationDate: before], ofItemAtPath: target.localURL.path)
+        #expect(locator.downloadDate(of: target) == before)
+        #expect(locator.isOutdated(target))
+        #expect(locator.outdatedItemIDs(among: [item]) == ["PZO1E"])
+
+        let after = Date(timeIntervalSince1970: 1_760_000_000)
+        try FileManager.default.setAttributes([.creationDate: after], ofItemAtPath: target.localURL.path)
+        #expect(!locator.isOutdated(target))
+        #expect(locator.outdatedItemIDs(among: [item]).isEmpty)
+    }
+
+    @Test func downloadWithoutAnUpdateDateFromPaizoIsNeverOutOfDate() throws {
+        let item = makeItem()
+        let target = locator.target(for: item.editions[0], in: item)
+        try write(target.localURL)
+        try FileManager.default.setAttributes(
+            [.creationDate: Date(timeIntervalSince1970: 1_000_000_000)], ofItemAtPath: target.localURL.path
+        )
+        #expect(target.remoteUpdated == nil)
+        #expect(!locator.isOutdated(target))
+    }
+
     @Test func emptyTitleFolderDoesNotCountAsDownloaded() throws {
         let item = makeItem()
         try FileManager.default.createDirectory(at: locator.folder(for: item), withIntermediateDirectories: true)

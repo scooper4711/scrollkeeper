@@ -5,6 +5,11 @@ extension LibraryStore {
         locator.isDownloaded(target)
     }
 
+    /// True when Paizo has updated the file since this copy was downloaded.
+    public func isOutdated(_ target: DownloadTarget) -> Bool {
+        locator.isOutdated(target)
+    }
+
     /// The downloaded file, or the unpacked files of an archive. Empty when not downloaded.
     public func files(in target: DownloadTarget) -> [URL] {
         locator.files(in: target)
