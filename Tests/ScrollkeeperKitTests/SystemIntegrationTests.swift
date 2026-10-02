@@ -4,7 +4,7 @@ import Testing
 
 /// Answers every request made through a session configured with this protocol class.
 final class StubURLProtocol: URLProtocol {
-    override static func canInit(with request: URLRequest) -> Bool { true }
+    override static func canInit(with _: URLRequest) -> Bool { true }
 
     override static func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
@@ -19,11 +19,16 @@ final class StubURLProtocol: URLProtocol {
         client?.urlProtocolDidFinishLoading(self)
     }
 
-    override func stopLoading() {}
+    override func stopLoading() {
+        // Nothing to cancel: startLoading answers at once.
+    }
 }
 
 @Suite struct URLSessionHTTPClientTests {
     private let directory = TemporaryDirectory()
+    private let ignoringProgress: ProgressHandler = { _ in
+        // Progress is not what these tests check.
+    }
 
     private func makeClient() -> URLSessionHTTPClient {
         let configuration = URLSessionHTTPClient.makeConfiguration()
@@ -50,7 +55,7 @@ final class StubURLProtocol: URLProtocol {
         try await makeClient().download(request("book.pdf"), to: destination) { fraction in
             if fraction == 1 { finished.set() }
         }
-        try await makeClient().download(request("book.pdf"), to: destination) { _ in }
+        try await makeClient().download(request("book.pdf"), to: destination, progress: ignoringProgress)
 
         #expect(try String(contentsOf: destination, encoding: .utf8) == "body of book.pdf")
         #expect(finished.isSet)
@@ -59,7 +64,7 @@ final class StubURLProtocol: URLProtocol {
     @Test func downloadFailsOnErrorStatusWithoutLeavingAFile() async throws {
         let destination = directory.url.appending(path: "missing.pdf")
         await #expect(throws: PaizoError.http(operation: "Downloading the file", status: 404)) {
-            try await makeClient().download(request("missing.pdf"), to: destination) { _ in }
+            try await makeClient().download(request("missing.pdf"), to: destination, progress: ignoringProgress)
         }
         #expect(!FileManager.default.fileExists(atPath: destination.path))
     }
