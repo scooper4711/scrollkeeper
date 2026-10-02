@@ -69,6 +69,8 @@ struct OpenControls: View {
         }
         .controlSize(.small)
         .buttonStyle(.bordered)
+        // Buttons keep their size; text beside them gives way instead.
+        .fixedSize()
     }
 
     #if os(macOS)
