@@ -39,6 +39,7 @@ struct LibraryWindow: View {
     /// Raised each time a search or filter change leaves nothing to show while filters are set.
     @State private var filterPulse = 0
     @State private var showSettings = false
+    @State private var showDownloads = false
 
     var body: some View {
         @Bindable var store = store
@@ -64,6 +65,15 @@ struct LibraryWindow: View {
                 }
         }
         #if !os(macOS)
+        .sheet(isPresented: $showDownloads) {
+            NavigationStack {
+                DownloadsList()
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar { Button("Done") { showDownloads = false } }
+            }
+            .presentationDetents([.medium, .large])
+            .environment(store)
+        }
         .sheet(isPresented: $showSettings) {
             NavigationStack {
                 SettingsView()
@@ -132,7 +142,7 @@ struct LibraryWindow: View {
             .help("Show the library as covers, a list or columns")
         }
         ToolbarItem { FilterMenu(pulse: filterPulse) }
-        ToolbarItem { DownloadsButton() }
+        ToolbarItem { DownloadsButton(isShowingList: $showDownloads) }
         ToolbarItem {
             Button {
                 store.startRefresh()

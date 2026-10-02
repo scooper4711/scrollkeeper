@@ -66,6 +66,9 @@ public final class LibraryStore {
     public internal(set) var downloads: [String: DownloadState] = [:]
     /// Every download that is running, waiting or has failed, in the order they were asked for.
     public internal(set) var downloadOrder: [DownloadTarget] = []
+    /// How many downloads are running or waiting. Kept apart from `downloads` so that a view
+    /// showing only this number is not redrawn on every step of progress.
+    public internal(set) var pendingDownloadCount = 0
     public internal(set) var downloadedItemIDs: Set<String> = []
     /// Titles with a download that Paizo has updated since.
     public internal(set) var outdatedItemIDs: Set<String> = []

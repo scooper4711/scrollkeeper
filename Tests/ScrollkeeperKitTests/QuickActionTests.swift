@@ -125,6 +125,7 @@ import Testing
         let states = store.downloadJobs.map(\.state)
         #expect(states.filter { $0 == .inProgress(0) }.count == LibraryStore.maximumConcurrentDownloads)
         #expect(states.filter { $0 == .waiting }.count == 2)
+        #expect(store.pendingDownloadCount == 7)
         #expect(store.downloadJobs.map(\.id) == targets.map(\.id))
         #expect(Set(store.downloadJobs.map(\.name)) == Set((1...7).map { "Book \($0) PDF" }))
         #expect(store.downloadJobs.allSatisfy { $0.state.isPending && $0.id == $0.target.id })
@@ -132,6 +133,7 @@ import Testing
         await store.waitForDownloads()
 
         #expect(store.downloadJobs.isEmpty)
+        #expect(store.pendingDownloadCount == 0)
         #expect(targets.allSatisfy(store.isDownloaded))
     }
 
@@ -162,14 +164,37 @@ import Testing
         #expect(!store.isDownloaded(targets[5]))
     }
 
+    @Test func failedDownloadCanBeRetriedFromTheList() async {
+        let store = await harness.makeSyncedStore()
+        let target = targets(in: store)[0]
+        store.retryDownload(target)
+        #expect(store.downloadJobs.isEmpty)
+
+        harness.paizo.http.on("https://s3.example/signed", text: "interrupted", status: 503)
+        store.download(target)
+        await store.waitForDownloads()
+        #expect(store.downloadJobs.count == 1)
+
+        harness.paizo.installDownloads()
+        store.retryDownload(target)
+        #expect(store.downloads[target.id] == .inProgress(0))
+        store.retryDownload(target)
+        await store.waitForDownloads()
+
+        #expect(store.downloadJobs.isEmpty)
+        #expect(store.isDownloaded(target))
+    }
+
     @Test func failedDownloadStaysListedUntilDismissedOrRetried() async {
         let store = await harness.makeSyncedStore()
         let target = targets(in: store)[0]
         harness.paizo.http.on("https://s3.example/signed", text: "denied", status: 403)
 
         store.download(target)
+        #expect(store.pendingDownloadCount == 1)
         await store.waitForDownloads()
         #expect(store.downloadJobs.map(\.state.isPending) == [false])
+        #expect(store.pendingDownloadCount == 0)
 
         store.dismissDownload(target)
         #expect(store.downloadJobs.isEmpty)

@@ -96,7 +96,8 @@ once, online or off.
     servers; any more wait their turn.
 5.3a A downloads list, opened from the toolbar, shows every download that is
     running, waiting or has failed. Each can be canceled or, once failed,
-    dismissed, and all pending ones can be canceled together.
+    retried or dismissed, and all pending ones can be canceled together. The
+    list can be opened at any time, including while downloads are running.
 5.3b There is deliberately no way to download everything, or several selected
     titles, in one step.
 5.4 A downloaded file is kept on disk. Its location is a folder inside the
