@@ -10,7 +10,11 @@ struct TitleListView: View {
         List(store.visibleItems, selection: $selection) { item in
             TitleRow(item: item)
         }
+        #if os(macOS)
         .listStyle(.inset(alternatesRowBackgrounds: true))
+        #else
+        .listStyle(.plain)
+        #endif
     }
 }
 

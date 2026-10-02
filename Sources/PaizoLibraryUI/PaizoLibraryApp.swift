@@ -1,25 +1,31 @@
 import PaizoLibraryKit
 import SwiftUI
 
-@main
-struct PaizoLibraryManagerApp: App {
+/// The app, shared by the Mac and the iPad.
+public struct PaizoLibraryApp: App {
     @State private var store = LibraryStore(environment: .live())
 
-    var body: some Scene {
+    public init() {}
+
+    public var body: some Scene {
         WindowGroup("Paizo Library") {
             LibraryWindow()
                 .environment(store)
                 .task { await store.start() }
+            #if os(macOS)
                 .frame(minWidth: 900, minHeight: 520)
+            #endif
         }
         .commands {
             LibraryCommands(store: store)
         }
 
+        #if os(macOS)
         Settings {
             SettingsView()
                 .environment(store)
         }
+        #endif
     }
 }
 

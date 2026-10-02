@@ -9,9 +9,25 @@ struct TitleTableView: View {
     private typealias Column = TableColumn<LibraryTitle, KeyPathComparator<LibraryTitle>, Text, Text>
 
     var body: some View {
+        #if os(macOS)
+        table
+        #else
+        // An iPad held upright is narrower than the columns need; the table keeps its width and
+        // scrolls sideways instead of squeezing the title off the edge.
+        GeometryReader { geometry in
+            ScrollView(.horizontal) {
+                table.frame(width: max(Self.fullWidth, geometry.size.width), height: geometry.size.height)
+            }
+        }
+        #endif
+    }
+
+    private static let fullWidth: CGFloat = 1180
+
+    private var table: some View {
         @Bindable var store = store
         // A table takes at most ten columns directly, so they are given in two groups.
-        Table(store.visibleItems, selection: $selection, sortOrder: $store.sortOrder) {
+        return Table(store.visibleItems, selection: $selection, sortOrder: $store.sortOrder) {
             Group {
                 Column("Title", value: \LibraryTitle.titleSortKey) { (item: LibraryTitle) in Text(item.title) }
                     .width(min: 220, ideal: 340)

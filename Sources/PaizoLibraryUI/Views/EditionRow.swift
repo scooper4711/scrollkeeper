@@ -1,4 +1,3 @@
-import AppKit
 import PaizoLibraryKit
 import SwiftUI
 
@@ -50,12 +49,7 @@ struct EditionRow: View {
             Button("Cancel") { store.cancelDownload(target) }
                 .controlSize(.small)
         } else if edition.isSavedElsewhere {
-            if !files.isEmpty {
-                Button("Show in Finder") { FileOpener.reveal(target.localURL) }
-                    .controlSize(.small)
-            }
-            Button("Save As…", action: saveElsewhere)
-                .controlSize(.small)
+            savedElsewhereActions(target: target, isSaved: !files.isEmpty)
         } else if files.isEmpty {
             Button("Download") { store.download(target) }
                 .controlSize(.small)
@@ -67,20 +61,42 @@ struct EditionRow: View {
         }
     }
 
+    /// A zip the app does not keep: on the Mac it is saved where the user says; on the iPad it
+    /// is downloaded and then handed to the share sheet.
+    @ViewBuilder
+    private func savedElsewhereActions(target: DownloadTarget, isSaved: Bool) -> some View {
+        #if os(macOS)
+        if isSaved {
+            Button(PlatformText.showInFileBrowser) { FileOpener.reveal(target.localURL) }
+                .controlSize(.small)
+        }
+        Button("Save As…", action: saveElsewhere)
+            .controlSize(.small)
+        #else
+        if isSaved {
+            ShareLink(item: target.localURL) { Text("Share…") }
+                .controlSize(.small)
+        } else {
+            Button("Download", action: downloadForSharing)
+                .controlSize(.small)
+        }
+        #endif
+    }
+
     private func downloadedMenu(target: DownloadTarget) -> some View {
         Menu {
-            Button("Show in Finder") { FileOpener.reveal(target.localURL) }
+            Button(PlatformText.showInFileBrowser) { FileOpener.reveal(target.localURL) }
             Button("Download Again") { store.download(target) }
             Divider()
             Button("Delete Download", role: .destructive) { store.deleteDownload(target) }
         } label: {
             Image(systemName: "ellipsis.circle")
         }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
+        .compactMenuStyle()
         .help("More actions for this download")
     }
 
+    #if os(macOS)
     /// Asks where to put the zip and downloads it there; the library keeps no copy.
     private func saveElsewhere() {
         let panel = NSSavePanel()
@@ -90,11 +106,23 @@ struct EditionRow: View {
             exported = store.export(edition, of: item, to: destination)
         }
     }
+    #else
+    /// Downloads the zip to a temporary place, from where the share sheet can pass it on.
+    private func downloadForSharing() {
+        let name = store.locator.suggestedFileName(for: edition, in: item)
+        let destination = FileManager.default.temporaryDirectory.appending(path: "Shared/" + name)
+        exported = store.export(edition, of: item, to: destination)
+    }
+    #endif
 
     private var formatDescription: String {
         let type = edition.entitlement.fileExtension.uppercased()
         if edition.isSavedElsewhere {
+            #if os(macOS)
             return "ZIP, saved where you choose"
+            #else
+            return "ZIP, passed on with the share sheet"
+            #endif
         }
         guard edition.isUnpackedArchive else { return type }
         let count = edition.entitlement.assetCount

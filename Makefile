@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run dmg icon clean
+.PHONY: build test lint coverage app run install dmg icon ipad-simulator clean
 
 build:
 	swift build
@@ -18,6 +18,11 @@ app:
 run: app
 	open "build/Paizo Library Manager.app"
 
+# Copies the built app into /Applications, replacing an earlier copy.
+install: app
+	rm -rf "/Applications/Paizo Library Manager.app"
+	ditto "build/Paizo Library Manager.app" "/Applications/Paizo Library Manager.app"
+
 dmg: app
 	scripts/make-dmg.sh
 
@@ -25,5 +30,9 @@ dmg: app
 icon:
 	swift scripts/make-icon.swift
 
+# Builds the iPad app and starts it in a simulator. IPAD_SIMULATOR names the simulator.
+ipad-simulator:
+	scripts/run-ipad-simulator.sh
+
 clean:
-	rm -rf .build build
+	rm -rf .build build ios/build

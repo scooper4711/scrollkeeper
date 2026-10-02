@@ -1,4 +1,3 @@
-import AppKit
 import PaizoLibraryKit
 import SwiftUI
 
@@ -7,17 +6,17 @@ import SwiftUI
 final class CoverImageCache {
     static let shared = CoverImageCache()
 
-    private let cache = NSCache<NSURL, NSImage>()
+    private let cache = NSCache<NSURL, PlatformImage>()
 
     private init() {
         cache.countLimit = 600
     }
 
-    func image(at url: URL) -> NSImage? {
+    func image(at url: URL) -> PlatformImage? {
         if let cached = cache.object(forKey: url as NSURL) {
             return cached
         }
-        guard let image = NSImage(contentsOf: url) else { return nil }
+        guard let image = PlatformImage.load(from: url) else { return nil }
         cache.setObject(image, forKey: url as NSURL)
         return image
     }
@@ -30,7 +29,7 @@ struct CoverImage: View {
 
     var body: some View {
         if let url = store.coverURL(for: item), let image = CoverImageCache.shared.image(at: url) {
-            Image(nsImage: image)
+            Image(platformImage: image)
                 .resizable()
                 .scaledToFit()
                 .clipShape(RoundedRectangle(cornerRadius: 4))

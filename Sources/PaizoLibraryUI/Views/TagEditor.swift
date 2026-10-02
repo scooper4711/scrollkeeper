@@ -27,12 +27,11 @@ struct TagEditor: View {
                 } label: {
                     Image(systemName: "tag")
                 }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
+                .compactMenuStyle()
                 .disabled(suggestions.isEmpty)
                 .help("Add a tag you have used before")
             }
-            Text("Tags are also set as Finder tags on this title's downloaded files.")
+            Text(PlatformText.tagsNote)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

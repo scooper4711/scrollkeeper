@@ -1,4 +1,5 @@
 import Foundation
+import ZIPFoundation
 
 public struct ArchiveError: Error, Equatable, LocalizedError {
     public let archiveName: String
@@ -9,7 +10,7 @@ public struct ArchiveError: Error, Equatable, LocalizedError {
     }
 }
 
-/// Unpacks zip archives with the system's `ditto` tool.
+/// Unpacks zip archives.
 public struct ArchiveExtractor: Sendable {
     public init() {}
 
@@ -22,8 +23,8 @@ public struct ArchiveExtractor: Sendable {
         _ = try? FileManager.default.removeItem(at: staging)
         try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
         do {
-            try runDitto(arguments: ["-x", "-k", archive.path, staging.path], archiveName: archive.lastPathComponent)
-            removeUploadPrefixes(in: staging)
+            try unzip(archive, to: staging)
+            tidy(staging)
             _ = try? FileManager.default.removeItem(at: directory)
             try FileManager.default.moveItem(at: staging, to: directory)
         } catch {
@@ -32,34 +33,32 @@ public struct ArchiveExtractor: Sendable {
         }
     }
 
-    private func removeUploadPrefixes(in directory: URL) {
+    private func unzip(_ archive: URL, to directory: URL) throws {
+        do {
+            try FileManager.default.unzipItem(at: archive, to: directory)
+        } catch {
+            throw ArchiveError(archiveName: archive.lastPathComponent, detail: Self.describe(error))
+        }
+    }
+
+    private static func describe(_ error: Error) -> String {
+        error is Archive.ArchiveError ? "the archive is damaged." : error.localizedDescription
+    }
+
+    /// Removes the resource-fork folder some archives made on a Mac carry, and the upload prefixes.
+    private func tidy(_ directory: URL) {
+        try? FileManager.default.removeItem(at: directory.appending(path: "__MACOSX"))
         let enumerator = FileManager.default.enumerator(at: directory, includingPropertiesForKeys: nil)
         let files = enumerator?.compactMap { $0 as? URL } ?? []
         for file in files {
             let name = file.lastPathComponent
-            let tidy = Self.uploadPrefix.removingMatches(in: name)
-            let renamed = file.deletingLastPathComponent().appending(path: tidy)
-            if tidy != name, !tidy.isEmpty, !FileManager.default.fileExists(atPath: renamed.path) {
+            let tidyName = Self.uploadPrefix.removingMatches(in: name)
+            let renamed = file.deletingLastPathComponent().appending(path: tidyName)
+            if tidyName != name, !tidyName.isEmpty, !FileManager.default.fileExists(atPath: renamed.path) {
                 try? FileManager.default.moveItem(at: file, to: renamed)
             }
         }
     }
 
     private static let uploadPrefix = TextPattern(#"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-"#)
-
-    private func runDitto(arguments: [String], archiveName: String) throws {
-        let process = Process()
-        let errors = Pipe()
-        process.executableURL = URL(filePath: "/usr/bin/ditto")
-        process.arguments = arguments
-        process.standardError = errors
-        process.standardOutput = Pipe()
-        try process.run()
-        let message = String(bytes: errors.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else {
-            let detail = message.trimmingCharacters(in: .whitespacesAndNewlines)
-            throw ArchiveError(archiveName: archiveName, detail: detail.isEmpty ? "the archive is damaged." : detail)
-        }
-    }
 }

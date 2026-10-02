@@ -1,7 +1,7 @@
 # Paizo Library Manager
 
-A native macOS app for browsing and downloading the digital library attached to
-your [paizo.com](https://store.paizo.com) account.
+A native app for the Mac and the iPad for browsing and downloading the digital
+library attached to your [paizo.com](https://store.paizo.com) account.
 
 Paizo's web library is slow to load and slow to search. This app downloads the
 list of everything you own once, keeps it on your Mac, and gives you instant
@@ -29,8 +29,9 @@ It only accesses files that your own account is entitled to download.
 
 ## Requirements
 
-- macOS 14 or later
-- Xcode 16 or later (Swift 6 toolchain) to build
+- macOS 14 or later, or iPadOS 17 or later
+- Xcode 16 or later (Swift 6 toolchain) to build; for the iPad app, Xcode's iOS
+  platform component as well (Xcode › Settings › Components)
 
 ## Building
 
@@ -48,6 +49,27 @@ it, open it the first time with right-click → Open (or allow it under System
 Settings → Privacy & Security). After a rebuild, macOS may ask for permission
 to use the saved Keychain item again.
 
+## Building for iPad
+
+The iPad app is built from `ios/PaizoLibraryManager.xcodeproj`, which uses the
+same Swift package as the Mac app.
+
+1. Open `ios/PaizoLibraryManager.xcodeproj` in Xcode.
+2. Select the PaizoLibraryManager-iPad target, open Signing & Capabilities and choose
+   your team. A free Apple ID works; an app signed that way runs for seven days
+   before it has to be installed again, a paid developer account for a year.
+3. If Xcode says the bundle identifier is taken, change it to one of your own.
+4. Connect the iPad, pick it as the run destination and press Run. The first
+   time, the iPad asks you to trust the developer under Settings › General ›
+   VPN & Device Management.
+
+`make ipad-simulator` builds the app and starts it in an iPad simulator.
+
+On the iPad, downloads appear in the Files app under On My iPad. Opening a file
+shows a preview; the share button offers every app that accepts the file. The
+Files app's tags cannot be set by an app, so tags stay inside the app. The Mac
+and the iPad each keep their own catalog, tags and downloads.
+
 ## Installing a release
 
 Download the disk image from the
@@ -59,9 +81,9 @@ automatically for every version tag.
 
 | What | Where |
 |---|---|
-| Catalog, summaries, tags | `~/Library/Application Support/Paizo Library Manager/` |
+| Catalog, summaries, tags | `~/Library/Application Support/Paizo Library Manager/` (inside the app's container on the iPad) |
 | Cover artwork | `~/Library/Application Support/Paizo Library Manager/Covers/` |
-| Downloaded files | `~/Library/Application Support/Paizo Library Manager/Files/` (changeable in Settings) |
+| Downloaded files | Mac: `~/Library/Application Support/Paizo Library Manager/Files/` (changeable in Settings). iPad: the app's Documents folder, shown in Files |
 | Password | macOS Keychain, service `store.paizo.com` |
 
 ## Documentation

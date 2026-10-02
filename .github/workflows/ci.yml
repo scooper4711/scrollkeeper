@@ -32,3 +32,9 @@ jobs:
 
       - name: Build the app bundle
         run: scripts/build-app.sh
+
+      - name: Build the iPad app
+        run: |
+          xcodebuild -project ios/PaizoLibraryManager.xcodeproj -scheme PaizoLibraryManager-iPad \
+            -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build \
+            CODE_SIGNING_ALLOWED=NO build | tail -n 3

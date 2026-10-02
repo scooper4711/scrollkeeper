@@ -29,10 +29,11 @@ enum ViewMode: String, CaseIterable, Identifiable {
 struct LibraryWindow: View {
     @Environment(LibraryStore.self) private var store
     @AppStorage("viewMode") private var viewMode = ViewMode.covers
-    @AppStorage("showInspector") private var showInspector = true
+    @AppStorage("showInspector") private var showInspector = LibraryWindow.showsInspectorAtFirst
     @State private var selection: LibraryTitle.ID?
     /// Raised each time a search or filter change leaves nothing to show while filters are set.
     @State private var filterPulse = 0
+    @State private var showSettings = false
 
     var body: some View {
         @Bindable var store = store
@@ -43,20 +44,53 @@ struct LibraryWindow: View {
             catalog
                 .safeAreaInset(edge: .bottom, spacing: 0) { SyncStatusBar() }
                 .navigationTitle(title)
+            #if os(macOS)
                 .navigationSubtitle(subtitle)
+            #else
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
+                // The toolbar and search field belong to the library, not to the split view:
+                // iPadOS only shows toolbar items that are attached inside a navigation column.
+                .toolbar { toolbar }
+                .searchable(text: $store.query.searchText, prompt: "Title, author, SKU, series or tag")
+                .inspector(isPresented: $showInspector) {
+                    TitleDetailView(item: store.item(id: selection))
+                        .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
+                }
         }
-        .searchable(text: $store.query.searchText, prompt: "Title, SKU, series, summary or tag")
-        .inspector(isPresented: $showInspector) {
-            TitleDetailView(item: store.item(id: selection))
-                .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
+        #if !os(macOS)
+        .sheet(isPresented: $showSettings) {
+            NavigationStack {
+                SettingsView()
+                    .navigationTitle("Settings")
+                    .toolbar { Button("Done") { showSettings = false } }
+            }
+            .environment(store)
         }
-        .toolbar { toolbar }
+        #endif
+        #if !os(macOS)
+        // On the iPad the details cover part of the library, so they open when a title is chosen.
+        .onChange(of: selection) { _, chosen in
+            if chosen != nil {
+                showInspector = true
+            }
+        }
+        #endif
         .onChange(of: filtersLeaveNothing) { _, leavesNothing in
             if leavesNothing {
                 filterPulse += 1
             }
         }
     }
+
+    // On the iPad the middle of the bar holds the title, so the view picker sits with the buttons.
+    #if os(macOS)
+    private static let showsInspectorAtFirst = true
+    private static let viewPickerPlacement = ToolbarItemPlacement.principal
+    #else
+    private static let showsInspectorAtFirst = false
+    private static let viewPickerPlacement = ToolbarItemPlacement.topBarLeading
+    #endif
 
     /// True when nothing is shown and a filter is set, so clearing the filters may bring titles back.
     private var filtersLeaveNothing: Bool {
@@ -65,7 +99,7 @@ struct LibraryWindow: View {
 
     @ViewBuilder private var catalog: some View {
         if store.items.isEmpty {
-            EmptyLibraryView()
+            EmptyLibraryView { showSettings = true }
         } else if store.visibleItems.isEmpty {
             NoResultsView()
         } else {
@@ -78,7 +112,7 @@ struct LibraryWindow: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        ToolbarItem(placement: .principal) {
+        ToolbarItem(placement: Self.viewPickerPlacement) {
             Picker("View", selection: $viewMode) {
                 ForEach(ViewMode.allCases) { mode in
                     Label(mode.label, systemImage: mode.symbolName).tag(mode)
@@ -97,6 +131,15 @@ struct LibraryWindow: View {
             .disabled(store.account == .signedOut || store.sync.isRunning)
             .help("Check Paizo for titles added since the last sync")
         }
+        #if !os(macOS)
+        ToolbarItem {
+            Button {
+                showSettings = true
+            } label: {
+                Label("Settings", systemImage: "gearshape")
+            }
+        }
+        #endif
         ToolbarItem {
             Button {
                 showInspector.toggle()
@@ -152,6 +195,8 @@ struct NoResultsView: View {
 /// Shown while there is no catalog: either no account yet, or the first sync is running.
 struct EmptyLibraryView: View {
     @Environment(LibraryStore.self) private var store
+    /// Opens the settings on the iPad, where they are a sheet of the window.
+    let openSettings: () -> Void
 
     var body: some View {
         if store.account == .signedOut {
@@ -160,7 +205,11 @@ struct EmptyLibraryView: View {
             } description: {
                 Text("Add your Paizo account in Settings to load your library.")
             } actions: {
+                #if os(macOS)
                 SettingsLink { Text("Open Settings…") }
+                #else
+                Button("Open Settings…", action: openSettings)
+                #endif
             }
         } else if store.sync.isRunning {
             ContentUnavailableView {
