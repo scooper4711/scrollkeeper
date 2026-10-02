@@ -5,6 +5,10 @@ public actor StorefrontClient {
     /// The storefront limits query complexity; ten products per request fits.
     public static let batchSize = 10
     static let coverWidth = 480
+    /// Descriptions are fetched whole. Some end in copyright notices, which Paizo's terms forbid
+    /// removing, so they must never be cut short. The longest known description is under 10,000
+    /// characters; the storefront requires some limit to be given.
+    static let descriptionLimit = 1_000_000
 
     private let http: HTTPClient
     private let endpoints: PaizoEndpoints
@@ -77,7 +81,7 @@ public actor StorefrontClient {
 
     private static let tokenPattern = TextPattern(#"graphql_token\\?"\s*:\s*\\?"([^"\\]+)"#)
     private static let detailsFragment = """
-    fragment Details on Product { sku name path plainTextDescription(characterLimit: 4000) \
+    fragment Details on Product { sku name path plainTextDescription(characterLimit: \(descriptionLimit)) \
     brand { name } defaultImage { url(width: \(coverWidth)) } \
     categories { edges { node { breadcrumbs(depth: 5) { edges { node { name } } } } } } \
     customFields(first: 30) { edges { node { name value } } } }

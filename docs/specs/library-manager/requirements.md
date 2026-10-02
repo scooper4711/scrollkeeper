@@ -184,3 +184,9 @@ searching, classification, tagging and downloading in a native macOS app.
      and other artwork of the app itself use no Paizo material.
 11.5 The licence notices of included third-party software are part of the app
      (Settings › About) and of the repository (`THIRD-PARTY-NOTICES.md`).
+11.6 Paizo's terms forbid removing copyright, trademark or other proprietary
+     notices from its content. Product descriptions are therefore fetched and
+     shown complete and unaltered, never shortened, since some end in such
+     notices. Covers are shown whole, without cropping or rounded corners.
+     Each description is followed by a credit to Paizo as its owner.
+     Downloaded files are saved exactly as Paizo delivers them.

@@ -31,8 +31,9 @@ struct CoverImage: View {
         if let url = store.coverURL(for: item), let image = CoverImageCache.shared.image(at: url) {
             Image(platformImage: image)
                 .resizable()
+                // Covers are shown whole: Paizo's Community Use Policy forbids cropping them,
+                // and that includes rounding their corners.
                 .scaledToFit()
-                .clipShape(RoundedRectangle(cornerRadius: 4))
                 .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
         } else {
             placeholder

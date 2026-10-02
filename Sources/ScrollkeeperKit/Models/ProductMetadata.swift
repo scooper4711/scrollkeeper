@@ -3,7 +3,7 @@ import Foundation
 /// What the public storefront knows about a product.
 public struct ProductMetadata: Codable, Sendable, Equatable {
     /// Raised whenever a field is added, so that metadata stored by an older version is fetched again.
-    public static let schemaVersion = 2
+    public static let schemaVersion = 3
 
     public var sku: String
     public var name: String
