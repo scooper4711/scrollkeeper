@@ -2,7 +2,7 @@
 // ios/App/Assets.xcassets/AppIcon.appiconset/icon-1024.png for the iPad.
 // Usage: swift scripts/make-icon.swift
 //
-// The artwork is original: a shelf of books and a twenty-sided die. It uses no Paizo logos,
+// The artwork is original: scrolls and a twenty-sided die. It uses no Paizo logos,
 // lettering or artwork.
 import AppKit
 
@@ -31,23 +31,64 @@ func fillGradient(_ context: CGContext, in path: CGPath, from top: UInt32, to bo
     context.restoreGState()
 }
 
-/// A book standing on the shelf: a spine with two gilt bands.
-func drawBook(_ context: CGContext, frame: CGRect, top: UInt32, bottom: UInt32, tilt: CGFloat = 0) {
-    context.saveGState()
-    context.translateBy(x: frame.minX, y: frame.minY)
-    context.rotate(by: tilt * .pi / 180)
-    let spine = CGRect(origin: .zero, size: frame.size)
-    context.setShadow(offset: CGSize(width: 0, height: -6), blur: 18, color: color(0x000000, alpha: 0.35))
-    let path = CGPath(roundedRect: spine, cornerWidth: 14, cornerHeight: 14, transform: nil)
-    context.addPath(path)
-    context.setFillColor(color(bottom))
-    context.fillPath()
-    context.setShadow(offset: .zero, blur: 0, color: nil)
-    fillGradient(context, in: path, from: top, to: bottom)
-    context.setFillColor(color(0xF2D27A, alpha: 0.9))
-    for offset in [frame.height * 0.16, frame.height * 0.78] {
-        context.fill(CGRect(x: 0, y: offset, width: frame.width, height: 14))
+/// A rolled-up end of a scroll: a parchment cylinder on a wooden rod with a knob at each side.
+func drawRoll(_ context: CGContext, frame: CGRect) {
+    let knob = CGSize(width: frame.height * 0.42, height: frame.height * 0.5)
+    for x in [frame.minX - knob.width + 6, frame.maxX - 6] {
+        let rect = CGRect(x: x, y: frame.midY - knob.height / 2, width: knob.width, height: knob.height)
+        fillGradient(
+            context, in: CGPath(roundedRect: rect, cornerWidth: 9, cornerHeight: 9, transform: nil),
+            from: 0xB07A3E, to: 0x6E4420
+        )
     }
+    let roll = CGPath(
+        roundedRect: frame, cornerWidth: frame.height / 2, cornerHeight: frame.height / 2, transform: nil
+    )
+    context.saveGState()
+    context.setShadow(offset: CGSize(width: 0, height: -6), blur: 14, color: color(0x000000, alpha: 0.3))
+    context.addPath(roll)
+    context.setFillColor(color(0xD9C28A))
+    context.fillPath()
+    context.restoreGState()
+    fillGradient(context, in: roll, from: 0xFBF1D3, to: 0xCDB278)
+}
+
+/// An open scroll: a sheet of parchment with lines of writing between two rolled ends.
+func drawOpenScroll(_ context: CGContext, frame: CGRect) {
+    let rollHeight: CGFloat = 74
+    let sheet = frame.insetBy(dx: 26, dy: rollHeight / 2)
+    context.saveGState()
+    context.setShadow(offset: CGSize(width: 0, height: -8), blur: 22, color: color(0x000000, alpha: 0.35))
+    context.setFillColor(color(0xEFE0B6))
+    context.fill(sheet)
+    context.restoreGState()
+    fillGradient(context, in: CGPath(rect: sheet, transform: nil), from: 0xFAF0D2, to: 0xE6D3A3)
+
+    context.setFillColor(color(0x8A7346, alpha: 0.75))
+    let widths: [CGFloat] = [0.78, 0.92, 0.84, 0.9, 0.6]
+    for (index, width) in widths.enumerated() {
+        let line = CGRect(
+            x: sheet.minX + 44, y: sheet.maxY - 92 - CGFloat(index) * 58,
+            width: (sheet.width - 88) * width, height: 16
+        )
+        context.addPath(CGPath(roundedRect: line, cornerWidth: 8, cornerHeight: 8, transform: nil))
+        context.fillPath()
+    }
+    drawRoll(context, frame: CGRect(x: frame.minX, y: frame.maxY - rollHeight, width: frame.width, height: rollHeight))
+    drawRoll(context, frame: CGRect(x: frame.minX, y: frame.minY, width: frame.width, height: rollHeight))
+}
+
+/// A closed scroll tied with a ribbon, lying at an angle.
+func drawClosedScroll(_ context: CGContext, center: CGPoint, length: CGFloat, tilt: CGFloat, ribbon: UInt32) {
+    context.saveGState()
+    context.translateBy(x: center.x, y: center.y)
+    context.rotate(by: tilt * .pi / 180)
+    let frame = CGRect(x: -length / 2, y: -40, width: length, height: 80)
+    drawRoll(context, frame: frame)
+    let band = CGRect(x: -22, y: -40, width: 44, height: 80)
+    fillGradient(context, in: CGPath(rect: band, transform: nil), from: ribbon, to: ribbon)
+    context.setFillColor(color(0x000000, alpha: 0.18))
+    context.fill(CGRect(x: -22, y: -40, width: 44, height: 22))
     context.restoreGState()
 }
 
@@ -133,17 +174,9 @@ func drawIcon(fullBleed: Bool) -> NSBitmapImageRep? {
     context.saveGState()
     context.addPath(platePath)
     context.clip()
-    let shelfTop: CGFloat = 318
-    drawBook(context, frame: CGRect(x: 214, y: shelfTop, width: 104, height: 404), top: 0xD9534F, bottom: 0x9E2B2B)
-    drawBook(context, frame: CGRect(x: 328, y: shelfTop, width: 84, height: 350), top: 0xF0B84A, bottom: 0xC27F1E)
-    drawBook(context, frame: CGRect(x: 422, y: shelfTop, width: 116, height: 440), top: 0x3FB8A6, bottom: 0x1F7A6E)
-    drawBook(context, frame: CGRect(x: 548, y: shelfTop, width: 92, height: 376), top: 0x8E7BE0, bottom: 0x5B46B0)
-    drawBook(context, frame: CGRect(x: 664, y: shelfTop, width: 88, height: 392), top: 0xF4EEDC, bottom: 0xCFC5A8, tilt: -13)
-    let shelf = CGPath(
-        roundedRect: CGRect(x: 170, y: shelfTop - 34, width: 684, height: 34), cornerWidth: 10, cornerHeight: 10,
-        transform: nil
-    )
-    fillGradient(context, in: shelf, from: 0xB98A4E, to: 0x7C5526)
+    drawClosedScroll(context, center: CGPoint(x: 330, y: 300), length: 300, tilt: 12, ribbon: 0xC2413B)
+    drawClosedScroll(context, center: CGPoint(x: 356, y: 222), length: 330, tilt: -6, ribbon: 0x2F9E8F)
+    drawOpenScroll(context, frame: CGRect(x: 250, y: 330, width: 420, height: 470))
     context.restoreGState()
 
     drawDie(context, center: CGPoint(x: 690, y: 330), radius: 168)
