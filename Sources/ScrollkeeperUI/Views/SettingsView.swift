@@ -16,7 +16,10 @@ struct SettingsView: View {
             Form { DownloadSettings() }
                 .formStyle(.grouped)
                 .tabItem { Label("Downloads", systemImage: "arrow.down.circle") }
-            Form { AboutView() }
+            Form {
+                AboutView()
+                AcknowledgementsView()
+            }
                 .formStyle(.grouped)
                 .tabItem { Label("About", systemImage: "info.circle") }
         }
@@ -26,6 +29,7 @@ struct SettingsView: View {
             AccountSettings()
             DownloadSettings()
             AboutView()
+            AcknowledgementsView()
         }
         #endif
     }
