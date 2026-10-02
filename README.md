@@ -1,7 +1,8 @@
-# Paizo Library Manager
+# Scrollkeeper
 
-A native app for the Mac and the iPad for browsing and downloading the digital
-library attached to your [paizo.com](https://store.paizo.com) account.
+An unofficial library manager for your Paizo purchases. A native app for the Mac
+and the iPad for browsing and downloading the digital library attached to your
+[paizo.com](https://store.paizo.com) account.
 
 Paizo's web library is slow to load and slow to search. This app downloads the
 list of everything you own once, keeps it on your Mac, and gives you instant
@@ -10,11 +11,11 @@ search, sorting, filtering, cover artwork, summaries and tags.
 It is free, and it only accesses files that your own account is entitled to
 download.
 
-> Paizo Library Manager uses trademarks and/or copyrights owned by Paizo Inc.,
+> Scrollkeeper uses trademarks and/or copyrights owned by Paizo Inc.,
 > used under Paizo's Community Use Policy
 > ([paizo.com/licenses/communityuse](https://paizo.com/licenses/communityuse)).
 > We are expressly prohibited from charging you to use or access this content.
-> Paizo Library Manager is not published, endorsed, or specifically approved by
+> Scrollkeeper is not published, endorsed, or specifically approved by
 > Paizo. For more information about Paizo Inc. and Paizo products, visit
 > [paizo.com](https://paizo.com).
 
@@ -44,7 +45,7 @@ download.
 ## Building
 
 ```sh
-make app      # builds build/Paizo Library Manager.app
+make app      # builds build/Scrollkeeper.app
 make run      # builds and launches the app
 make test     # runs the unit tests
 make lint     # runs SwiftLint
@@ -59,7 +60,7 @@ to use the saved Keychain item again.
 
 ## Building for iPad
 
-The iPad app is built from `ios/PaizoLibraryManager.xcodeproj`, which uses the
+The iPad app is built from `ios/Scrollkeeper.xcodeproj`, which uses the
 same Swift package as the Mac app.
 
 1. Add your Apple ID to Xcode under Settings › Accounts. A free Apple ID works;
@@ -67,7 +68,7 @@ same Swift package as the Mac app.
    again, a paid developer account for a year.
 2. Put your team in `ios/Local.xcconfig`, which is not committed (see
    `ios/Signing.xcconfig`). The team identifier is shown in Xcode when you
-   select the PaizoLibraryManager-iPad target and open Signing & Capabilities.
+   select the Scrollkeeper-iPad target and open Signing & Capabilities.
 3. Connect the iPad and turn on Developer Mode on it under Settings › Privacy &
    Security.
 4. Run `make ipad-install`. It builds the app, installs it and starts it.
@@ -75,9 +76,9 @@ same Swift package as the Mac app.
    developer under Settings › General › VPN & Device Management.
 
 When the seven days are up, `make ipad-install` again; the catalog and downloads
-on the iPad are kept. You can also open `ios/PaizoLibraryManager.xcodeproj` in
+on the iPad are kept. You can also open `ios/Scrollkeeper.xcodeproj` in
 Xcode and press Run. Open the project itself, not the package folder, and pick
-the PaizoLibraryManager-iPad scheme.
+the Scrollkeeper-iPad scheme.
 
 `make ipad-simulator` builds the app and starts it in an iPad simulator.
 
@@ -89,7 +90,7 @@ and the iPad each keep their own catalog, tags and downloads.
 ## Installing a release
 
 Download the disk image from the
-[releases page](https://github.com/scooper4711/paizo-library-manager/releases),
+[releases page](https://github.com/scooper4711/scrollkeeper/releases),
 open it and drag the app to Applications. A disk image is built and attached
 automatically for every version tag.
 
@@ -97,14 +98,20 @@ automatically for every version tag.
 
 | What | Where |
 |---|---|
-| Catalog, summaries, tags | `~/Library/Application Support/Paizo Library Manager/` (inside the app's container on the iPad) |
-| Cover artwork | `~/Library/Application Support/Paizo Library Manager/Covers/` |
-| Downloaded files | Mac: `~/Library/Application Support/Paizo Library Manager/Files/` (changeable in Settings). iPad: the app's Documents folder, shown in Files |
+| Catalog, summaries, tags | `~/Library/Application Support/Scrollkeeper/` (inside the app's container on the iPad) |
+| Cover artwork | `~/Library/Application Support/Scrollkeeper/Covers/` |
+| Downloaded files | Mac: `~/Library/Application Support/Scrollkeeper/Files/` (changeable in Settings). iPad: the app's Documents folder, shown in Files |
 | Password | macOS Keychain, service `store.paizo.com` |
 
 ## Documentation
 
 The requirements and design are in [`docs/specs/library-manager`](docs/specs/library-manager).
+
+## Licences
+
+Scrollkeeper includes [ZIPFoundation](https://github.com/weichsel/ZIPFoundation)
+under the MIT licence; its notice is in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and in the app's settings.
 
 ## Supporting the project
 

@@ -1,4 +1,4 @@
-# Paizo Library Manager — Design
+# Scrollkeeper — Design
 
 ## Overview
 
@@ -6,12 +6,12 @@ A Swift package with three targets, plus an Xcode project for the iPad app:
 
 | Target | Kind | Contents |
 |---|---|---|
-| `PaizoLibraryKit` | library | Models, Paizo clients, sync, classification, persistence, downloads, the observable `LibraryStore`. Fully unit tested. Builds for macOS and iPadOS. |
-| `PaizoLibraryUI` | library | SwiftUI views and the `App` itself. They render `LibraryStore` state and forward user actions to it. Builds for macOS and iPadOS; the few differences are behind `#if os(...)`. |
-| `PaizoLibraryManager` | executable | The macOS entry point: one file that starts the shared `App`. |
+| `ScrollkeeperKit` | library | Models, Paizo clients, sync, classification, persistence, downloads, the observable `LibraryStore`. Fully unit tested. Builds for macOS and iPadOS. |
+| `ScrollkeeperUI` | library | SwiftUI views and the `App` itself. They render `LibraryStore` state and forward user actions to it. Builds for macOS and iPadOS; the few differences are behind `#if os(...)`. |
+| `Scrollkeeper` | executable | The macOS entry point: one file that starts the shared `App`. |
 
 `scripts/build-app.sh` wraps the macOS executable in an ad-hoc signed `.app`
-bundle. `ios/PaizoLibraryManager.xcodeproj` builds the iPad app from the same
+bundle. `ios/Scrollkeeper.xcodeproj` builds the iPad app from the same
 package: its only source file starts the shared `App`.
 
 The package depends on ZIPFoundation for unpacking archives, because iPadOS has
@@ -153,7 +153,7 @@ background, so artwork fills in while the catalog is still loading.
 ### Persistence
 
 `LibraryRepository` reads and writes JSON files in
-`~/Library/Application Support/Paizo Library Manager/`:
+`~/Library/Application Support/Scrollkeeper/`:
 
 | File | Contents |
 |---|---|
@@ -220,7 +220,7 @@ user fill them with Password AutoFill.
 Unit tests use Swift Testing. Network types are tested against a stub
 `HTTPClient` with fixtures modelled on real responses but containing no account
 data. `URLSessionHTTPClient` is tested through a `URLProtocol` stub.
-`scripts/coverage.sh` fails when line or region coverage of `PaizoLibraryKit`
+`scripts/coverage.sh` fails when line or region coverage of `ScrollkeeperKit`
 is below 80%. Swift's coverage tooling does not report branch coverage; region
 coverage is the closest measure and is used in its place.
 

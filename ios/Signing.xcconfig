@@ -7,8 +7,8 @@
 //
 // If Xcode reports that the bundle identifier is taken, set your own there as well:
 //
-//     PRODUCT_BUNDLE_IDENTIFIER = com.example.PaizoLibraryManager
+//     PRODUCT_BUNDLE_IDENTIFIER = com.example.Scrollkeeper
 DEVELOPMENT_TEAM =
-PRODUCT_BUNDLE_IDENTIFIER = io.github.scooper4711.PaizoLibraryManager
+PRODUCT_BUNDLE_IDENTIFIER = io.github.scooper4711.Scrollkeeper
 
 #include? "Local.xcconfig"

@@ -39,4 +39,4 @@ jobs:
             sleep 10
           done
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --draft --title "$TAG" --generate-notes
-          gh release upload "$TAG" "build/PaizoLibraryManager-$VERSION.dmg" --clobber
+          gh release upload "$TAG" "build/Scrollkeeper-$VERSION.dmg" --clobber

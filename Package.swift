@@ -2,23 +2,23 @@
 import PackageDescription
 
 let package = Package(
-    name: "PaizoLibraryManager",
+    name: "Scrollkeeper",
     platforms: [.macOS(.v14), .iOS(.v17)],
     products: [
-        .library(name: "PaizoLibraryKit", targets: ["PaizoLibraryKit"]),
-        .library(name: "PaizoLibraryUI", targets: ["PaizoLibraryUI"]),
-        .executable(name: "PaizoLibraryManager", targets: ["PaizoLibraryManager"])
+        .library(name: "ScrollkeeperKit", targets: ["ScrollkeeperKit"]),
+        .library(name: "ScrollkeeperUI", targets: ["ScrollkeeperUI"]),
+        .executable(name: "Scrollkeeper", targets: ["Scrollkeeper"])
     ],
     dependencies: [
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.19")
     ],
     targets: [
         .target(
-            name: "PaizoLibraryKit",
+            name: "ScrollkeeperKit",
             dependencies: [.product(name: "ZIPFoundation", package: "ZIPFoundation")]
         ),
-        .target(name: "PaizoLibraryUI", dependencies: ["PaizoLibraryKit"]),
-        .executableTarget(name: "PaizoLibraryManager", dependencies: ["PaizoLibraryUI"]),
-        .testTarget(name: "PaizoLibraryKitTests", dependencies: ["PaizoLibraryKit"])
+        .target(name: "ScrollkeeperUI", dependencies: ["ScrollkeeperKit"]),
+        .executableTarget(name: "Scrollkeeper", dependencies: ["ScrollkeeperUI"]),
+        .testTarget(name: "ScrollkeeperKitTests", dependencies: ["ScrollkeeperKit"])
     ]
 )

@@ -28,15 +28,15 @@ PYTHON
 )}"
 [ -n "$IPAD" ] || { echo "Installing failed: no iPad is connected." >&2; exit 1; }
 
-BUNDLE_ID="$(xcodebuild -project ios/PaizoLibraryManager.xcodeproj -scheme PaizoLibraryManager-iPad \
+BUNDLE_ID="$(xcodebuild -project ios/Scrollkeeper.xcodeproj -scheme Scrollkeeper-iPad \
     -showBuildSettings 2>/dev/null | sed -n 's/^ *PRODUCT_BUNDLE_IDENTIFIER = //p' | head -n 1)"
 
 echo "Building for ${IPAD}..."
-xcodebuild -project ios/PaizoLibraryManager.xcodeproj -scheme PaizoLibraryManager-iPad \
+xcodebuild -project ios/Scrollkeeper.xcodeproj -scheme Scrollkeeper-iPad \
     -destination 'generic/platform=iOS' -derivedDataPath ios/build -allowProvisioningUpdates build \
     | grep -E 'error:|warning: .*[Pp]rovision|BUILD' || true
 
-APP="ios/build/Build/Products/Debug-iphoneos/Paizo Library Manager.app"
+APP="ios/build/Build/Products/Debug-iphoneos/Scrollkeeper.app"
 [ -d "$APP" ] || { echo "Installing failed: the build did not produce the app." >&2; exit 1; }
 
 xcrun devicectl device install app --device "$IPAD" "$APP" >/dev/null
