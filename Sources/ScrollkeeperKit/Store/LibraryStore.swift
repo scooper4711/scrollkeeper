@@ -30,13 +30,15 @@ public enum DownloadState: Equatable, Sendable {
     /// Queued behind the downloads that are running.
     case waiting
     case inProgress(Double)
+    /// Cut off by a lost connection or by the app being put to sleep; it resumes by itself.
+    case interrupted
     case failed(String)
 
     /// True while the download is running or waiting for its turn.
     public var isPending: Bool {
         switch self {
         case .waiting, .inProgress: true
-        case .failed: false
+        case .interrupted, .failed: false
         }
     }
 }

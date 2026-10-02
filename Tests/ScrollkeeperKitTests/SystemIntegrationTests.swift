@@ -79,6 +79,18 @@ final class StubURLProtocol: URLProtocol {
     }
 }
 
+@Suite struct ResumeDataStoreTests {
+    @Test func partialDownloadIsHandedOutOnce() {
+        let store = ResumeDataStore()
+        #expect(store.take("/tmp/book.pdf") == nil)
+
+        store.store(Data("partial".utf8), for: "/tmp/book.pdf")
+        #expect(store.take("/tmp/other.pdf") == nil)
+        #expect(store.take("/tmp/book.pdf") == Data("partial".utf8))
+        #expect(store.take("/tmp/book.pdf") == nil)
+    }
+}
+
 @Suite struct KeychainCredentialStoreTests {
     @Test func savesReplacesAndDeletesTheAccount() throws {
         let store = KeychainCredentialStore(server: "test-\(UUID().uuidString).paizo-library-manager.invalid")

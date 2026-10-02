@@ -28,6 +28,7 @@ enum ViewMode: String, CaseIterable, Identifiable {
 /// The main window: sidebar of scopes, the catalog in the chosen view, and a detail inspector.
 struct LibraryWindow: View {
     @Environment(LibraryStore.self) private var store
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("viewMode") private var viewMode = ViewMode.covers
     @AppStorage("showInspector") private var showInspector = LibraryWindow.showsInspectorAtFirst
     @State private var selection: LibraryTitle.ID?
@@ -91,6 +92,12 @@ struct LibraryWindow: View {
             }
         }
         #endif
+        .onChange(of: scenePhase) { _, phase in
+            DownloadContinuity.sceneChanged(to: phase, store: store)
+        }
+        .onChange(of: store.pendingDownloadCount) { _, pending in
+            DownloadContinuity.pendingChanged(to: pending)
+        }
         .onChange(of: filtersLeaveNothing) { _, leavesNothing in
             if leavesNothing {
                 filterPulse += 1

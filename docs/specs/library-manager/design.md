@@ -202,6 +202,17 @@ change with a full sync.
 time; the rest are `waiting` and start as running ones finish. `downloadJobs`
 is what the downloads list shows.
 
+The app uses an ordinary `URLSession`, not a background one, so iPadOS cuts its
+downloads off when it suspends the app. Three things soften that:
+`DownloadContinuity` asks for background time when the scene goes to the
+background with downloads pending; `URLSessionHTTPClient` keeps the resume data
+of a download that was cut off and continues from it on the next attempt for
+the same destination, starting over if the server refuses; and
+`LibraryStore.resumeInterruptedDownloads` restarts interrupted downloads when
+the scene becomes active. A background `URLSession` would let long downloads
+finish while the app is suspended, at the cost of delegate-based plumbing and
+relaunch handling; it has not been needed so far.
+
 `LibraryStore.quickActions(for:)` decides what the hover buttons and the
 right-click menu offer for a title. It ranks the editions by
 `Edition.downloadPreference` and looks at what is on disk.

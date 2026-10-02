@@ -32,6 +32,12 @@ struct EditionRow: View {
                     .foregroundStyle(.orange)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            if store.downloads[target.id] == .interrupted {
+                Text("The download was interrupted and will resume.")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if case let .failed(message) = store.downloads[target.id] {
                 Text(message)
                     .font(.caption)

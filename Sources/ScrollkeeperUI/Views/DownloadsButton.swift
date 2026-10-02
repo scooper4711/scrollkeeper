@@ -94,7 +94,7 @@ private struct DownloadJobRow: View {
             }
             Spacer()
             if !job.state.isPending {
-                Button("Retry") { store.retryDownload(job.target) }
+                Button(job.state == .interrupted ? "Resume" : "Retry") { store.retryDownload(job.target) }
                     .controlSize(.small)
                     .help("Try this download again")
             }
@@ -119,6 +119,11 @@ private struct DownloadJobRow: View {
             Text("Waiting")
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        case .interrupted:
+            Text("Interrupted. It resumes when you come back to Scrollkeeper or the connection returns.")
+                .font(.caption)
+                .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
         case let .failed(message):
             Text(message)
                 .font(.caption)
