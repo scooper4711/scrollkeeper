@@ -3,6 +3,7 @@ import Foundation
 /// `HTTPClient` backed by a `URLSession` that keeps Paizo's session cookies in memory.
 public final class URLSessionHTTPClient: HTTPClient {
     private let session: URLSession
+    private let resumeData = ResumeDataStore()
 
     public init(configuration: URLSessionConfiguration = URLSessionHTTPClient.makeConfiguration()) {
         session = URLSession(configuration: configuration)
@@ -28,8 +29,7 @@ public final class URLSessionHTTPClient: HTTPClient {
 
     public func download(_ request: URLRequest, to destination: URL, progress: @escaping ProgressHandler) async throws {
         let observer = DownloadProgressObserver(progress: progress)
-        let (temporary, response) = try await session.download(for: request, delegate: observer)
-        let status = statusCode(of: response)
+        let (temporary, status) = try await fetch(request, key: destination.path, observer: observer)
         guard (200..<300).contains(status) else {
             try? FileManager.default.removeItem(at: temporary)
             throw PaizoError.http(operation: "Downloading the file", status: status)
@@ -41,6 +41,27 @@ public final class URLSessionHTTPClient: HTTPClient {
         _ = try? FileManager.default.removeItem(at: destination)
         try FileManager.default.moveItem(at: temporary, to: destination)
         progress(1)
+    }
+
+    /// Downloads to a temporary file. A download that was cut off earlier continues from where
+    /// it stopped; when that is refused, for example because the link has expired, it starts over.
+    /// A download cut off now leaves what it has so far for the next attempt.
+    private func fetch(_ request: URLRequest, key: String, observer: DownloadProgressObserver) async throws
+        -> (URL, Int) {
+        do {
+            if let partial = resumeData.take(key),
+               let (temporary, response) = try? await session.download(resumeFrom: partial, delegate: observer),
+               (200..<300).contains(statusCode(of: response)) {
+                return (temporary, statusCode(of: response))
+            }
+            let (temporary, response) = try await session.download(for: request, delegate: observer)
+            return (temporary, statusCode(of: response))
+        } catch let error as URLError {
+            if let partial = error.downloadTaskResumeData {
+                resumeData.store(partial, for: key)
+            }
+            throw error
+        }
     }
 
     private func statusCode(of response: URLResponse) -> Int {
@@ -69,5 +90,21 @@ private final class DownloadProgressObserver: NSObject, URLSessionTaskDelegate, 
         observation = task.progress.observe(\.fractionCompleted) { taskProgress, _ in
             progress(taskProgress.fractionCompleted)
         }
+    }
+}
+
+/// What interrupted downloads had received so far, by destination, so that they can continue.
+/// `@unchecked Sendable`: the dictionary is guarded by `lock`.
+final class ResumeDataStore: @unchecked Sendable {
+    private let lock = NSLock()
+    private var partials: [String: Data] = [:]
+
+    func store(_ data: Data, for key: String) {
+        lock.withLock { partials[key] = data }
+    }
+
+    /// The partial download for the key, which is then forgotten: it can be used only once.
+    func take(_ key: String) -> Data? {
+        lock.withLock { partials.removeValue(forKey: key) }
     }
 }

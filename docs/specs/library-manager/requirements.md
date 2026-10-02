@@ -98,6 +98,12 @@ once, online or off.
     running, waiting or has failed. Each can be canceled or, once failed,
     retried or dismissed, and all pending ones can be canceled together. The
     list can be opened at any time, including while downloads are running.
+5.3c A download cut off by a lost connection, or by the app being put to sleep
+    when the user switches away on an iPad, is marked interrupted. It resumes
+    by itself when the user returns to the app, continuing from where it
+    stopped when the server allows, and can also be resumed by hand. On an
+    iPad the app asks the system for extra time when it is sent to the
+    background with downloads under way, so that short ones can finish.
 5.3b There is deliberately no way to download everything, or several selected
     titles, in one step.
 5.4 A downloaded file is kept on disk. Its location is a folder inside the

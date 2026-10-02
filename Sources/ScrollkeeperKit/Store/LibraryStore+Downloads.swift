@@ -41,12 +41,31 @@ extension LibraryStore {
         refreshPendingCount()
     }
 
-    /// Tries a failed download again.
+    /// Tries a failed or interrupted download again.
     public func retryDownload(_ target: DownloadTarget) {
-        if case .failed = downloads[target.id] {
+        if let state = downloads[target.id], !state.isPending {
             download(target)
         }
     }
+
+    /// Continues the downloads that were cut off. Called when the app comes back to the front.
+    public func resumeInterruptedDownloads() {
+        for job in downloadJobs where job.state == .interrupted {
+            download(job.target)
+        }
+    }
+
+    /// True for the errors of a connection that dropped, as opposed to a refusal by the server.
+    /// Putting an iPad app in the background ends its connections in just this way.
+    static func isInterruption(_ error: Error) -> Bool {
+        guard let code = (error as? URLError)?.code else { return false }
+        return interruptionCodes.contains(code)
+    }
+
+    private static let interruptionCodes: Set<URLError.Code> = [
+        .networkConnectionLost, .notConnectedToInternet, .timedOut, .cannotConnectToHost, .cannotFindHost,
+        .dnsLookupFailed, .dataNotAllowed, .internationalRoamingOff, .callIsActive, .backgroundSessionWasDisconnected
+    ]
 
     /// Stops a running download, or takes a waiting one out of the line.
     public func cancelDownload(_ target: DownloadTarget) {
@@ -133,7 +152,7 @@ extension LibraryStore {
             if error is CancellationError || Task.isCancelled {
                 forget(target)
             } else {
-                downloads[target.id] = .failed(error.localizedDescription)
+                downloads[target.id] = Self.isInterruption(error) ? .interrupted : .failed(error.localizedDescription)
                 refreshPendingCount()
             }
         }

@@ -164,6 +164,63 @@ import Testing
         #expect(!store.isDownloaded(targets[5]))
     }
 
+    @Test func interruptedDownloadResumesWhenTheAppComesBack() async {
+        let store = await harness.makeSyncedStore()
+        let target = targets(in: store)[0]
+        harness.paizo.http.on("https://s3.example/signed") { _ in throw URLError(.networkConnectionLost) }
+
+        store.download(target)
+        await store.waitForDownloads()
+        #expect(store.downloads[target.id] == .interrupted)
+        #expect(store.pendingDownloadCount == 0)
+        #expect(!DownloadState.interrupted.isPending)
+
+        harness.paizo.installDownloads()
+        store.resumeInterruptedDownloads()
+        #expect(store.pendingDownloadCount == 1)
+        await store.waitForDownloads()
+
+        #expect(store.downloadJobs.isEmpty)
+        #expect(store.isDownloaded(target))
+    }
+
+    @Test func refusedDownloadIsNotResumedByItself() async {
+        let store = await harness.makeSyncedStore()
+        let target = targets(in: store)[0]
+        harness.paizo.http.on("https://s3.example/signed", text: "denied", status: 403)
+        store.download(target)
+        await store.waitForDownloads()
+
+        store.resumeInterruptedDownloads()
+
+        #expect(store.pendingDownloadCount == 0)
+        #expect(store.downloadJobs.count == 1)
+    }
+
+    @Test(arguments: [URLError.Code.networkConnectionLost, .notConnectedToInternet, .timedOut])
+    func droppedConnectionsCountAsInterruptions(code: URLError.Code) {
+        #expect(LibraryStore.isInterruption(URLError(code)))
+    }
+
+    @Test func otherErrorsAreNotInterruptions() {
+        #expect(!LibraryStore.isInterruption(URLError(.badServerResponse)))
+        #expect(!LibraryStore.isInterruption(PaizoError.tokenExpired))
+    }
+
+    @Test func interruptedDownloadCanAlsoBeRetriedByHand() async {
+        let store = await harness.makeSyncedStore()
+        let target = targets(in: store)[0]
+        harness.paizo.http.on("https://s3.example/signed") { _ in throw URLError(.timedOut) }
+        store.download(target)
+        await store.waitForDownloads()
+
+        harness.paizo.installDownloads()
+        store.retryDownload(target)
+        await store.waitForDownloads()
+
+        #expect(store.isDownloaded(target))
+    }
+
     @Test func failedDownloadCanBeRetriedFromTheList() async {
         let store = await harness.makeSyncedStore()
         let target = targets(in: store)[0]
