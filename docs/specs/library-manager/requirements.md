@@ -199,3 +199,16 @@ once, online or off.
      notices. Covers are shown whole, without cropping or rounded corners.
      Each description is followed by a credit to Paizo as its owner.
      Downloaded files are saved exactly as Paizo delivers them.
+
+## 12. App updates
+
+12.1 The Mac app has a "Check for Updates…" command that asks GitHub for the
+     latest published release and compares its version with the running one.
+12.2 When the running version is the newest, the app says so.
+12.3 When a newer version exists, the app says which and offers to download
+     it. Nothing is downloaded unless the user agrees.
+12.4 On agreement the release's disk image is downloaded to the user's
+     Downloads folder, with progress, and the app then offers to open it. The
+     app does not install the update itself.
+12.5 The check contacts GitHub only when the user asks for it.
+12.6 The iPad app has no update check; it is updated by installing it again.

@@ -35,6 +35,7 @@ download.
 - Automatic classification: adventure paths, stand-alone adventures, society
   scenarios (with season or year), maps, rulebooks, fiction and more.
 - Tags that are written to the downloaded files as Finder tags.
+- Checks for a newer version on request and offers to download it (Mac).
 - Downloaded files are kept on disk and can be opened straight from the app,
   with the default application or any other that handles the file type.
 
