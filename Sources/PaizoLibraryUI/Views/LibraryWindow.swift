@@ -90,6 +90,7 @@ struct LibraryWindow: View {
     #else
     private static let showsInspectorAtFirst = false
     private static let viewPickerPlacement = ToolbarItemPlacement.topBarLeading
+    private static let viewPickerWidth: CGFloat = 168
     #endif
 
     /// True when nothing is shown and a filter is set, so clearing the filters may bring titles back.
@@ -119,6 +120,10 @@ struct LibraryWindow: View {
                 }
             }
             .pickerStyle(.segmented)
+            #if !os(macOS)
+            // iPadOS 26 squeezes a toolbar item to a circle unless it is given its width.
+            .frame(width: Self.viewPickerWidth)
+            #endif
             .help("Show the library as covers, a list or columns")
         }
         ToolbarItem { FilterMenu(pulse: filterPulse) }
