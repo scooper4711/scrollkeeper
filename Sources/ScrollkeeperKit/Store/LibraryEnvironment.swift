@@ -45,6 +45,28 @@ public struct LibraryEnvironment: Sendable {
     }
 }
 
+extension LibraryEnvironment {
+    /// The launch argument that starts the app in demo mode.
+    public static let demoArgument = "-ScrollkeeperDemo"
+
+    /// The environment the app should run in: demo mode when launched with `demoArgument`.
+    public static func forLaunch(arguments: [String] = ProcessInfo.processInfo.arguments) -> LibraryEnvironment {
+        arguments.contains(demoArgument) ? demo() : live()
+    }
+
+    /// An invented library served from inside the app, already signed in, kept in a temporary
+    /// folder that starts empty on every launch. Nothing reaches the network or the Keychain.
+    public static func demo(downloadDuration: TimeInterval = 8) -> LibraryEnvironment {
+        let run = UUID().uuidString
+        return LibraryEnvironment(
+            http: DemoHTTPClient(downloadDuration: downloadDuration),
+            credentials: InMemoryCredentialStore(Credentials(email: "demo@example.com", password: "demo")),
+            dataDirectory: FileManager.default.temporaryDirectory.appending(path: "ScrollkeeperDemo-" + run),
+            settings: SettingsStore(suiteName: "ScrollkeeperDemo-" + run)
+        )
+    }
+}
+
 /// User settings kept in user defaults.
 public struct SettingsStore: Sendable {
     private let suiteName: String

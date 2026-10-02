@@ -45,6 +45,9 @@ jobs:
             -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build \
             CODE_SIGNING_ALLOWED=NO build | tail -n 3
 
+      - name: Run the iPad UI tests
+        run: scripts/run-ipad-uitests.sh
+
   sonar:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest

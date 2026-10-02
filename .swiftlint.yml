@@ -1,6 +1,8 @@
 included:
   - Sources
   - Tests
+  - ios/App
+  - ios/UITests
   - Package.swift
 line_length:
   warning: 120

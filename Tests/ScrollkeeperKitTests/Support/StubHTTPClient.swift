@@ -66,18 +66,5 @@ final class StubHTTPClient: HTTPClient, @unchecked Sendable {
     }
 }
 
-/// An in-memory `CredentialStore`. `@unchecked Sendable`: state is guarded by `lock`.
-final class MemoryCredentialStore: CredentialStore, @unchecked Sendable {
-    private let lock = NSLock()
-    private var stored: Credentials?
-
-    init(_ credentials: Credentials? = nil) {
-        stored = credentials
-    }
-
-    func load() -> Credentials? { lock.withLock { stored } }
-
-    func save(_ credentials: Credentials) throws { lock.withLock { stored = credentials } }
-
-    func delete() throws { lock.withLock { stored = nil } }
-}
+/// The in-memory credential store now lives in the library, where demo mode uses it too.
+typealias MemoryCredentialStore = InMemoryCredentialStore

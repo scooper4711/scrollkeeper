@@ -20,6 +20,23 @@ public protocol CredentialStore: Sendable {
     func delete() throws
 }
 
+/// Keeps the account in memory only. Used by demo mode and by tests.
+/// `@unchecked Sendable`: the account is guarded by `lock`.
+public final class InMemoryCredentialStore: CredentialStore, @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: Credentials?
+
+    public init(_ credentials: Credentials? = nil) {
+        stored = credentials
+    }
+
+    public func load() -> Credentials? { lock.withLock { stored } }
+
+    public func save(_ credentials: Credentials) throws { lock.withLock { stored = credentials } }
+
+    public func delete() throws { lock.withLock { stored = nil } }
+}
+
 public struct KeychainError: Error, Equatable, LocalizedError {
     public let operation: String
     public let status: OSStatus
