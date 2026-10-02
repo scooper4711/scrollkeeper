@@ -150,6 +150,16 @@ public final class AppUpdater {
         }
     }
 
+    /// The check made when the app opens: it speaks up only when a newer version exists.
+    /// Being up to date, or being unable to reach GitHub, is not worth interrupting for.
+    public func checkForUpdateQuietly() async {
+        await checkForUpdate()
+        if case .available = state {
+            return
+        }
+        dismiss()
+    }
+
     /// Downloads the disk image of the version that was offered, into the Downloads folder.
     public func downloadUpdate() async {
         guard let pending = beginDownload() else { return }

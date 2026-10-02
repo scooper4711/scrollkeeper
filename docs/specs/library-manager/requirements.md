@@ -210,5 +210,7 @@ once, online or off.
 12.4 On agreement the release's disk image is downloaded to the user's
      Downloads folder, with progress, and the app then offers to open it. The
      app does not install the update itself.
-12.5 The check contacts GitHub only when the user asks for it.
+12.5 The app also checks when it opens, unless the user has turned that off in
+     Settings. That check is silent unless a newer version exists: being up to
+     date, or GitHub being unreachable, shows nothing.
 12.6 The iPad app has no update check; it is updated by installing it again.

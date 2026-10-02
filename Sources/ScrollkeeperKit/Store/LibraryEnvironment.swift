@@ -72,10 +72,18 @@ public struct SettingsStore: Sendable {
         nonmutating set { defaults.set(newValue, forKey: Self.metadataVersionKey) }
     }
 
+    /// Whether the app looks for a newer version when it opens. On until the user turns it off.
+    public var checksForUpdatesAtLaunch: Bool {
+        get { defaults.object(forKey: Self.updateCheckAtLaunchKey) as? Bool ?? true }
+        nonmutating set { defaults.set(newValue, forKey: Self.updateCheckAtLaunchKey) }
+    }
+
     private var defaults: UserDefaults {
         (suiteName.isEmpty ? nil : UserDefaults(suiteName: suiteName)) ?? .standard
     }
 
+    /// The key of `checksForUpdatesAtLaunch`, for views that bind a switch to it.
+    public static let updateCheckAtLaunchKey = "checksForUpdatesAtLaunch"
     private static let downloadDirectoryKey = "downloadDirectoryPath"
     private static let completedFullSyncKey = "hasCompletedFullSync"
     private static let metadataVersionKey = "metadataVersion"

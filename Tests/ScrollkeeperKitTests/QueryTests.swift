@@ -111,6 +111,9 @@ import Testing
         let settings = SettingsStore(suiteName: suite)
 
         #expect(settings.downloadDirectoryPath.isEmpty)
+        #expect(settings.checksForUpdatesAtLaunch)
+        settings.checksForUpdatesAtLaunch = false
+        #expect(!SettingsStore(suiteName: suite).checksForUpdatesAtLaunch)
         settings.downloadDirectoryPath = "/Volumes/Books"
         #expect(SettingsStore(suiteName: suite).downloadDirectoryPath == "/Volumes/Books")
     }

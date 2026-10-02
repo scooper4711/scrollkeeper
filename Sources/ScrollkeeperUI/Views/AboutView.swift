@@ -1,3 +1,4 @@
+import ScrollkeeperKit
 import SwiftUI
 
 #if os(macOS)
@@ -42,7 +43,21 @@ enum AboutInfo {
 
 /// The notice with links to Paizo's policy and, on the Mac, to the donation page.
 struct AboutView: View {
+    #if os(macOS)
+    @AppStorage(SettingsStore.updateCheckAtLaunchKey) private var checksForUpdatesAtLaunch = true
+    #endif
+
     var body: some View {
+        #if os(macOS)
+        Section {
+            Toggle("Check for updates when Scrollkeeper opens", isOn: $checksForUpdatesAtLaunch)
+        } header: {
+            Text("Updates")
+        } footer: {
+            Text("You are told when a newer version exists and asked before anything is downloaded.")
+                .foregroundStyle(.secondary)
+        }
+        #endif
         Section {
             Text(AboutInfo.tagline)
             Text(AboutInfo.notice)
