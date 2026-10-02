@@ -11,14 +11,6 @@ summaries and tags.
 It is free, and it only accesses files that your own account is entitled to
 download.
 
-> Scrollkeeper uses trademarks and/or copyrights owned by Paizo Inc.,
-> used under Paizo's Community Use Policy
-> ([paizo.com/licenses/communityuse](https://paizo.com/licenses/communityuse)).
-> We are expressly prohibited from charging you to use or access this content.
-> Scrollkeeper is not published, endorsed, or specifically approved by
-> Paizo. For more information about Paizo Inc. and Paizo products, visit
-> [paizo.com](https://paizo.com).
-
 ![Scrollkeeper on the Mac: adventure paths shown as covers, with the details of the selected title](docs/images/mac-library.png)
 
 ## Features
@@ -121,3 +113,13 @@ The requirements and design are in [`docs/specs/library-manager`](docs/specs/lib
 Scrollkeeper includes [ZIPFoundation](https://github.com/weichsel/ZIPFoundation)
 under the MIT licence; its notice is in
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and in the app's settings.
+
+## Community Use Policy
+
+> Scrollkeeper uses trademarks and/or copyrights owned by Paizo Inc.,
+> used under Paizo's Community Use Policy
+> ([paizo.com/licenses/communityuse](https://paizo.com/licenses/communityuse)).
+> We are expressly prohibited from charging you to use or access this content.
+> Scrollkeeper is not published, endorsed, or specifically approved by
+> Paizo. For more information about Paizo Inc. and Paizo products, visit
+> [paizo.com](https://paizo.com).
