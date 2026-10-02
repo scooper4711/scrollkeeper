@@ -17,6 +17,9 @@ enum AboutInfo {
     more information about Paizo Inc. and Paizo products, visit paizo.com.
     """
 
+    /// Shown with every description, which is Paizo's text exactly as the store publishes it.
+    static let contentCredit = "Cover image and description © Paizo Inc., as published on store.paizo.com."
+
     static let policyURL = URL(string: "https://paizo.com/licenses/communityuse")
     static let paizoURL = URL(string: "https://paizo.com")
     /// Donations are optional; nothing in the app depends on them.

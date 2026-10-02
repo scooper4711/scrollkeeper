@@ -25,6 +25,10 @@ struct TitleDetailView: View {
                             Text(item.metadata.summary)
                                 .textSelection(.enabled)
                                 .fixedSize(horizontal: false, vertical: true)
+                            Text(AboutInfo.contentCredit)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                 }

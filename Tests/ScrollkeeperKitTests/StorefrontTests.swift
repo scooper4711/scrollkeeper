@@ -39,6 +39,19 @@ import Testing
         #expect(metadata.map(\.pageCount) == [0, 64])
     }
 
+    @Test func keepsALongDescriptionWholeIncludingTheNoticeAtItsEnd() async throws {
+        let notice = "Pathfinder Campaign Setting: Giants Revisited © 2012, Paizo Publishing, LLC"
+        let description = String(repeating: "Bestiary pawn. ", count: 600) + "\n15. COPYRIGHT NOTICE\n" + notice
+        var product = FakePaizo.productNode(sku: "LONG", name: "Giants Revisited PDF")
+        product["plainTextDescription"] = description
+        paizo.installStorefront(products: ["LONG": product])
+
+        let summary = try await StorefrontClient(http: paizo.http).fetchMetadata(skus: ["LONG"])[0].summary
+
+        #expect(summary.count == description.count)
+        #expect(summary.hasSuffix(notice))
+    }
+
     @Test func sendsAnonymousTokenAndReusesIt() async throws {
         paizo.installStorefront(products: [:])
         let client = StorefrontClient(http: paizo.http)
@@ -83,6 +96,7 @@ import Testing
         #expect(query.contains("p1: product(sku: $s1) { ...Details }"))
         #expect(query.contains("url(width: 480)"))
         #expect(query.contains("customFields(first: 30)"))
+        #expect(query.contains("plainTextDescription(characterLimit: 1000000)"))
     }
 }
 
