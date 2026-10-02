@@ -56,7 +56,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>NSHighResolutionCapable</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
-    <string>Unofficial. Not affiliated with Paizo Inc.</string>
+    <string>Not published, endorsed, or specifically approved by Paizo.</string>
 </dict>
 </plist>
 PLIST

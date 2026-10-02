@@ -7,8 +7,16 @@ Paizo's web library is slow to load and slow to search. This app downloads the
 list of everything you own once, keeps it on your Mac, and gives you instant
 search, sorting, filtering, cover artwork, summaries and tags.
 
-This is an unofficial tool. It is not affiliated with or endorsed by Paizo Inc.
-It only accesses files that your own account is entitled to download.
+It is free, and it only accesses files that your own account is entitled to
+download.
+
+> Paizo Library Manager uses trademarks and/or copyrights owned by Paizo Inc.,
+> used under Paizo's Community Use Policy
+> ([paizo.com/licenses/communityuse](https://paizo.com/licenses/communityuse)).
+> We are expressly prohibited from charging you to use or access this content.
+> Paizo Library Manager is not published, endorsed, or specifically approved by
+> Paizo. For more information about Paizo Inc. and Paizo products, visit
+> [paizo.com](https://paizo.com).
 
 ## Features
 
@@ -97,3 +105,9 @@ automatically for every version tag.
 ## Documentation
 
 The requirements and design are in [`docs/specs/library-manager`](docs/specs/library-manager).
+
+## Supporting the project
+
+The app is free and always will be. If it saves you time and you would like to
+say thanks, you can leave a tip on [Ko-fi](https://ko-fi.com/coop207627). A
+donation is entirely optional and unlocks nothing.
