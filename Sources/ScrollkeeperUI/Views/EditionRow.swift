@@ -13,16 +13,18 @@ struct EditionRow: View {
         let target = exported ?? store.locator.target(for: edition, in: item)
         let files = store.files(in: target)
         VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(edition.label)
-                        .fontWeight(.medium)
-                    Text(formatDescription)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            // Side by side when there is room; in a narrow pane the buttons go underneath, so
+            // that none of them is squeezed out of shape.
+            ViewThatFits(in: .horizontal) {
+                HStack {
+                    heading
+                    Spacer()
+                    actions(target: target, files: files)
                 }
-                Spacer()
-                actions(target: target, files: files)
+                VStack(alignment: .leading, spacing: 6) {
+                    heading
+                    HStack { actions(target: target, files: files) }
+                }
             }
             if store.isOutdated(target) {
                 Label("Paizo updated this file after you downloaded it.", systemImage: "arrow.triangle.2.circlepath")
@@ -41,6 +43,16 @@ struct EditionRow: View {
             }
         }
         .padding(.vertical, 4)
+    }
+
+    private var heading: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(edition.label)
+                .fontWeight(.medium)
+            Text(formatDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     @ViewBuilder

@@ -19,7 +19,7 @@ summaries and tags.
 It is free, and it only accesses files that your own account is entitled to
 download.
 
-![Scrollkeeper on the Mac: adventure paths shown as covers, with the details of the selected title](docs/images/mac-library.png)
+![Scrollkeeper on the Mac: rulebooks shown as covers, with the details of the selected title](docs/images/mac-library.png)
 
 ## Features
 
