@@ -150,7 +150,7 @@ public struct EntitlementGrouper: Sendable {
     /// `(Download) - JPGs` → `JPGs`, `(S2)` → `S2`, `PDF - Assembled Maps` → `Assembled Maps`.
     private func tidyLabel(_ text: String) -> String {
         let separators = CharacterSet(charactersIn: " -:–")
-        // A title ending in a parenthesis leaves its closing bracket at the front of the remainder.
+        // A title ending in a parenthesis leaves its closing parenthesis at the front of the remainder.
         let remainder = String(text.drop(while: { ") -:–".contains($0) }))
         var label = Self.formatPrefix.removingMatches(in: remainder.trimmingCharacters(in: separators))
         if label.hasPrefix("("), label.hasSuffix(")"), label.filter({ $0 == "(" }).count == 1 {

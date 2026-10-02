@@ -1,7 +1,7 @@
 import Foundation
 @testable import ScrollkeeperKit
 
-/// Builders for test data modelled on Paizo's responses. None of it is real account data.
+/// Builders for test data modeled on Paizo's responses. None of it is real account data.
 enum Fixtures {
     static func entitlement(
         _ displayName: String,

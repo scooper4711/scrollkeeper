@@ -117,7 +117,7 @@ import Testing
         #expect(harness.environment.settings.hasCompletedFullSync)
     }
 
-    @Test func cancelledSyncEndsQuietly() async {
+    @Test func canceledSyncEndsQuietly() async {
         let store = await harness.makeSyncedStore()
         store.startFullSync()
         store.cancelSync()

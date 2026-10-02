@@ -157,7 +157,7 @@ func drawIcon(fullBleed: Bool) -> NSBitmapImageRep? {
     if fullBleed {
         let square = CGPath(rect: CGRect(x: 0, y: 0, width: canvas, height: canvas), transform: nil)
         fillGradient(context, in: square, from: 0x3B3F96, to: 0x14163A)
-        // Enlarge the artwork about the centre so that it fills the square as it fills the plate.
+        // Enlarge the artwork about the center so that it fills the square as it fills the plate.
         context.translateBy(x: canvas / 2, y: canvas / 2)
         context.scaleBy(x: canvas / plate.width, y: canvas / plate.height)
         context.translateBy(x: -canvas / 2, y: -canvas / 2)
