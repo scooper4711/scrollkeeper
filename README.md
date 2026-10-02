@@ -4,9 +4,9 @@ An unofficial library manager for your Paizo purchases. A native app for the Mac
 and the iPad for browsing and downloading the digital library attached to your
 [paizo.com](https://store.paizo.com) account.
 
-Paizo's web library is slow to load and slow to search. This app downloads the
-list of everything you own once, keeps it on your Mac, and gives you instant
-search, sorting, filtering, cover artwork, summaries and tags.
+Scrollkeeper downloads the list of everything you own once, keeps it on your
+device, and gives you instant search, sorting, filtering, cover artwork,
+summaries and tags.
 
 It is free, and it only accesses files that your own account is entitled to
 download.

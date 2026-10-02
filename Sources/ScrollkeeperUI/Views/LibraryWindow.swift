@@ -220,7 +220,7 @@ struct EmptyLibraryView: View {
             ContentUnavailableView {
                 Label("Loading Your Library", systemImage: "books.vertical")
             } description: {
-                Text("Paizo takes a while to list everything you own. Titles appear here as they arrive.")
+                Text("Listing everything you own takes a few minutes. Titles appear here as they arrive.")
             }
         } else {
             ContentUnavailableView {
