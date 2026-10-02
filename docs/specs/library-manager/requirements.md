@@ -277,3 +277,5 @@ Paizo than one who has downloaded a little.
 14.8 A check also takes over the file's current name and location at Paizo,
      so that "Update" downloads the new file.
 14.9 Settings shows when update dates were last checked.
+14.10 The numbers in this section live in one place in the code
+      (`UpdateCheckPolicy`), so they can be tuned together.
