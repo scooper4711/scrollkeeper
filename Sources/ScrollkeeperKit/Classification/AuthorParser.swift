@@ -51,7 +51,7 @@ enum AuthorParser {
         connectors.contains(word.lowercased()) || word.first?.isUppercase == true
     }
 
-    /// A full stop ends the names unless it follows an initial or a short abbreviation: `A.`, `St.`.
+    /// A period ends the names unless it follows an initial or a short abbreviation: `A.`, `St.`.
     private static func endsSentence(_ word: String) -> Bool {
         word.hasSuffix(".") && word.count > 3
     }

@@ -93,7 +93,7 @@ private actor PageLog {
         #expect(paizo.http.count(of: "customer-library") == 3)
     }
 
-    @Test func cancelledSyncStopsBeforeAskingPaizo() async {
+    @Test func canceledSyncStopsBeforeAskingPaizo() async {
         let synchronizer = makeSynchronizer(recordCount: 4)
         let task = Task {
             try await Task.sleep(for: .seconds(30))

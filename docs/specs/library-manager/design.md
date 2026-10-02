@@ -218,7 +218,7 @@ user fill them with Password AutoFill.
 ## Testing
 
 Unit tests use Swift Testing. Network types are tested against a stub
-`HTTPClient` with fixtures modelled on real responses but containing no account
+`HTTPClient` with fixtures modeled on real responses but containing no account
 data. `URLSessionHTTPClient` is tested through a `URLProtocol` stub.
 `scripts/coverage.sh` fails when line or region coverage of `ScrollkeeperKit`
 is below 80%. Swift's coverage tooling does not report branch coverage; region

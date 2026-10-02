@@ -75,7 +75,7 @@ once, online or off.
 ## 4. Grouping
 
 4.1 Entitlements that come from the same product SKU are shown as one title.
-4.2 Each edition is labelled by its kind: Single File, File per Chapter, Lite
+4.2 Each edition is labeled by its kind: Single File, File per Chapter, Lite
     Single File, Lite File per Chapter, ePub, or the distinguishing part of its
     name.
 4.3 An entitlement without a usable SKU is shown as its own title.
@@ -182,7 +182,7 @@ once, online or off.
      iPad app does not, because Apple restricts links to outside payment pages.
 11.4 Cover images and product descriptions are shown unmodified. The app icon
      and other artwork of the app itself use no Paizo material.
-11.5 The licence notices of included third-party software are part of the app
+11.5 The license notices of included third-party software are part of the app
      (Settings › About) and of the repository (`THIRD-PARTY-NOTICES.md`).
 11.6 Paizo's terms forbid removing copyright, trademark or other proprietary
      notices from its content. Product descriptions are therefore fetched and

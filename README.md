@@ -124,10 +124,10 @@ Think of it like driving a car instead of walking. I plan the route, decide the 
 
 If you don't want to use tools written with AI assistance, then I respect that decision. That's why I'm transparent about it. You can make up your own mind.
 
-## Licences
+## Licenses
 
 Scrollkeeper includes [ZIPFoundation](https://github.com/weichsel/ZIPFoundation)
-under the MIT licence; its notice is in
+under the MIT license; its notice is in
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and in the app's settings.
 
 ## Community Use Policy

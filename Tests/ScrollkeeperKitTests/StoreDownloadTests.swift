@@ -55,7 +55,7 @@ import Testing
         #expect(store.downloadedItemIDs.isEmpty)
     }
 
-    @Test func cancelledDownloadLeavesNoFailure() async throws {
+    @Test func canceledDownloadLeavesNoFailure() async throws {
         let store = await harness.makeSyncedStore()
         let target = try singleFileTarget(in: store)
 

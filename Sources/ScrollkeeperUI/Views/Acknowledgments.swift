@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// Notices for the software Scrollkeeper includes. Their licences require the notice to travel
+/// Notices for the software Scrollkeeper includes. Their licenses require the notice to travel
 /// with every copy of the app, so the text is part of the app itself.
-enum Acknowledgements {
+enum Acknowledgments {
     static let zipFoundationName = "ZIPFoundation"
     static let zipFoundationPurpose = "Used to unpack zip archives."
-    static let zipFoundationLicence = """
+    static let zipFoundationLicense = """
     MIT License
 
     Copyright (c) 2017-2025 Thomas Zoechling (https://www.peakstep.com)
@@ -30,22 +30,22 @@ enum Acknowledgements {
     """
 }
 
-/// The acknowledgements, folded away until asked for.
-struct AcknowledgementsView: View {
+/// The acknowledgments, folded away until asked for.
+struct AcknowledgmentsView: View {
     @State private var isExpanded = false
 
     var body: some View {
         Section {
-            DisclosureGroup(Acknowledgements.zipFoundationName, isExpanded: $isExpanded) {
-                Text(Acknowledgements.zipFoundationLicence)
+            DisclosureGroup(Acknowledgments.zipFoundationName, isExpanded: $isExpanded) {
+                Text(Acknowledgments.zipFoundationLicense)
                     .font(.caption)
                     .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
             }
         } header: {
-            Text("Acknowledgements")
+            Text("Acknowledgments")
         } footer: {
-            Text(Acknowledgements.zipFoundationPurpose)
+            Text(Acknowledgments.zipFoundationPurpose)
                 .foregroundStyle(.secondary)
         }
     }

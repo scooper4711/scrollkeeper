@@ -202,7 +202,7 @@ import Testing
         #expect(entitlement.resolvedSKU.isEmpty)
     }
 
-    @Test func recognisesLegacyStorage() {
+    @Test func recognizesLegacyStorage() {
         var entitlement = Entitlement(packageID: "p", displayName: "Old")
         entitlement.filePath = "https://s3.us-west-2.amazonaws.com/com.paizo.downloads.raw/PaizoInc./A/A.pdf?X=1"
         #expect(entitlement.isLegacyStorage)
