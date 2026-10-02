@@ -31,6 +31,8 @@ struct LibraryWindow: View {
     @AppStorage("viewMode") private var viewMode = ViewMode.covers
     @AppStorage("showInspector") private var showInspector = true
     @State private var selection: LibraryTitle.ID?
+    /// Raised each time a search or filter change leaves nothing to show while filters are set.
+    @State private var filterPulse = 0
 
     var body: some View {
         @Bindable var store = store
@@ -49,13 +51,23 @@ struct LibraryWindow: View {
                 .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
         }
         .toolbar { toolbar }
+        .onChange(of: filtersLeaveNothing) { _, leavesNothing in
+            if leavesNothing {
+                filterPulse += 1
+            }
+        }
+    }
+
+    /// True when nothing is shown and a filter is set, so clearing the filters may bring titles back.
+    private var filtersLeaveNothing: Bool {
+        !store.items.isEmpty && store.visibleItems.isEmpty && store.query.hasFilters
     }
 
     @ViewBuilder private var catalog: some View {
         if store.items.isEmpty {
             EmptyLibraryView()
         } else if store.visibleItems.isEmpty {
-            ContentUnavailableView.search(text: store.query.searchText)
+            NoResultsView()
         } else {
             switch viewMode {
             case .covers: CoverGridView(selection: $selection)
@@ -75,7 +87,7 @@ struct LibraryWindow: View {
             .pickerStyle(.segmented)
             .help("Show the library as covers, a list or columns")
         }
-        ToolbarItem { FilterMenu() }
+        ToolbarItem { FilterMenu(pulse: filterPulse) }
         ToolbarItem {
             Button {
                 store.startRefresh()
@@ -108,6 +120,32 @@ struct LibraryWindow: View {
     private var subtitle: String {
         let shown = store.visibleItems.count
         return shown == store.items.count ? "\(shown) titles" : "\(shown) of \(store.items.count) titles"
+    }
+}
+
+/// Shown when the search and filters match nothing. With filters set, it offers to clear them.
+struct NoResultsView: View {
+    @Environment(LibraryStore.self) private var store
+
+    var body: some View {
+        if store.query.hasFilters {
+            ContentUnavailableView {
+                Label("No Results", systemImage: "magnifyingglass")
+            } description: {
+                Text(filteredDescription)
+            } actions: {
+                Button("Clear the Current Filters") { store.query.clearFilters() }
+            }
+        } else {
+            ContentUnavailableView.search(text: store.query.searchText)
+        }
+    }
+
+    private var filteredDescription: String {
+        let search = store.query.searchText.trimmingCharacters(in: .whitespaces)
+        return search.isEmpty
+            ? "No titles match the current filters."
+            : "Check the spelling or try a new search, or clear the current filters."
     }
 }
 

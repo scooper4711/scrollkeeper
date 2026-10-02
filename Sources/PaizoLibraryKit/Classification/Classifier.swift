@@ -26,7 +26,9 @@ public struct Classifier: Sendable {
             productLine: ProductLineRules.productLine(title: title, categoryPath: input.metadata.categoryPath)
         )
         result.formats = input.formats
-        result.levelRange = LevelRangeParser.parse(title) ?? LevelRangeParser.parse(input.metadata.summary)
+        result.levelRange = LevelRangeParser.parseField(input.metadata.startingLevel)
+            ?? LevelRangeParser.parse(title)
+            ?? LevelRangeParser.parse(input.metadata.summary)
         applySeries(to: &result, title: title)
         return result
     }

@@ -80,7 +80,7 @@ public actor StorefrontClient {
     fragment Details on Product { sku name path plainTextDescription(characterLimit: 4000) \
     brand { name } defaultImage { url(width: \(coverWidth)) } \
     categories { edges { node { breadcrumbs(depth: 5) { edges { node { name } } } } } } \
-    customFields { edges { node { name value } } } }
+    customFields(first: 30) { edges { node { name value } } } }
     """
 }
 
@@ -127,9 +127,15 @@ struct ProductNode: Decodable {
         metadata.coverURL = defaultImage?.url ?? ""
         metadata.brand = brand?.name ?? ""
         metadata.categoryPath = categories?.nodes.first?.breadcrumbs?.nodes.compactMap(\.name) ?? []
-        metadata.pageCount = customFields?.nodes
-            .first(where: { $0.name == "Page Count" })
-            .flatMap { Int($0.value ?? "") } ?? 0
+        metadata.pageCount = Int(customField("Page Count")) ?? 0
+        metadata.startingLevel = customField("Starting Level")
+        let credited = customField("Author(s)")
+        metadata.author = credited.isEmpty ? AuthorParser.parse(metadata.summary) : credited
         return metadata
+    }
+
+    private func customField(_ name: String) -> String {
+        let value = customFields?.nodes.first(where: { $0.name == name })?.value ?? ""
+        return value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

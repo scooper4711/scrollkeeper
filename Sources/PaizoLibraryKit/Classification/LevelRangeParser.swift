@@ -17,6 +17,17 @@ enum LevelRangeParser {
         return nil
     }
 
+    /// Parses the storefront's "Starting Level" field: `10-14` or `5`.
+    static func parseField(_ value: String) -> ClosedRange<Int>? {
+        let numbers = TitleNormalizer.plainPunctuation(value).split(separator: "-").map {
+            Int($0.trimmingCharacters(in: .whitespaces))
+        }
+        guard let low = numbers.first ?? nil, let high = numbers.last ?? nil, numbers.count <= 2,
+              isPlausible(low, high)
+        else { return nil }
+        return low...high
+    }
+
     private static let ordinal = #"(\d{1,2})(?:st|nd|rd|th)?"#
     private static let rangePatterns = [
         TextPattern(ordinal + #"[\s-]*(?:-|through|to)[\s-]*"# + ordinal + #"[\s-]+level"#),

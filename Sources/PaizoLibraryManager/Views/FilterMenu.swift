@@ -4,6 +4,8 @@ import SwiftUI
 /// Toolbar menu with the filters that apply on top of the sidebar scope.
 struct FilterMenu: View {
     @Environment(LibraryStore.self) private var store
+    /// Changes when the filter button should draw attention to itself.
+    let pulse: Int
 
     var body: some View {
         @Bindable var store = store
@@ -32,6 +34,8 @@ struct FilterMenu: View {
             Label("Filter", systemImage: store.query.hasFilters
                 ? "line.3.horizontal.decrease.circle.fill"
                 : "line.3.horizontal.decrease.circle")
+                .symbolEffect(.pulse, options: .repeat(3), value: pulse)
+                .foregroundStyle(store.query.hasFilters ? Color.accentColor : Color.primary)
         }
         .help("Filter by game, type, format, level or download state")
     }
