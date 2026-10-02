@@ -51,6 +51,25 @@ import Testing
         #expect(PaizoDateParser.parse(text)?.timeIntervalSince1970 == expected)
     }
 
+    @Test(arguments: [
+        ("6/26/2024 7:00:00 AM", "2024-06-26"),
+        ("11/20/2024 8:00:00 AM", "2024-11-20"),
+        ("8/4/2011", "2011-08-04"),
+        (" 12/31/2024 ", "2024-12-31"),
+        // Three in the morning UTC is still the evening before at Paizo's offices.
+        ("1/1/2025 3:00:00 AM", "2024-12-31")
+    ])
+    func readsTheReleaseDay(text: String, expected: String) {
+        let day = PaizoDateParser.parseReleaseDay(text)
+        #expect(day?.formatted(.iso8601.year().month().day()) == expected)
+        #expect(day?.formatted(.iso8601.time(includingFractionalSeconds: false)) == "12:00:00")
+    }
+
+    @Test(arguments: ["", "soon", "2024-06-26", "13/45/2024"])
+    func ignoresReleaseDatesItCannotRead(text: String) {
+        #expect(PaizoDateParser.parseReleaseDay(text) == nil)
+    }
+
     @Test func rejectsUnknownFormats() {
         #expect(PaizoDateParser.parse("yesterday") == nil)
         #expect(PaizoDateParser.parse("") == nil)

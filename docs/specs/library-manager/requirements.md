@@ -61,8 +61,9 @@ once, online or off.
 3.2 This runs concurrently with the catalog sync and has its own progress
     indication.
 3.3 Other metadata the storefront offers is kept as well: game edition (brand),
-    category path, page count, starting level, author and the link to the store
-    page. The author is the storefront's author field when there is one, and
+    category path, page count, starting level, author, release date and the
+    link to the store page. Paizo gives a release date for only a small share
+    of products; the details show "Released" for those and omit it otherwise. The author is the storefront's author field when there is one, and
     otherwise the credit in the summary ("Written by …", or a "by …" line).
 3.3a Metadata stored by a version of the app that kept fewer fields is fetched
     again; cover artwork is not downloaded again.

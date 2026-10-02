@@ -26,7 +26,8 @@ import Testing
         var novel = FakePaizo.productNode(sku: "NOVEL", name: "Lord of Penance ePub")
         novel["customFields"] = ["edges": [
             ["node": ["name": "Author(s)", "value": " Richard Lee Byers "]],
-            ["node": ["name": "Starting Level", "value": "10-14"]]
+            ["node": ["name": "Starting Level", "value": "10-14"]],
+            ["node": ["name": "Release Date", "value": "8/4/2011"]]
         ]]
         var scenario = FakePaizo.productNode(sku: "SCENARIO", name: "Scenario #6-06")
         scenario["plainTextDescription"] = "For 1st-4th level characters.\nWritten by Josh Foster\nScenario tags"
@@ -37,6 +38,8 @@ import Testing
         #expect(metadata.map(\.author) == ["Richard Lee Byers", "Josh Foster"])
         #expect(metadata.map(\.startingLevel) == ["10-14", ""])
         #expect(metadata.map(\.pageCount) == [0, 64])
+        #expect(metadata[0].releaseDate == PaizoDateParser.parseReleaseDay("8/4/2011"))
+        #expect(metadata[1].releaseDate == nil)
     }
 
     @Test func keepsALongDescriptionWholeIncludingTheNoticeAtItsEnd() async throws {

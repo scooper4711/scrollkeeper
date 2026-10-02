@@ -138,6 +138,7 @@ import Testing
         #expect(metadata.pageCount == 64)
         #expect(metadata.author.isEmpty)
         #expect(metadata.startingLevel.isEmpty)
+        #expect(metadata.releaseDate == nil)
         #expect(metadata.categoryPath.isEmpty)
     }
 
@@ -149,6 +150,14 @@ import Testing
         )
         let item = EntitlementGrouper().makeItems(from: snapshot)[0]
         #expect(item.author == "Tim Hitchcock")
+        #expect(item.releasedLabel.isEmpty)
+
+        metadata.releaseDate = PaizoDateParser.parseReleaseDay("6/26/2024 7:00:00 AM")
+        let released = EntitlementGrouper().makeItems(
+            from: CatalogSnapshot(entitlements: snapshot.entitlements, metadata: ["PZO1E": metadata])
+        )[0]
+        #expect(released.releasedLabel.contains("2024"))
+        #expect(released.releasedLabel.contains("26"))
         #expect(item.searchText.contains("tim hitchcock"))
     }
 

@@ -97,6 +97,7 @@ private struct FactsGrid: View {
             ("Pages", item.pageCount > 0 ? String(item.pageCount) : ""),
             ("Category", item.metadata.categoryPath.joined(separator: " › ")),
             ("Formats", item.formatsLabel),
+            ("Released", item.releasedLabel),
             ("Added", added),
             ("SKU", item.sku)
         ]
