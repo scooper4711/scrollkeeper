@@ -168,3 +168,14 @@ searching, classification, tagging and downloading in a native macOS app.
 10.7 Settings are reached from a button in the toolbar.
 10.8 The Mac and the iPad each sync with Paizo on their own; catalog, tags and
      downloads are not shared between devices.
+
+## 11. Paizo's Community Use Policy
+
+11.1 The app is free. No feature depends on a payment.
+11.2 The notice that Paizo's Community Use Policy prescribes is shown, in the
+     policy's own wording, in the README, in the Mac app's About panel, and in
+     the settings of both apps.
+11.3 The Mac app and the README link to a page for optional donations. The
+     iPad app does not, because Apple restricts links to outside payment pages.
+11.4 Cover images and product descriptions are shown unmodified. The app icon
+     and other artwork of the app itself use no Paizo material.

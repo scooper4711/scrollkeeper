@@ -18,6 +18,9 @@ public struct PaizoLibraryApp: App {
         }
         .commands {
             LibraryCommands(store: store)
+            #if os(macOS)
+            AboutCommands()
+            #endif
         }
 
         #if os(macOS)
@@ -28,6 +31,27 @@ public struct PaizoLibraryApp: App {
         #endif
     }
 }
+
+#if os(macOS)
+/// The About panel with Paizo's required notice, and Help menu links.
+struct AboutCommands: Commands {
+    @Environment(\.openURL) private var openURL
+
+    var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("About \(AboutInfo.appName)") { AboutInfo.showAboutPanel() }
+        }
+        CommandGroup(replacing: .help) {
+            if let policy = AboutInfo.policyURL {
+                Button("Paizo's Community Use Policy") { openURL(policy) }
+            }
+            if let donation = AboutInfo.donationURL {
+                Button("Support Development on Ko-fi") { openURL(donation) }
+            }
+        }
+    }
+}
+#endif
 
 /// The Library menu: refresh and full reload.
 struct LibraryCommands: Commands {
