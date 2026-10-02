@@ -17,14 +17,15 @@ It only accesses files that your own account is entitled to download.
 - Downloads your full list of titles with a progress bar, and fetches cover
   artwork and summaries from the public storefront at the same time.
 - Groups the different editions of a product (single file, file per chapter,
-  lite versions) into one title, and lets you download the single file, the
-  zip of all chapters, or individual chapters.
+  lite versions) into one title. PDF editions that Paizo delivers as a zip are
+  unpacked for you, so you get the chapters rather than an archive.
 - Three ways to browse: cover thumbnails, a list, and a sortable column view.
 - Search, plus filtering by game system, product type, level, format and tag.
 - Automatic classification: adventure paths, stand-alone adventures, society
   scenarios (with season or year), maps, rulebooks, fiction and more.
 - Tags that are written to the downloaded files as Finder tags.
-- Downloaded files are kept on disk and can be opened straight from the app.
+- Downloaded files are kept on disk and can be opened straight from the app,
+  with the default application or any other that handles the file type.
 
 ## Requirements
 
@@ -39,10 +40,20 @@ make run      # builds and launches the app
 make test     # runs the unit tests
 make lint     # runs SwiftLint
 make coverage # runs the tests and enforces the coverage threshold
+make dmg      # packages the app into a disk image
 ```
 
-The app is ad-hoc signed. The first time it reads its saved password after a
-rebuild, macOS may ask for permission to use the Keychain item.
+The app is ad-hoc signed, not notarized. On a Mac other than the one that built
+it, open it the first time with right-click → Open (or allow it under System
+Settings → Privacy & Security). After a rebuild, macOS may ask for permission
+to use the saved Keychain item again.
+
+## Installing a release
+
+Download the disk image from the
+[releases page](https://github.com/scooper4711/paizo-library-manager/releases),
+open it and drag the app to Applications. A disk image is built and attached
+automatically for every version tag.
 
 ## Where things are stored
 

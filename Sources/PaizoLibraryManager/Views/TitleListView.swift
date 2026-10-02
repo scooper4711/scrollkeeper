@@ -1,0 +1,56 @@
+import PaizoLibraryKit
+import SwiftUI
+
+/// The library as a list with small covers.
+struct TitleListView: View {
+    @Environment(LibraryStore.self) private var store
+    @Binding var selection: LibraryTitle.ID?
+
+    var body: some View {
+        List(store.visibleItems, selection: $selection) { item in
+            TitleRow(item: item)
+        }
+        .listStyle(.inset(alternatesRowBackgrounds: true))
+    }
+}
+
+private struct TitleRow: View {
+    @Environment(LibraryStore.self) private var store
+    let item: LibraryTitle
+
+    var body: some View {
+        HStack(spacing: 12) {
+            CoverImage(item: item)
+                .frame(width: 42, height: 56)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(item.title)
+                    .lineLimit(1)
+                Text(details)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Spacer()
+            if !item.tags.isEmpty {
+                Text(item.tagsLabel)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+            Text(item.formatsLabel)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Image(systemName: "arrow.down.circle.fill")
+                .foregroundStyle(.green)
+                .opacity(store.downloadedItemIDs.contains(item.id) ? 1 : 0)
+                .help("Downloaded")
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var details: String {
+        let level = item.classification.levelLabel.isEmpty ? "" : "Level \(item.classification.levelLabel)"
+        let parts = [item.classification.gameSystem.label, item.subtitle, level]
+        return parts.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+}
