@@ -8,6 +8,8 @@ final class StoreHarness {
     let directory = TemporaryDirectory()
     let credentials: MemoryCredentialStore
     let settingsSuite = "ScrollkeeperKitTests-" + UUID().uuidString
+    let clock = Clock()
+    var updateCheckPolicy = UpdateCheckPolicy.standard
 
     static let records: [[String: Any]] = [
         Fixtures.record(id: "ap-single", name: "Pathfinder Adventure PDF - Single File", sku: "PZO1E"),
@@ -31,12 +33,15 @@ final class StoreHarness {
     }
 
     var environment: LibraryEnvironment {
-        LibraryEnvironment(
+        var environment = LibraryEnvironment(
             http: paizo.http,
             credentials: credentials,
             dataDirectory: directory.url.appending(path: "data"),
             settings: SettingsStore(suiteName: settingsSuite)
         )
+        environment.updateCheckPolicy = updateCheckPolicy
+        environment.now = { [clock] in clock.now }
+        return environment
     }
 
     func makeStore() -> LibraryStore {

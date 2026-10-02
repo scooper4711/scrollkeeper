@@ -24,6 +24,8 @@ public struct DemoHTTPClient: HTTPClient {
             return reply(#"{"data":"demo-ticket"}"#, to: request)
         case (_, "/api/library/download/demo-ticket"):
             return reply(#"{"data":"https://files.demo.invalid/download"}"#, to: request)
+        case (_, let lookup) where lookup.hasPrefix("/api/library/entitlement/customer/"):
+            return reply(Self.record(packageID: request.url?.lastPathComponent ?? ""), to: request)
         case (_, "/graphql"):
             return reply(Self.products(for: request), to: request)
         case (_, "/"):
@@ -71,6 +73,12 @@ public struct DemoHTTPClient: HTTPClient {
         let properties: [String: Any] = ["entitlements": records, "count": DemoCatalog.records.count]
         let row = "4:" + json(["$", "$Lb", NSNull(), properties]) + "\n"
         return "<html><body><script>self.__next_f.push([1,\(json(row))])</script></body></html>"
+    }
+
+    /// One entitlement, as the lookup that checks for updated files receives it.
+    private static func record(packageID: String) -> String {
+        let record = DemoCatalog.records.first { $0["DigitalPackageID"] as? String == packageID }
+        return json(["data": record ?? [:]])
     }
 
     private static func products(for request: URLRequest) -> String {

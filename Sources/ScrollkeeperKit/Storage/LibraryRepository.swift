@@ -17,6 +17,15 @@ public actor LibraryRepository {
         )
     }
 
+    /// When editions were last checked for an update. Empty when missing or unreadable.
+    public func loadUpdateChecks() -> UpdateCheckLog {
+        read("updatechecks.json") ?? UpdateCheckLog()
+    }
+
+    public func save(updateChecks: UpdateCheckLog) throws {
+        try write(updateChecks, to: "updatechecks.json")
+    }
+
     public func save(entitlements: [Entitlement]) throws {
         try write(entitlements, to: "catalog.json")
     }

@@ -3,9 +3,15 @@ import Foundation
 extension LibraryStore {
     /// Fetches every entitlement. Entitlements Paizo no longer lists are dropped when it completes.
     public func startFullSync() {
+        startFullSync(concurrentPages: CatalogSynchronizer.concurrentPages)
+    }
+
+    /// A full sync that asks for `concurrentPages` pages at a time.
+    func startFullSync(concurrentPages: Int) {
         runSync { store in
             let seen = SeenIdentifiers()
-            try await CatalogSynchronizer(client: store.catalog).fetchAll { page in
+            let synchronizer = CatalogSynchronizer(client: store.catalog, pagesAtOnce: concurrentPages)
+            try await synchronizer.fetchAll { page in
                 await seen.insert(page.entitlements.map(\.packageID))
                 await store.merge(page)
             }
@@ -28,9 +34,15 @@ extension LibraryStore {
         syncTask?.cancel()
     }
 
-    /// Waits for the running sync and artwork fetch, if any. Used by tests.
+    /// Waits for the running sync, update check and artwork fetch, if any. Used by tests.
     public func waitUntilIdle() async {
-        await syncTask?.value
+        // A finished sync can start an update check, and that in turn a sync.
+        var awaited: Task<Void, Never>?
+        repeat {
+            awaited = syncTask
+            await awaited?.value
+            await updateCheckTask?.value
+        } while awaited != syncTask
         await metadataTask?.value
         await persistTask?.value
     }
@@ -41,14 +53,20 @@ extension LibraryStore {
         syncTask = Task { [weak self] in
             guard let self else { return }
             var failure = ""
+            var isComplete = false
             do {
                 try await work(self)
+                isComplete = true
             } catch is CancellationError {
                 failure = ""
             } catch {
                 failure = error.localizedDescription
             }
             finishSync(failure: failure)
+            // Only after a sync that ran to its end, so that canceling one does not start another.
+            if isComplete {
+                checkForFileUpdates()
+            }
         }
     }
 
@@ -84,6 +102,7 @@ extension LibraryStore {
     private func completeFullSync(seen: Set<String>) {
         environment.settings.hasCompletedFullSync = true
         snapshot.entitlements.removeAll { !seen.contains($0.packageID) }
+        recordListing(seen: seen)
         rebuildItems()
     }
 

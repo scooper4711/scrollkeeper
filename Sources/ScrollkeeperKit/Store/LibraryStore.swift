@@ -74,6 +74,8 @@ public final class LibraryStore {
     public internal(set) var downloadedItemIDs: Set<String> = []
     /// Titles with a download that Paizo has updated since.
     public internal(set) var outdatedItemIDs: Set<String> = []
+    /// When Paizo was last asked whether downloaded files have been updated; nil when never.
+    public internal(set) var lastUpdateCheck: Date?
     public internal(set) var locator: FileLocator
 
     public var query = LibraryQuery() {
@@ -100,6 +102,8 @@ public final class LibraryStore {
     var requestedSKUs: Set<String> = []
     var downloadTasks: [String: Task<Void, Never>] = [:]
     var persistTask: Task<Void, Never>?
+    var updateCheckLog = UpdateCheckLog()
+    var updateCheckTask: Task<Void, Never>?
 
     public init(environment: LibraryEnvironment) {
         self.environment = environment
@@ -114,9 +118,11 @@ public final class LibraryStore {
     }
 
     /// Loads the stored catalog and, when an account exists but the library has never been
-    /// fetched to the end, starts a full sync.
+    /// fetched to the end, starts a full sync. Otherwise checks downloaded files for updates.
     public func start() async {
         snapshot = await repository.load()
+        updateCheckLog = await repository.loadUpdateChecks()
+        lastUpdateCheck = updateCheckLog.latest
         discardOutdatedMetadata()
         rebuildItems()
         importFinderTags()
@@ -126,6 +132,8 @@ public final class LibraryStore {
         enqueueMissingMetadata()
         if account != .signedOut, !environment.settings.hasCompletedFullSync {
             startFullSync()
+        } else {
+            checkForFileUpdates()
         }
     }
 

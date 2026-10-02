@@ -16,9 +16,11 @@ public struct CatalogSynchronizer: Sendable {
     static let attemptsPerPage = 2
 
     private let client: LibraryCatalogClient
+    private let pagesAtOnce: Int
 
-    public init(client: LibraryCatalogClient) {
+    public init(client: LibraryCatalogClient, pagesAtOnce: Int = CatalogSynchronizer.concurrentPages) {
         self.client = client
+        self.pagesAtOnce = pagesAtOnce
     }
 
     /// Fetches every page: the first to learn the total, then the rest several at a time.
@@ -31,7 +33,7 @@ public struct CatalogSynchronizer: Sendable {
 
         try await withThrowingTaskGroup(of: LibraryPage.self) { group in
             var next = 2
-            while next <= min(lastPage, Self.concurrentPages + 1) {
+            while next <= min(lastPage, pagesAtOnce + 1) {
                 group.addTask { [next] in try await fetchWithRetry(next) }
                 next += 1
             }
