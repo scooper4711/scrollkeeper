@@ -85,6 +85,22 @@ import Testing
         #expect(updater.state.title == "Scrollkeeper 0.2.0 has been downloaded")
     }
 
+    @Test func quietCheckSpeaksUpOnlyWhenANewerVersionExists() async {
+        publish(tag: "v0.2.0")
+        let behind = makeUpdater()
+        await behind.checkForUpdateQuietly()
+        #expect(behind.state == .available(version: "0.2.0"))
+
+        let current = makeUpdater(running: "0.2.0")
+        await current.checkForUpdateQuietly()
+        #expect(current.state == .idle)
+
+        http.on("api.github.com/repos/scooper4711/scrollkeeper/releases/latest", text: "unreachable", status: 503)
+        let offline = makeUpdater()
+        await offline.checkForUpdateQuietly()
+        #expect(offline.state == .idle)
+    }
+
     @Test func declinedUpdateDownloadsNothing() async {
         publish(tag: "v0.2.0")
         let updater = makeUpdater()

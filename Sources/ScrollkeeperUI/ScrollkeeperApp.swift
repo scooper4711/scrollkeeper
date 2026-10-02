@@ -19,6 +19,11 @@ public struct ScrollkeeperApp: App {
                 .frame(minWidth: 900, minHeight: 520)
                 .modifier(UpdatePrompt())
                 .environment(updater)
+                .task {
+                    if SettingsStore(suiteName: "").checksForUpdatesAtLaunch {
+                        await updater.checkForUpdateQuietly()
+                    }
+                }
             #endif
         }
         .commands {
