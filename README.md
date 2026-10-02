@@ -48,9 +48,15 @@ Download the disk image from the
 [releases page](https://github.com/scooper4711/scrollkeeper/releases), open it
 and drag Scrollkeeper to Applications.
 
-The app is not notarized by Apple, so the first time you open it macOS will
-refuse. Right-click the app and choose Open, or allow it under System Settings ›
-Privacy & Security. After that it opens normally.
+The app is not notarized by Apple, so macOS blocks it the first time:
+
+1. Open Scrollkeeper once. macOS says it cannot be opened; click Done.
+2. Open System Settings › Privacy & Security and scroll down to the message
+   about Scrollkeeper.
+3. Click Open Anyway and confirm.
+
+After that it opens normally. On macOS 14 you can instead right-click the app
+and choose Open; from macOS 15 on, that shortcut no longer works.
 
 ## Supporting the project
 
