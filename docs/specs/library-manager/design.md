@@ -198,6 +198,14 @@ the pages it returns are not in order of the update date in the data, so it
 cannot be used to find recently updated files. Update dates therefore only
 change with a full sync.
 
+`LibraryStore.download` keeps the order downloads were asked for. Five run at a
+time; the rest are `waiting` and start as running ones finish. `downloadJobs`
+is what the downloads list shows.
+
+`LibraryStore.quickActions(for:)` decides what the hover buttons and the
+right-click menu offer for a title. It ranks the editions by
+`Edition.downloadPreference` and looks at what is on disk.
+
 Opening is done by the views with `NSWorkspace`: "Open" uses the default
 application, "Open With" lists `urlsForApplications(toOpen:)`.
 

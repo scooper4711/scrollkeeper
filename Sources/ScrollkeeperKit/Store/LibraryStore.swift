@@ -27,8 +27,28 @@ public enum AccountState: Equatable, Sendable {
 }
 
 public enum DownloadState: Equatable, Sendable {
+    /// Queued behind the downloads that are running.
+    case waiting
     case inProgress(Double)
     case failed(String)
+
+    /// True while the download is running or waiting for its turn.
+    public var isPending: Bool {
+        switch self {
+        case .waiting, .inProgress: true
+        case .failed: false
+        }
+    }
+}
+
+/// One download as the downloads list shows it.
+public struct DownloadJob: Identifiable, Equatable, Sendable {
+    public let target: DownloadTarget
+    public let state: DownloadState
+
+    public var id: String { target.id }
+
+    public var name: String { target.remote.displayName }
 }
 
 /// The app's state: the catalog, what is visible, and everything in progress.
@@ -44,6 +64,8 @@ public final class LibraryStore {
     public internal(set) var artwork = ArtworkProgress()
     public internal(set) var account = AccountState.signedOut
     public internal(set) var downloads: [String: DownloadState] = [:]
+    /// Every download that is running, waiting or has failed, in the order they were asked for.
+    public internal(set) var downloadOrder: [DownloadTarget] = []
     public internal(set) var downloadedItemIDs: Set<String> = []
     /// Titles with a download that Paizo has updated since.
     public internal(set) var outdatedItemIDs: Set<String> = []

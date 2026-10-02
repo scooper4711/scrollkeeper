@@ -25,6 +25,7 @@ private struct CoverCell: View {
     @Environment(LibraryStore.self) private var store
     let item: LibraryTitle
     let isSelected: Bool
+    @State private var isHovered = false
 
     var body: some View {
         VStack(spacing: 6) {
@@ -32,6 +33,12 @@ private struct CoverCell: View {
                 .frame(height: 200)
                 .frame(maxWidth: .infinity)
                 .overlay(alignment: .topTrailing) { downloadedBadge }
+                .overlay(alignment: .bottom) {
+                    if isHovered {
+                        QuickActionButtons(item: item)
+                            .padding(.bottom, 8)
+                    }
+                }
             Text(item.title)
                 .font(.callout)
                 .lineLimit(3)
@@ -44,6 +51,8 @@ private struct CoverCell: View {
         .padding(8)
         .background(isSelected ? Color.accentColor.opacity(0.22) : .clear, in: RoundedRectangle(cornerRadius: 8))
         .contentShape(Rectangle())
+        .onHover { isHovered = $0 }
+        .modifier(QuickActionMenu(item: item))
         .help(item.title)
     }
 

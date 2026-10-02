@@ -61,11 +61,8 @@ struct EditionRow: View {
             Text("Not available from Paizo")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-        } else if case let .inProgress(fraction) = store.downloads[target.id] {
-            ProgressView(value: fraction)
-                .frame(width: 90)
-            Button("Cancel") { store.cancelDownload(target) }
-                .controlSize(.small)
+        } else if let state = store.downloads[target.id], state.isPending {
+            pendingActions(target: target, state: state)
         } else if edition.isSavedElsewhere {
             savedElsewhereActions(target: target, isSaved: !files.isEmpty)
         } else if files.isEmpty {
@@ -104,6 +101,21 @@ struct EditionRow: View {
                 .controlSize(.small)
         }
         #endif
+    }
+
+    /// A download that is running shows its progress; one that is waiting says so.
+    @ViewBuilder
+    private func pendingActions(target: DownloadTarget, state: DownloadState) -> some View {
+        if case let .inProgress(fraction) = state {
+            ProgressView(value: fraction)
+                .frame(width: 90)
+        } else {
+            Text("Waiting")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        Button("Cancel") { store.cancelDownload(target) }
+            .controlSize(.small)
     }
 
     private func downloadedMenu(target: DownloadTarget) -> some View {

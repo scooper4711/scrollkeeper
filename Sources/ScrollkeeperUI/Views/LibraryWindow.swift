@@ -132,6 +132,7 @@ struct LibraryWindow: View {
             .help("Show the library as covers, a list or columns")
         }
         ToolbarItem { FilterMenu(pulse: filterPulse) }
+        ToolbarItem { DownloadsButton() }
         ToolbarItem {
             Button {
                 store.startRefresh()
