@@ -215,6 +215,15 @@ cannot read the Passwords app's entry for the site directly; instead the
 Settings fields declare username and password content types, which lets the
 user fill them with Password AutoFill.
 
+### App updates
+
+`AppUpdater` reads `releases/latest` from GitHub's API, which leaves out drafts
+and pre-releases, and compares the tag with the bundle version as `AppVersion`s
+(numbers only, so `v0.10.0` is newer than `0.9.3`). A newer release moves it to
+the `available` state and nothing more; `startDownload` fetches the asset whose
+name ends in `.dmg` into the Downloads folder. `UpdatePrompt` shows each state as
+an alert on the Mac.
+
 ### Views
 
 - `LibraryWindow` — `NavigationSplitView`: sidebar of filters, content in the

@@ -4,6 +4,9 @@ import SwiftUI
 /// The app, shared by the Mac and the iPad.
 public struct ScrollkeeperApp: App {
     @State private var store = LibraryStore(environment: .live())
+    #if os(macOS)
+    @State private var updater = AppUpdater.live()
+    #endif
 
     public init() {}
 
@@ -14,12 +17,14 @@ public struct ScrollkeeperApp: App {
                 .task { await store.start() }
             #if os(macOS)
                 .frame(minWidth: 900, minHeight: 520)
+                .modifier(UpdatePrompt())
+                .environment(updater)
             #endif
         }
         .commands {
             LibraryCommands(store: store)
             #if os(macOS)
-            AboutCommands()
+            AboutCommands(updater: updater)
             #endif
         }
 
@@ -36,10 +41,15 @@ public struct ScrollkeeperApp: App {
 /// The About panel with Paizo's required notice, and Help menu links.
 struct AboutCommands: Commands {
     @Environment(\.openURL) private var openURL
+    let updater: AppUpdater
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
             Button("About \(AboutInfo.appName)") { AboutInfo.showAboutPanel() }
+            Button("Check for Updates…") {
+                Task { await updater.checkForUpdate() }
+            }
+            .disabled(updater.state.isBusy)
         }
         CommandGroup(replacing: .help) {
             if let policy = AboutInfo.policyURL {
