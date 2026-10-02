@@ -36,6 +36,8 @@ download.
   scenarios (with season or year), maps, rulebooks, fiction and more.
 - Tags that are written to the downloaded files as Finder tags.
 - Checks for a newer version on request and offers to download it (Mac).
+- Download or open a title straight from the grid or list by pointing at it.
+  Downloads run five at a time, with a list to watch and cancel them.
 - Downloaded files are kept on disk and can be opened straight from the app,
   with the default application or any other that handles the file type.
 

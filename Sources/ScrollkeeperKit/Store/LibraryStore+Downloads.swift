@@ -15,20 +15,70 @@ extension LibraryStore {
         locator.files(in: target)
     }
 
-    /// Starts downloading the file unless it is already on its way. The zip of a PDF edition is
-    /// unpacked into its folder and then removed.
+    /// At most this many downloads run at once, to go easy on Paizo's servers; the rest wait.
+    public static let maximumConcurrentDownloads = 5
+
+    /// The downloads that are running, waiting or have failed, oldest first.
+    public var downloadJobs: [DownloadJob] {
+        downloadOrder.compactMap { target in
+            downloads[target.id].map { DownloadJob(target: target, state: $0) }
+        }
+    }
+
+    /// Downloads the file unless it is already on its way. When five downloads are running it
+    /// waits for its turn. The zip of a PDF edition is unpacked into its folder and then removed.
     public func download(_ target: DownloadTarget) {
-        if case .inProgress = downloads[target.id] {
+        if downloads[target.id]?.isPending == true {
             return
         }
+        downloadOrder.removeAll { $0.id == target.id }
+        downloadOrder.append(target)
+        if downloadTasks.count < Self.maximumConcurrentDownloads {
+            start(target)
+        } else {
+            downloads[target.id] = .waiting
+        }
+    }
+
+    /// Stops a running download, or takes a waiting one out of the line.
+    public func cancelDownload(_ target: DownloadTarget) {
+        if let task = downloadTasks[target.id] {
+            task.cancel()
+        } else {
+            forget(target)
+        }
+    }
+
+    public func cancelAllDownloads() {
+        for job in downloadJobs where job.state.isPending {
+            cancelDownload(job.target)
+        }
+    }
+
+    /// Clears a failed download from the list.
+    public func dismissDownload(_ target: DownloadTarget) {
+        if downloads[target.id]?.isPending != true {
+            forget(target)
+        }
+    }
+
+    private func start(_ target: DownloadTarget) {
         downloads[target.id] = .inProgress(0)
         downloadTasks[target.id] = Task { [weak self] in
             await self?.performDownload(target)
         }
     }
 
-    public func cancelDownload(_ target: DownloadTarget) {
-        downloadTasks[target.id]?.cancel()
+    private func startNextWaiting() {
+        let next = downloadOrder.first { downloads[$0.id] == .waiting }
+        if let next, downloadTasks.count < Self.maximumConcurrentDownloads {
+            start(next)
+        }
+    }
+
+    private func forget(_ target: DownloadTarget) {
+        downloads[target.id] = nil
+        downloadOrder.removeAll { $0.id == target.id }
     }
 
     /// Downloads an edition to a place the user chose. The app keeps no copy of it.
@@ -42,13 +92,13 @@ extension LibraryStore {
     /// Removes a downloaded file, or the unpacked contents of an archive, from disk.
     public func deleteDownload(_ target: DownloadTarget) {
         try? FileManager.default.removeItem(at: target.localURL)
-        downloads[target.id] = nil
+        forget(target)
         refreshDownloadedItems()
     }
 
-    /// Waits for every download in progress. Used by tests.
+    /// Waits for every download, including those still waiting their turn. Used by tests.
     public func waitForDownloads() async {
-        for task in downloadTasks.values {
+        while let task = downloadTasks.values.first {
             await task.value
         }
     }
@@ -61,15 +111,18 @@ extension LibraryStore {
                 Task { @MainActor in self?.reportProgress(fraction, for: target) }
             }
             try await moveIntoPlace(partial, for: target)
-            downloads[target.id] = nil
+            forget(target)
             finishDownload(target)
         } catch {
-            downloads[target.id] = error is CancellationError || Task.isCancelled
-                ? nil
-                : .failed(error.localizedDescription)
+            if error is CancellationError || Task.isCancelled {
+                forget(target)
+            } else {
+                downloads[target.id] = .failed(error.localizedDescription)
+            }
         }
         try? FileManager.default.removeItem(at: partial)
         downloadTasks[target.id] = nil
+        startNextWaiting()
     }
 
     private func moveIntoPlace(_ partial: URL, for target: DownloadTarget) async throws {

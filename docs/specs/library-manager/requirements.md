@@ -92,7 +92,13 @@ once, online or off.
 5.2a A zip of material that is not for reading in the app is not kept by the
     app: community use packages, image sets (JPG, PNG), logos, icons and
     audio. Downloading one asks where to save the zip and saves it there.
-5.3 Downloads show progress and can run several at a time.
+5.3 Downloads show progress. At most five run at a time, to go easy on Paizo's
+    servers; any more wait their turn.
+5.3a A downloads list, opened from the toolbar, shows every download that is
+    running, waiting or has failed. Each can be canceled or, once failed,
+    dismissed, and all pending ones can be canceled together.
+5.3b There is deliberately no way to download everything, or several selected
+    titles, in one step.
 5.4 A downloaded file is kept on disk. Its location is a folder inside the
     user's Library directory by default and can be changed in Settings.
 5.5 Once a file is downloaded, the app offers "Open", "Open With" and "Show in
@@ -124,6 +130,17 @@ once, online or off.
     combined with a category shows what in that category is still missing.
 6.4a When the search and filters match nothing and a filter is set, the empty
     view offers to clear the filters and the filter button pulses briefly.
+6.4b Holding the pointer over a title in the cover or list view shows quick
+    actions, and a right-click (or a long press on the iPad) offers the same in
+    every view:
+    - Download, when the title has nothing on disk. It fetches one edition,
+      the most common: the single file before the file per chapter, a PDF
+      before an ePub, full quality before lite. Editions without a file and
+      zips that ask where to be saved (5.2a) are never picked.
+    - Update, when a copy on disk is out of date (5.8).
+    - Open, when there is a copy on disk. It opens with the default
+      application for the file; several unpacked files open as their folder
+      on the Mac and as a preview of all of them on the iPad.
 6.5 Selecting a title shows its details: cover, summary, metadata, editions
     with their download actions, and tags.
 

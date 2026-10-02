@@ -21,6 +21,7 @@ struct TitleListView: View {
 private struct TitleRow: View {
     @Environment(LibraryStore.self) private var store
     let item: LibraryTitle
+    @State private var isHovered = false
 
     var body: some View {
         HStack(spacing: 12) {
@@ -35,6 +36,9 @@ private struct TitleRow: View {
                     .lineLimit(1)
             }
             Spacer()
+            if isHovered {
+                QuickActionButtons(item: item)
+            }
             if !item.tags.isEmpty {
                 Text(item.tagsLabel)
                     .font(.caption)
@@ -50,6 +54,9 @@ private struct TitleRow: View {
                 .help(isOutdated ? "Downloaded; Paizo has a newer version" : "Downloaded")
         }
         .padding(.vertical, 2)
+        .contentShape(Rectangle())
+        .onHover { isHovered = $0 }
+        .modifier(QuickActionMenu(item: item))
     }
 
     private var isOutdated: Bool { store.outdatedItemIDs.contains(item.id) }

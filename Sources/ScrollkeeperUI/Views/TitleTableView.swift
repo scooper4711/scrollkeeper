@@ -5,10 +5,16 @@ import SwiftUI
 struct TitleTableView: View {
     @Environment(LibraryStore.self) private var store
     @Binding var selection: LibraryTitle.ID?
+    @State private var preview = PreviewRequest()
 
     private typealias Column = TableColumn<LibraryTitle, KeyPathComparator<LibraryTitle>, Text, Text>
 
     var body: some View {
+        content
+            .quickPreview($preview)
+    }
+
+    @ViewBuilder private var content: some View {
         #if os(macOS)
         table
         #else
@@ -67,6 +73,11 @@ struct TitleTableView: View {
                 .width(min: 70, ideal: 86)
                 Column("Tags", value: \LibraryTitle.tagsLabel) { (item: LibraryTitle) in Text(item.tagsLabel) }
                     .width(min: 60, ideal: 110)
+            }
+        }
+        .contextMenu(forSelectionType: LibraryTitle.ID.self) { chosen in
+            if let item = store.item(id: chosen.first) {
+                QuickActionMenuItems(item: item) { QuickOpen.open($0, in: store, preview: &preview) }
             }
         }
     }
