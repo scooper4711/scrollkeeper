@@ -54,14 +54,22 @@ to use the saved Keychain item again.
 The iPad app is built from `ios/PaizoLibraryManager.xcodeproj`, which uses the
 same Swift package as the Mac app.
 
-1. Open `ios/PaizoLibraryManager.xcodeproj` in Xcode.
-2. Select the PaizoLibraryManager-iPad target, open Signing & Capabilities and choose
-   your team. A free Apple ID works; an app signed that way runs for seven days
-   before it has to be installed again, a paid developer account for a year.
-3. If Xcode says the bundle identifier is taken, change it to one of your own.
-4. Connect the iPad, pick it as the run destination and press Run. The first
-   time, the iPad asks you to trust the developer under Settings › General ›
-   VPN & Device Management.
+1. Add your Apple ID to Xcode under Settings › Accounts. A free Apple ID works;
+   an app signed that way runs for seven days before it has to be installed
+   again, a paid developer account for a year.
+2. Put your team in `ios/Local.xcconfig`, which is not committed (see
+   `ios/Signing.xcconfig`). The team identifier is shown in Xcode when you
+   select the PaizoLibraryManager-iPad target and open Signing & Capabilities.
+3. Connect the iPad and turn on Developer Mode on it under Settings › Privacy &
+   Security.
+4. Run `make ipad-install`. It builds the app, installs it and starts it.
+5. The first time, the iPad refuses to start the app until you trust the
+   developer under Settings › General › VPN & Device Management.
+
+When the seven days are up, `make ipad-install` again; the catalog and downloads
+on the iPad are kept. You can also open `ios/PaizoLibraryManager.xcodeproj` in
+Xcode and press Run. Open the project itself, not the package folder, and pick
+the PaizoLibraryManager-iPad scheme.
 
 `make ipad-simulator` builds the app and starts it in an iPad simulator.
 

@@ -106,8 +106,10 @@ searching, classification, tagging and downloading in a native macOS app.
     order also applies to the other two views.
 6.3 A search field filters titles as the user types. It matches the title, SKU,
     edition names, series, author, summary and tags. All words must match.
-6.4 Titles can be filtered by game system, product type, format, tag and
-    whether they are downloaded.
+6.4 Titles can be filtered by game system, product type, format, level and tag,
+    and by download state: downloaded, or not downloaded. A title counts as
+    downloaded when at least one of its files is on disk. "Not downloaded"
+    combined with a category shows what in that category is still missing.
 6.4a When the search and filters match nothing and a filter is set, the empty
     view offers to clear the filters and the filter button pulses briefly.
 6.5 Selecting a title shows its details: cover, summary, metadata, editions

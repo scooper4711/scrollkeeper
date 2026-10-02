@@ -9,6 +9,31 @@ public enum LibraryScope: Hashable, Sendable {
     case tag(String)
 }
 
+/// Which titles to keep by whether any of their files has been downloaded.
+public enum DownloadFilter: String, Sendable, CaseIterable, Identifiable {
+    case any
+    case downloaded
+    case notDownloaded
+
+    public var id: String { rawValue }
+
+    public var label: String {
+        switch self {
+        case .any: "Downloaded or Not"
+        case .downloaded: "Downloaded"
+        case .notDownloaded: "Not Downloaded"
+        }
+    }
+
+    func matches(isDownloaded: Bool) -> Bool {
+        switch self {
+        case .any: true
+        case .downloaded: isDownloaded
+        case .notDownloaded: !isDownloaded
+        }
+    }
+}
+
 /// What the user is looking for: a sidebar scope, filters and search words.
 public struct LibraryQuery: Equatable, Sendable {
     public var scope = LibraryScope.all
@@ -19,13 +44,13 @@ public struct LibraryQuery: Equatable, Sendable {
     public var format = ""
     /// Keep titles written for this character level.
     public var level: Int?
-    public var downloadedOnly = false
+    public var download = DownloadFilter.any
 
     public init() {}
 
     /// True when a filter besides the sidebar scope and search text is set.
     public var hasFilters: Bool {
-        gameSystem != nil || productLine != nil || !format.isEmpty || level != nil || downloadedOnly
+        gameSystem != nil || productLine != nil || !format.isEmpty || level != nil || download != .any
     }
 
     public mutating func clearFilters() {
@@ -33,7 +58,7 @@ public struct LibraryQuery: Equatable, Sendable {
         productLine = nil
         format = ""
         level = nil
-        downloadedOnly = false
+        download = .any
     }
 
     public func filter(_ items: [LibraryTitle], downloadedIDs: Set<String>) -> [LibraryTitle] {
@@ -62,7 +87,7 @@ public struct LibraryQuery: Equatable, Sendable {
             && (productLine == nil || classification.productLine == productLine)
             && (format.isEmpty || classification.formats.contains(format))
             && (level.map { classification.levelRange?.contains($0) == true } ?? true)
-            && (!downloadedOnly || isDownloaded)
+            && download.matches(isDownloaded: isDownloaded)
     }
 }
 

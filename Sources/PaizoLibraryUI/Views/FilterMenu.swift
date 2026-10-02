@@ -26,7 +26,9 @@ struct FilterMenu: View {
                 Text("Any Level").tag(Int?.none)
                 ForEach(1...20, id: \.self) { Text("Level \($0)").tag(Int?.some($0)) }
             }
-            Toggle("Downloaded Only", isOn: $store.query.downloadedOnly)
+            Picker("Downloads", selection: $store.query.download) {
+                ForEach(DownloadFilter.allCases) { Text($0.label).tag($0) }
+            }
             Divider()
             Button("Clear Filters") { store.query.clearFilters() }
                 .disabled(!store.query.hasFilters)
