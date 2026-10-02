@@ -19,6 +19,14 @@ download.
 > Paizo. For more information about Paizo Inc. and Paizo products, visit
 > [paizo.com](https://paizo.com).
 
+![Scrollkeeper on the Mac: adventure paths shown as covers, with the details of the selected title](docs/images/mac-library.png)
+
+## Supporting the project
+
+The app is free and always will be. If it saves you time and you would like to
+say thanks, you can leave a tip on [Ko-fi](https://ko-fi.com/coop207627). A
+donation is entirely optional and unlocks nothing.
+
 ## Features
 
 - Signs in with your Paizo account; credentials are kept in the macOS Keychain
@@ -112,9 +120,3 @@ The requirements and design are in [`docs/specs/library-manager`](docs/specs/lib
 Scrollkeeper includes [ZIPFoundation](https://github.com/weichsel/ZIPFoundation)
 under the MIT licence; its notice is in
 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) and in the app's settings.
-
-## Supporting the project
-
-The app is free and always will be. If it saves you time and you would like to
-say thanks, you can leave a tip on [Ko-fi](https://ko-fi.com/coop207627). A
-donation is entirely optional and unlocks nothing.

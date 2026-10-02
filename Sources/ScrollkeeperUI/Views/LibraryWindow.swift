@@ -31,6 +31,11 @@ struct LibraryWindow: View {
     @AppStorage("viewMode") private var viewMode = ViewMode.covers
     @AppStorage("showInspector") private var showInspector = LibraryWindow.showsInspectorAtFirst
     @State private var selection: LibraryTitle.ID?
+
+    /// - Parameter selecting: the title to show in the details at first; used for previews.
+    init(selecting title: LibraryTitle.ID? = nil) {
+        _selection = State(initialValue: title)
+    }
     /// Raised each time a search or filter change leaves nothing to show while filters are set.
     @State private var filterPulse = 0
     @State private var showSettings = false
