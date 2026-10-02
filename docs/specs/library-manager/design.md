@@ -51,8 +51,10 @@ The token behaves in ways that shaped `PaizoSession`:
   left to live, and signing in again does not produce a newer one.
 - The library app answers a request that carries an expired token with a
   server error (status 500 or 501), not with an authentication error.
-- Signing in ends the customer's other store sessions; a token request on an
-  ended session is answered with 404.
+- A store session can end without notice; a token request on an ended session
+  is answered with 404, and signing in again restores it. What ends a session
+  is not known. Using the web library in a browser alongside the app does not:
+  signing in, browsing, refreshing and downloading in both, in turn, works.
 
 `PaizoSession` therefore reads the expiry from the token itself, stops using a
 token 45 seconds before it lapses, and when the store returns one that is about
