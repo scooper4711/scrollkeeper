@@ -37,6 +37,21 @@ public struct RemoteFile: Sendable, Equatable {
     }
 }
 
+/// What Paizo currently holds for one edition: when its file last changed and where it is.
+public struct FileStatus: Sendable, Equatable {
+    public var packageID: String
+    public var dateUpdated: Date?
+    public var fileName: String
+    public var filePath: String
+
+    public init(packageID: String, dateUpdated: Date?, fileName: String, filePath: String) {
+        self.packageID = packageID
+        self.dateUpdated = dateUpdated
+        self.fileName = fileName
+        self.filePath = filePath
+    }
+}
+
 /// Reads the library listing and requests downloads from Paizo's library app.
 public struct LibraryCatalogClient: Sendable {
     private let http: HTTPClient
@@ -69,6 +84,35 @@ public struct LibraryCatalogClient: Sendable {
         } catch PaizoError.http {
             return try await requestSignedURL(for: file, token: session.renewedCustomerToken(replacing: token))
         }
+    }
+
+    /// The current state of one edition's file. This costs Paizo far less than a library page.
+    /// A failed request is tried once more with a renewed token, as for downloads.
+    public func fetchFileStatus(packageID: String) async throws -> FileStatus {
+        let token = try await session.customerToken()
+        do {
+            return try await requestFileStatus(packageID: packageID, token: token)
+        } catch PaizoError.http {
+            let renewed = try await session.renewedCustomerToken(replacing: token)
+            return try await requestFileStatus(packageID: packageID, token: renewed)
+        }
+    }
+
+    private func requestFileStatus(packageID: String, token: String) async throws -> FileStatus {
+        let operation = "Checking \(packageID) for an update"
+        let url = await session.currentEndpoints().appURL(
+            "/api/library/entitlement/customer/\(packageID)", query: [URLQueryItem(name: "token", value: token)]
+        )
+        let response = try await http.send(.get(url)).validated(operation: operation)
+        guard let answer = try? JSONDecoder().decode(FileStatusRecord.self, from: response.data),
+              let package = answer.data?.package
+        else { throw PaizoError.unexpectedResponse(operation: operation) }
+        return FileStatus(
+            packageID: packageID,
+            dateUpdated: package.dateLastUpdated.flatMap(PaizoDateParser.parse),
+            fileName: package.file ?? "",
+            filePath: package.filepath ?? ""
+        )
     }
 
     private func requestSignedURL(for file: RemoteFile, token: String) async throws -> URL {

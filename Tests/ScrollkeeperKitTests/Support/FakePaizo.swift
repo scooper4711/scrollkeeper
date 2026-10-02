@@ -60,6 +60,23 @@ struct FakePaizo {
         http.on("https://s3.example/signed", text: contents)
     }
 
+    /// The single-edition lookup. `updated` maps a package identifier to Paizo's last-updated
+    /// date in its own format, or to an empty string for none; other identifiers are unknown.
+    func installFileStatus(updated: [String: String], file: String = "book-v2.pdf") {
+        http.on("GET https://app.paizo.com/api/library/entitlement/customer/") { request in
+            let packageID = request.url?.lastPathComponent ?? ""
+            guard let date = updated[packageID] else {
+                return HTTPResponse(data: Data(#"{"error":"unknown"}"#.utf8), statusCode: 500, finalURL: request.url)
+            }
+            var package: [String: Any] = ["File": file, "Filepath": "https://bucket.example/" + file]
+            if !date.isEmpty {
+                package["DateLastUpdated"] = date
+            }
+            let answer: [String: Any] = ["data": ["DigitalPackageID": packageID, "DigitalPackage": package]]
+            return HTTPResponse(data: Data(Fixtures.jsonString(answer).utf8), finalURL: request.url)
+        }
+    }
+
     /// The storefront home page and product query. `products` maps SKU to a product node.
     func installStorefront(products: [String: [String: Any]]) {
         http.on("GET https://store.paizo.com/", text: #"{"graphql_token":"anonymous-token"}"#)
