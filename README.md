@@ -4,6 +4,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=scooper4711_scrollkeeper&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=scooper4711_scrollkeeper)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=scooper4711_scrollkeeper&metric=coverage)](https://sonarcloud.io/summary/new_code?id=scooper4711_scrollkeeper)
 [![GitHub Release](https://img.shields.io/github/v/release/scooper4711/scrollkeeper)](https://github.com/scooper4711/scrollkeeper/releases)
+[![GitHub Downloads](https://img.shields.io/github/downloads/scooper4711/scrollkeeper/total)](https://github.com/scooper4711/scrollkeeper/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%2014%2B%20%7C%20iPadOS%2017%2B-informational)](#requirements)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
