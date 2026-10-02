@@ -6,10 +6,10 @@ what the app works with.
 
 ## Purpose
 
-Paizo's web library (`https://store.paizo.com/library/`) takes about fifteen
-seconds to load each page of fifty items and searching is just as slow. A
-customer with a few thousand titles cannot browse it comfortably. Scrollkeeper keeps a local copy of the customer's catalog and offers fast browsing,
-searching, classification, tagging and downloading in a native macOS app.
+Scrollkeeper keeps a local copy of the customer's catalog and offers fast
+browsing, searching, classification, tagging and downloading in a native app.
+A customer with a few thousand titles can then find and open any of them at
+once, online or off.
 
 ## Glossary
 
