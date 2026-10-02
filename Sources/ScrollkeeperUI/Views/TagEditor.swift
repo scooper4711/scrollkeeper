@@ -73,12 +73,12 @@ private struct TagChip: View {
 struct FlowLayout: Layout {
     var spacing: CGFloat = 6
 
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
         let arrangement = arrange(subviews, width: proposal.width ?? .infinity)
         return CGSize(width: proposal.width ?? arrangement.size.width, height: arrangement.size.height)
     }
 
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
         let arrangement = arrange(subviews, width: bounds.width)
         for (subview, origin) in zip(subviews, arrangement.origins) {
             subview.place(at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y), proposal: .unspecified)

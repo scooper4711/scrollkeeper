@@ -1,5 +1,6 @@
 #!/bin/sh
-# Runs the tests with coverage and fails when line or region coverage of
+# Runs the tests with coverage, writes coverage/sonar-coverage.xml for SonarCloud, and fails when
+# line or region coverage of
 # ScrollkeeperKit is below the threshold. Swift's coverage tooling does not
 # report branch coverage; region coverage is the closest measure.
 set -eu
@@ -16,6 +17,25 @@ PACKAGE="$(basename "$(swift test --show-codecov-path)" .json)"
 BINARY="$BIN_PATH/${PACKAGE}PackageTests.xctest/Contents/MacOS/${PACKAGE}PackageTests"
 
 xcrun llvm-cov export -summary-only -instr-profile "$PROFILE" "$BINARY" > "$BIN_PATH/coverage.json"
+
+# SonarCloud's generic coverage format, with paths relative to the repository so that the
+# report can be read on another machine than the one that ran the tests.
+mkdir -p coverage
+xcrun llvm-cov export -format=lcov -instr-profile "$PROFILE" "$BINARY" | awk -v root="$PWD/" '
+    BEGIN { print "<coverage version=\"1\">" }
+    /^SF:/ {
+        file = substr($0, 4)
+        if (index(file, root) == 1) file = substr(file, length(root) + 1)
+        keep = (file ~ /^Sources\//)
+        if (keep) printf "  <file path=\"%s\">\n", file
+    }
+    /^DA:/ && keep {
+        split(substr($0, 4), parts, ",")
+        printf "    <lineToCover lineNumber=\"%s\" covered=\"%s\"/>\n", parts[1], (parts[2] > 0 ? "true" : "false")
+    }
+    /^end_of_record/ { if (keep) print "  </file>"; keep = 0 }
+    END { print "</coverage>" }
+' > coverage/sonar-coverage.xml
 
 /usr/bin/python3 - "$BIN_PATH/coverage.json" "$THRESHOLD" "${1:-}" <<'PYTHON'
 import json

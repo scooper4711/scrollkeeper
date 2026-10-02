@@ -64,7 +64,7 @@ private final class DownloadProgressObserver: NSObject, URLSessionTaskDelegate, 
         self.progress = progress
     }
 
-    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+    func urlSession(_: URLSession, didCreateTask task: URLSessionTask) {
         let progress = progress
         observation = task.progress.observe(\.fractionCompleted) { taskProgress, _ in
             progress(taskProgress.fractionCompleted)
