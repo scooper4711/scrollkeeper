@@ -1,0 +1,14 @@
+// Signing settings for the iPad app.
+//
+// Put your own Apple developer team in Local.xcconfig next to this file. That file is not
+// committed, so nobody's team ends up in the repository:
+//
+//     DEVELOPMENT_TEAM = ABCDE12345
+//
+// If Xcode reports that the bundle identifier is taken, set your own there as well:
+//
+//     PRODUCT_BUNDLE_IDENTIFIER = com.example.PaizoLibraryManager
+DEVELOPMENT_TEAM =
+PRODUCT_BUNDLE_IDENTIFIER = io.github.scooper4711.PaizoLibraryManager
+
+#include? "Local.xcconfig"

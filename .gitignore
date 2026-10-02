@@ -9,3 +9,4 @@ xcuserdata/
 __pycache__/
 ios/build/
 *.xcworkspace/xcuserdata/
+ios/Local.xcconfig
