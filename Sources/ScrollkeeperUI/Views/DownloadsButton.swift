@@ -1,12 +1,17 @@
 import ScrollkeeperKit
 import SwiftUI
 
-/// Toolbar button that opens the list of downloads that are running, waiting or have failed.
+/// Toolbar button for the list of downloads that are running, waiting or have failed.
+///
+/// The button reads only the number of pending downloads, never their progress: a toolbar item
+/// that is redrawn on every step of progress cannot keep a list open on the iPad. For the same
+/// reason the iPad shows the list as a sheet of the window; only the Mac anchors it to the button.
 struct DownloadsButton: View {
     @Environment(LibraryStore.self) private var store
-    @State private var isShowingList = false
+    @Binding var isShowingList: Bool
 
     var body: some View {
+        let pending = store.pendingDownloadCount
         Button {
             isShowingList.toggle()
         } label: {
@@ -25,19 +30,17 @@ struct DownloadsButton: View {
             }
         }
         .help("Show downloads in progress")
+        #if os(macOS)
         .popover(isPresented: $isShowingList, arrowEdge: .bottom) {
             DownloadsList()
                 .frame(width: 380)
                 .frame(minHeight: 120, maxHeight: 420)
         }
-    }
-
-    private var pending: Int {
-        store.downloadJobs.filter(\.state.isPending).count
+        #endif
     }
 }
 
-/// The downloads list: each with its progress and a button to cancel or dismiss it.
+/// The downloads list: each with its progress and buttons to cancel, retry or dismiss it.
 struct DownloadsList: View {
     @Environment(LibraryStore.self) private var store
 
@@ -49,7 +52,7 @@ struct DownloadsList: View {
                 Spacer()
                 Button("Cancel All") { store.cancelAllDownloads() }
                     .controlSize(.small)
-                    .disabled(!store.downloadJobs.contains { $0.state.isPending })
+                    .disabled(store.pendingDownloadCount == 0)
             }
             .padding(12)
             Divider()
@@ -90,6 +93,11 @@ private struct DownloadJobRow: View {
                 status
             }
             Spacer()
+            if !job.state.isPending {
+                Button("Retry") { store.retryDownload(job.target) }
+                    .controlSize(.small)
+                    .help("Try this download again")
+            }
             Button {
                 job.state.isPending ? store.cancelDownload(job.target) : store.dismissDownload(job.target)
             } label: {

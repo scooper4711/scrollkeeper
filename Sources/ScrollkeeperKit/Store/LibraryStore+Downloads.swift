@@ -38,6 +38,14 @@ extension LibraryStore {
         } else {
             downloads[target.id] = .waiting
         }
+        refreshPendingCount()
+    }
+
+    /// Tries a failed download again.
+    public func retryDownload(_ target: DownloadTarget) {
+        if case .failed = downloads[target.id] {
+            download(target)
+        }
     }
 
     /// Stops a running download, or takes a waiting one out of the line.
@@ -79,6 +87,14 @@ extension LibraryStore {
     private func forget(_ target: DownloadTarget) {
         downloads[target.id] = nil
         downloadOrder.removeAll { $0.id == target.id }
+        refreshPendingCount()
+    }
+
+    private func refreshPendingCount() {
+        let count = downloads.values.filter(\.isPending).count
+        if count != pendingDownloadCount {
+            pendingDownloadCount = count
+        }
     }
 
     /// Downloads an edition to a place the user chose. The app keeps no copy of it.
@@ -118,6 +134,7 @@ extension LibraryStore {
                 forget(target)
             } else {
                 downloads[target.id] = .failed(error.localizedDescription)
+                refreshPendingCount()
             }
         }
         try? FileManager.default.removeItem(at: partial)
@@ -136,11 +153,16 @@ extension LibraryStore {
     }
 
     /// Progress arrives from the network's own queue and may trail the end of the download.
+    /// Steps smaller than one percent are dropped: the network reports far more often than
+    /// that, and every change redraws the views that show it.
     private func reportProgress(_ fraction: Double, for target: DownloadTarget) {
-        if case .inProgress = downloads[target.id] {
+        guard case let .inProgress(shown) = downloads[target.id] else { return }
+        if fraction >= 1 || fraction - shown >= Self.smallestProgressStep {
             downloads[target.id] = .inProgress(fraction)
         }
     }
+
+    private static let smallestProgressStep = 0.01
 
     private func finishDownload(_ target: DownloadTarget) {
         if let item = item(id: target.itemID), !item.tags.isEmpty {
