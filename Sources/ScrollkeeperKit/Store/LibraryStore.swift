@@ -45,6 +45,8 @@ public final class LibraryStore {
     public internal(set) var account = AccountState.signedOut
     public internal(set) var downloads: [String: DownloadState] = [:]
     public internal(set) var downloadedItemIDs: Set<String> = []
+    /// Titles with a download that Paizo has updated since.
+    public internal(set) var outdatedItemIDs: Set<String> = []
     public internal(set) var locator: FileLocator
 
     public var query = LibraryQuery() {
@@ -140,12 +142,14 @@ public final class LibraryStore {
 
     func refreshDownloadedItems() {
         downloadedItemIDs = locator.downloadedItemIDs(among: items)
+        outdatedItemIDs = locator.outdatedItemIDs(among: items.filter { downloadedItemIDs.contains($0.id) })
         refreshVisibleItems()
     }
 
     func refreshVisibleItems() {
         facets = LibraryFacets(items: items, downloadedIDs: downloadedItemIDs)
-        visibleItems = query.filter(items, downloadedIDs: downloadedItemIDs).sorted(using: sortOrder)
+        let downloads = LibraryDownloads(downloaded: downloadedItemIDs, outdated: outdatedItemIDs)
+        visibleItems = query.filter(items, downloads: downloads).sorted(using: sortOrder)
     }
 
     /// Queues a repository write off the main actor. Writes run in order, and each one stores the

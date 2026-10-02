@@ -24,6 +24,12 @@ struct EditionRow: View {
                 Spacer()
                 actions(target: target, files: files)
             }
+            if store.isOutdated(target) {
+                Label("Paizo updated this file after you downloaded it.", systemImage: "arrow.triangle.2.circlepath")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if case let .failed(message) = store.downloads[target.id] {
                 Text(message)
                     .font(.caption)
@@ -54,6 +60,11 @@ struct EditionRow: View {
             Button("Download") { store.download(target) }
                 .controlSize(.small)
         } else {
+            if store.isOutdated(target) {
+                Button("Update") { store.download(target) }
+                    .controlSize(.small)
+                    .help("Download Paizo's newer version of this file")
+            }
             if !target.isArchive {
                 OpenControls(url: target.localURL)
             }
@@ -116,6 +127,11 @@ struct EditionRow: View {
     #endif
 
     private var formatDescription: String {
+        guard let updated = edition.entitlement.dateUpdated else { return deliveryDescription }
+        return deliveryDescription + " · Updated " + updated.formatted(date: .abbreviated, time: .omitted)
+    }
+
+    private var deliveryDescription: String {
         let type = edition.entitlement.fileExtension.uppercased()
         if edition.isSavedElsewhere {
             #if os(macOS)

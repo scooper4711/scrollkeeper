@@ -21,6 +21,28 @@ enum Fixtures {
 
     /// A raw entitlement in Paizo's wire format.
     static func record(id: String, name: String, sku: String = "PZO1000E", file: String = "book.pdf") -> [String: Any] {
+        record(RecordFields(id: id, name: name, sku: sku, file: file))
+    }
+
+    /// What a raw entitlement is built from; `updated` is Paizo's last-updated date in its own format.
+    struct RecordFields {
+        var id: String
+        var name: String
+        var sku = "PZO1000E"
+        var file = "book.pdf"
+        var updated = ""
+    }
+
+    static func record(_ fields: RecordFields) -> [String: Any] {
+        let (id, name, sku, file) = (fields.id, fields.name, fields.sku, fields.file)
+        var record = baseRecord(id: id, name: name, sku: sku, file: file)
+        if !fields.updated.isEmpty {
+            record["PackageDateLastUpdated"] = fields.updated
+        }
+        return record
+    }
+
+    private static func baseRecord(id: String, name: String, sku: String, file: String) -> [String: Any] {
         [
             "DigitalPackageID": id,
             "PackageDisplayName": name,

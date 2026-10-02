@@ -9,11 +9,25 @@ public enum LibraryScope: Hashable, Sendable {
     case tag(String)
 }
 
-/// Which titles to keep by whether any of their files has been downloaded.
+/// Which titles have files on disk, and which of those Paizo has updated since.
+public struct LibraryDownloads: Equatable, Sendable {
+    /// Titles with at least one file downloaded.
+    public var downloaded: Set<String>
+    /// Titles with a download that is older than Paizo's current file.
+    public var outdated: Set<String>
+
+    public init(downloaded: Set<String> = [], outdated: Set<String> = []) {
+        self.downloaded = downloaded
+        self.outdated = outdated
+    }
+}
+
+/// Which titles to keep by the state of their downloads.
 public enum DownloadFilter: String, Sendable, CaseIterable, Identifiable {
     case any
     case downloaded
     case notDownloaded
+    case updateAvailable
 
     public var id: String { rawValue }
 
@@ -22,14 +36,16 @@ public enum DownloadFilter: String, Sendable, CaseIterable, Identifiable {
         case .any: "Downloaded or Not"
         case .downloaded: "Downloaded"
         case .notDownloaded: "Not Downloaded"
+        case .updateAvailable: "Update Available"
         }
     }
 
-    func matches(isDownloaded: Bool) -> Bool {
+    func matches(_ item: LibraryTitle, in downloads: LibraryDownloads) -> Bool {
         switch self {
         case .any: true
-        case .downloaded: isDownloaded
-        case .notDownloaded: !isDownloaded
+        case .downloaded: downloads.downloaded.contains(item.id)
+        case .notDownloaded: !downloads.downloaded.contains(item.id)
+        case .updateAvailable: downloads.outdated.contains(item.id)
         }
     }
 }
@@ -61,12 +77,11 @@ public struct LibraryQuery: Equatable, Sendable {
         download = .any
     }
 
-    public func filter(_ items: [LibraryTitle], downloadedIDs: Set<String>) -> [LibraryTitle] {
+    public func filter(_ items: [LibraryTitle], downloads: LibraryDownloads) -> [LibraryTitle] {
         let words = searchText.lowercased().split(separator: " ").map(String.init)
         return items.filter { item in
-            let isDownloaded = downloadedIDs.contains(item.id)
-            return matchesScope(item, isDownloaded: isDownloaded)
-                && matchesFilters(item, isDownloaded: isDownloaded)
+            matchesScope(item, isDownloaded: downloads.downloaded.contains(item.id))
+                && matchesFilters(item, downloads: downloads)
                 && words.allSatisfy(item.searchText.contains)
         }
     }
@@ -81,13 +96,13 @@ public struct LibraryQuery: Equatable, Sendable {
         }
     }
 
-    private func matchesFilters(_ item: LibraryTitle, isDownloaded: Bool) -> Bool {
+    private func matchesFilters(_ item: LibraryTitle, downloads: LibraryDownloads) -> Bool {
         let classification = item.classification
         return (gameSystem == nil || classification.gameSystem == gameSystem)
             && (productLine == nil || classification.productLine == productLine)
             && (format.isEmpty || classification.formats.contains(format))
             && (level.map { classification.levelRange?.contains($0) == true } ?? true)
-            && download.matches(isDownloaded: isDownloaded)
+            && download.matches(item, in: downloads)
     }
 }
 

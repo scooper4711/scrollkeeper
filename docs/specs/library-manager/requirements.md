@@ -101,6 +101,14 @@ once, online or off.
 5.6 The user can delete a downloaded file from within the app.
 5.7 An entitlement that has no file attached on Paizo's side is shown as
     unavailable.
+5.8 Where Paizo's library gives the date a file was last updated, each edition
+    shows it. A download made before that date is marked as out of date and
+    offers "Update", which downloads the current file in its place.
+5.9 Paizo gives an update date only for files it has changed since moving to
+    its current library system, so most older files have none and are never
+    marked. Update dates of files already in the catalog are refreshed by a
+    full resync (2.7), not by a refresh (2.6): Paizo's library cannot be
+    listed in order of last update.
 
 ## 6. Browsing
 
@@ -111,7 +119,7 @@ once, online or off.
 6.3 A search field filters titles as the user types. It matches the title, SKU,
     edition names, series, author, summary and tags. All words must match.
 6.4 Titles can be filtered by game system, product type, format, level and tag,
-    and by download state: downloaded, or not downloaded. A title counts as
+    and by download state: downloaded, not downloaded, or update available. A title counts as
     downloaded when at least one of its files is on disk. "Not downloaded"
     combined with a category shows what in that category is still missing.
 6.4a When the search and filters match nothing and a filter is set, the empty

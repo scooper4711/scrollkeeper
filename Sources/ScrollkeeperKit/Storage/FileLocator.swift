@@ -9,6 +9,8 @@ public struct DownloadTarget: Sendable, Hashable, Identifiable {
     public let remote: RemoteFile
     public let localURL: URL
     public let isArchive: Bool
+    /// When Paizo last updated the file, where its library says so.
+    public var remoteUpdated: Date?
 
     public var id: String { localURL.path }
 
@@ -51,7 +53,8 @@ public struct FileLocator: Sendable {
             itemID: item.id,
             remote: RemoteFile(entitlement: edition.entitlement),
             localURL: localURL,
-            isArchive: edition.isUnpackedArchive
+            isArchive: edition.isUnpackedArchive,
+            remoteUpdated: edition.entitlement.dateUpdated
         )
     }
 
@@ -74,6 +77,30 @@ public struct FileLocator: Sendable {
 
     public func isDownloaded(_ target: DownloadTarget) -> Bool {
         !files(in: target).isEmpty
+    }
+
+    /// When the download was made: the creation date of the file, or of an archive's folder.
+    public func downloadDate(of target: DownloadTarget) -> Date? {
+        guard isDownloaded(target) else { return nil }
+        // A URL remembers the values it has read; ask afresh, since the file may have been replaced.
+        var fresh = target.localURL
+        fresh.removeAllCachedResourceValues()
+        return try? fresh.resourceValues(forKeys: [.creationDateKey]).creationDate
+    }
+
+    /// True when Paizo has updated the file since it was downloaded. Without an update date from
+    /// Paizo, which most older files lack, a download is never considered out of date.
+    public func isOutdated(_ target: DownloadTarget) -> Bool {
+        guard let updated = target.remoteUpdated, let downloaded = downloadDate(of: target) else { return false }
+        return updated > downloaded
+    }
+
+    /// The titles among `items` with a download that Paizo has since updated.
+    public func outdatedItemIDs(among items: [LibraryTitle]) -> Set<String> {
+        let outdated = items.filter { item in
+            item.editions.contains { isOutdated(target(for: $0, in: item)) }
+        }
+        return Set(outdated.map(\.id))
     }
 
     /// The downloaded file, or the unpacked files of an archive in name order. Empty when not downloaded.

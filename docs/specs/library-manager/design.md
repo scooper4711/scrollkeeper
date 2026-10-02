@@ -189,7 +189,14 @@ the body is written with its members in the order the web library uses:
 `key`, `legacy`, `token`, `customer`.
 
 A file counts as downloaded when it exists at that path, so there is no
-separate download database to fall out of step.
+separate download database to fall out of step. For the same reason the time of
+a download is the creation date of the file (or of an archive's folder); a
+download is out of date when the entitlement's update date is later than that.
+
+The web library offers a "last updated" sort order (`sort=updated-desc`), but
+the pages it returns are not in order of the update date in the data, so it
+cannot be used to find recently updated files. Update dates therefore only
+change with a full sync.
 
 Opening is done by the views with `NSWorkspace`: "Open" uses the default
 application, "Open With" lists `urlsForApplications(toOpen:)`.
