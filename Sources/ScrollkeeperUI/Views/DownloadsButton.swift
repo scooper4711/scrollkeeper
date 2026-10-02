@@ -3,40 +3,39 @@ import SwiftUI
 
 /// Toolbar button for the list of downloads that are running, waiting or have failed.
 ///
-/// The button reads only the number of pending downloads, never their progress: a toolbar item
-/// that is redrawn on every step of progress cannot keep a list open on the iPad. For the same
-/// reason the iPad shows the list as a sheet of the window; only the Mac anchors it to the button.
+/// The number of pending downloads is part of the button's own label. It must not be drawn as
+/// an overlay: on iPadOS 26 a toolbar button with an overlay no longer receives its taps.
 struct DownloadsButton: View {
     @Environment(LibraryStore.self) private var store
-    @Binding var isShowingList: Bool
+    @State private var isShowingList = false
 
     var body: some View {
         let pending = store.pendingDownloadCount
         Button {
             isShowingList.toggle()
         } label: {
-            Label("Downloads", systemImage: pending > 0 ? "arrow.down.circle.fill" : "arrow.down.circle")
-        }
-        .overlay(alignment: .topTrailing) {
             if pending > 0 {
-                Text("\(pending)")
-                    .font(.caption2.weight(.bold))
-                    .monospacedDigit()
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 4)
-                    .background(Color.accentColor, in: Capsule())
-                    .offset(x: 8, y: -6)
-                    .allowsHitTesting(false)
+                Label {
+                    // The toolbar takes the button's spoken name from this text, not from the button.
+                    Text("\(pending)")
+                        .monospacedDigit()
+                        .accessibilityLabel("Downloads, \(pending) in progress")
+                } icon: {
+                    Image(systemName: "arrow.down.circle.fill")
+                }
+                .labelStyle(.titleAndIcon)
+            } else {
+                Label("Downloads", systemImage: "arrow.down.circle")
             }
         }
+        .accessibilityLabel(pending > 0 ? "Downloads, \(pending) in progress" : "Downloads")
+        .accessibilityIdentifier("downloads-button")
         .help("Show downloads in progress")
-        #if os(macOS)
         .popover(isPresented: $isShowingList, arrowEdge: .bottom) {
             DownloadsList()
                 .frame(width: 380)
                 .frame(minHeight: 120, maxHeight: 420)
         }
-        #endif
     }
 }
 

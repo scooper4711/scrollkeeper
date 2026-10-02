@@ -238,3 +238,15 @@ once, online or off.
      Settings. That check is silent unless a newer version exists: being up to
      date, or GitHub being unreachable, shows nothing.
 12.6 The iPad app has no update check; it is updated by installing it again.
+
+## 13. Demo mode
+
+13.1 Launched with the argument `-ScrollkeeperDemo`, the app runs against an
+     invented library served from inside the app. It is signed in from the
+     start, contacts neither Paizo nor the Keychain, and keeps its data in a
+     temporary folder that is empty at every launch.
+13.2 The demo library covers the product types and both second-edition games,
+     with made-up titles and no artwork.
+13.3 Demo downloads take several seconds, so that progress, waiting and
+     canceling can be seen and tested.
+13.4 The iPad UI tests run against demo mode.

@@ -3,7 +3,7 @@ import SwiftUI
 
 /// The app, shared by the Mac and the iPad.
 public struct ScrollkeeperApp: App {
-    @State private var store = LibraryStore(environment: .live())
+    @State private var store = LibraryStore(environment: .forLaunch())
     #if os(macOS)
     @State private var updater = AppUpdater.live()
     #endif

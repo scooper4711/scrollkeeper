@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run install dmg icon ipad-simulator ipad-install clean
+.PHONY: build test lint coverage app run install dmg icon ipad-simulator ipad-install ipad-uitest clean
 
 build:
 	swift build
@@ -37,6 +37,10 @@ ipad-simulator:
 # Builds the iPad app and installs it on a connected iPad. IPAD names the iPad.
 ipad-install:
 	scripts/install-ipad.sh
+
+# Runs the iPad UI tests in a simulator, against the app's built-in demo library.
+ipad-uitest:
+	scripts/run-ipad-uitests.sh
 
 clean:
 	rm -rf .build build ios/build

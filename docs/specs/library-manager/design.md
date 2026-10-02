@@ -254,6 +254,13 @@ an alert on the Mac.
 
 ## Testing
 
+`ios/UITests` holds XCUITest cases that drive the iPad app in a simulator. They
+launch it in demo mode (`LibraryEnvironment.demo`, backed by `DemoHTTPClient`
+and `DemoCatalog`), which goes through the same sign-in, sync and download code
+as the real thing. They exist because some faults only show in the running app:
+a toolbar button drawn with an overlay looked normal on iPadOS 26 but no longer
+received its taps, which no unit test could have caught.
+
 Unit tests use Swift Testing. Network types are tested against a stub
 `HTTPClient` with fixtures modeled on real responses but containing no account
 data. `URLSessionHTTPClient` is tested through a `URLProtocol` stub.

@@ -1,16 +1,16 @@
 #!/bin/sh
 # Builds the iPad app for the simulator, installs it and starts it.
 #
-# IPAD_SIMULATOR  name of the simulator to use (default: the first available iPad)
+# IPAD_SIMULATOR  name of the simulator to use (default: an iPad on the newest iOS installed)
 set -eu
 
 cd "$(dirname "$0")/.."
 
-DEVICE="${IPAD_SIMULATOR:-$(xcrun simctl list devices available | sed -n 's/^ *\(iPad[^(]*\) (.*/\1/p' | head -n 1 | sed 's/ *$//')}"
+DEVICE="$(scripts/ipad-simulator-id.sh)"
 [ -n "$DEVICE" ] || { echo "Starting the simulator failed: no iPad simulator is installed." >&2; exit 1; }
 
 xcodebuild -project ios/Scrollkeeper.xcodeproj -scheme Scrollkeeper-iPad \
-    -destination "platform=iOS Simulator,name=$DEVICE" -derivedDataPath ios/build \
+    -destination "platform=iOS Simulator,id=$DEVICE" -derivedDataPath ios/build \
     CODE_SIGNING_ALLOWED=NO build | tail -n 3
 
 APP="ios/build/Build/Products/Debug-iphonesimulator/Scrollkeeper.app"

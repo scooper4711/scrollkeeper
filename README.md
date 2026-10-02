@@ -106,6 +106,18 @@ Xcode and press Run. Open the project itself, not the package folder, and pick
 the Scrollkeeper-iPad scheme.
 
 `make ipad-simulator` builds the app and starts it in an iPad simulator.
+`make ipad-uitest` runs the UI tests there.
+
+## Demo mode
+
+Launching the app with the argument `-ScrollkeeperDemo` starts it with an
+invented library served from inside the app: no account, no network, nothing
+saved between launches, and downloads that take a few seconds. The UI tests use
+it, and it is a way to look around without signing in.
+
+```sh
+open build/Scrollkeeper.app --args -ScrollkeeperDemo
+```
 
 On the iPad, downloads appear in the Files app under On My iPad. Opening a file
 shows a preview; the share button offers every app that accepts the file. The
