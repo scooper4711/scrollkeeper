@@ -72,8 +72,14 @@ followed by a new sign-in.
   requested in parallel. The sync therefore fetches page 1 to learn the count
   and then fetches the remaining pages six at a time.
 - `GET /api/library/entitlement/customer/<packageId>?token=<jwt>` returns one
-  entitlement with the individual files of its package. The app does not use
-  it: an archive is downloaded whole and unpacked instead.
+  entitlement as `{data: {…}}` in under a second: its `DigitalPackage` carries
+  `DateLastUpdated`, `File`, `Filepath` and the individual files of the
+  package. An unknown id is answered with status 500. The app uses it to check
+  for updated files (see "Checking for updated files"); it does not use the
+  individual files, since an archive is downloaded whole and unpacked.
+- `GET /api/library/entitlement/customer?token=<jwt>&page=<n>` returns the same
+  50 entitlements as the page, as JSON, and takes as long. It ignores requests
+  for a larger page. The app does not use it.
 
 ### Downloads
 
@@ -162,6 +168,7 @@ background, so artwork fills in while the catalog is still loading.
 | `catalog.json` | entitlements |
 | `metadata.json` | storefront metadata by SKU |
 | `userdata.json` | tags by title id |
+| `updatechecks.json` | when each edition was last checked for an update |
 | `Covers/<sku>.jpg` | cover artwork |
 
 Titles are derived from these at load time, so improving the classifier never
@@ -195,8 +202,46 @@ download is out of date when the entitlement's update date is later than that.
 
 The web library offers a "last updated" sort order (`sort=updated-desc`), but
 the pages it returns are not in order of the update date in the data, so it
-cannot be used to find recently updated files. Update dates therefore only
-change with a full sync.
+cannot be used to find recently updated files. Checked again in October 2026:
+of the first 100 entitlements in that order 15 had an update date, out of
+order, while the library held 270 dated ones; ascending and descending gave
+nearly the same page. The category and game filters do not help either: only
+some updated files carry them.
+
+### Checking for updated files
+
+Since the list cannot say what changed, the app asks about one edition at a
+time (`LibraryCatalogClient.fetchFileStatus`), which costs Paizo about a
+fifteenth of a library page. `UpdateCheckPolicy` decides what to ask and holds
+every number as a named constant:
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `dailyLookups` | 50 | lookups allowed in any 24 hours |
+| `concurrentLookups` | 2 | lookups in flight at once |
+| `minimumInterval` | 1 day | an edition is not asked about more often |
+| `recentInterval` / `olderInterval` | 7 / 30 days | how often an edition is due |
+| `recentAge` | 1 year | what counts as a recent edition |
+| `listingThreshold` | 900 | downloaded editions above which the list is cheaper |
+| `listingInterval` | 30 days | time between full syncs made for this reason |
+| `listingConcurrentPages` | 2 | pages at once in such a sync |
+
+The policy is a pure function of the downloaded editions, the log and the
+time. It ranks editions by how overdue they are relative to their own interval
+(never checked first), so one rule gives every case: a small library is checked
+daily, a larger one in rotation with recent editions about four times as often
+as older ones. The threshold is where the two costs meet: 900 lookups of about
+a second against 61 pages of about fifteen.
+
+`UpdateCheckLog` (`updatechecks.json`) records when each edition was last
+checked and when the library was last listed in full. The allowance is counted
+from it: the lookups logged in the last 24 hours. A check on opening a title
+is not held back by the allowance but counts toward it.
+
+`FileStatusFetcher` runs the lookups and stops at the first failure, returning
+what it learned. `LibraryStore+UpdateChecks` applies the results to the
+entitlements (update date, file name and path), which makes the existing
+out-of-date logic show the badge.
 
 `LibraryStore.download` keeps the order downloads were asked for. Five run at a
 time; the rest are `waiting` and start as running ones finish. `downloadJobs`

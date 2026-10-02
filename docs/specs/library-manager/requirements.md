@@ -120,8 +120,8 @@ once, online or off.
 5.9 Paizo gives an update date only for files it has changed since moving to
     its current library system, so most older files have none and are never
     marked. Update dates of files already in the catalog are refreshed by a
-    full resync (2.7), not by a refresh (2.6): Paizo's library cannot be
-    listed in order of last update.
+    full resync (2.7) and by the checks of section 14, not by a refresh (2.6):
+    Paizo's library cannot be listed in order of last update.
 
 ## 6. Browsing
 
@@ -250,3 +250,32 @@ once, online or off.
 13.3 Demo downloads take several seconds, so that progress, waiting and
      canceling can be seen and tested.
 13.4 The iPad UI tests run against demo mode.
+
+## 14. Checking for updated files
+
+The app learns that Paizo has replaced a file only by reading that edition's
+record again. These checks are kept small and do not grow with the size of the
+library, so that a customer who has downloaded everything puts no more load on
+Paizo than one who has downloaded a little.
+
+14.1 Only downloaded editions are checked; an update matters for nothing else.
+14.2 Opening a title's details checks its downloaded editions, unless they
+     were checked within the last day.
+14.3 When the app opens and after each refresh (2.6), it checks downloaded
+     editions in the background: at most 50 in any 24 hours, two at a time,
+     and none that was checked within the last day.
+14.4 When more editions are due than the allowance covers, those most overdue
+     go first. A recent edition (released, updated or added to the library
+     within the last year) is due every 7 days, any other every 30 days.
+14.5 A background check stops at the first error and says nothing; the next
+     one carries on.
+14.6 With more than 900 downloaded editions, checking them one by one would
+     cost Paizo more than listing the library. The background check then does
+     no single lookups; instead the app runs a full sync every 30 days, two
+     pages at a time.
+14.7 Any full sync counts as a check of every edition.
+14.8 A check also takes over the file's current name and location at Paizo,
+     so that "Update" downloads the new file.
+14.9 Settings shows when update dates were last checked.
+14.10 The numbers in this section live in one place in the code
+      (`UpdateCheckPolicy`), so they can be tuned together.

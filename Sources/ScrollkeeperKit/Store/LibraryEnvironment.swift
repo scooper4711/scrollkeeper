@@ -9,6 +9,10 @@ public struct LibraryEnvironment: Sendable {
     /// Where downloaded files go unless the user chooses another folder.
     public var defaultDownloadDirectory: URL
     public var settings: SettingsStore
+    /// How much the app asks Paizo about updated files.
+    public var updateCheckPolicy = UpdateCheckPolicy.standard
+    /// The current time. Tests supply their own.
+    public var now: @Sendable () -> Date = { Date() }
 
     public init(
         http: HTTPClient,

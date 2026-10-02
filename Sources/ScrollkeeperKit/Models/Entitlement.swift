@@ -52,6 +52,15 @@ public struct Entitlement: Codable, Sendable, Equatable, Identifiable {
         (fileName as NSString).pathExtension.lowercased()
     }
 
+    /// Takes over what a check found. What Paizo leaves out keeps its known value.
+    mutating func apply(_ status: FileStatus) {
+        dateUpdated = status.dateUpdated ?? dateUpdated
+        if !status.fileName.isEmpty, !status.filePath.isEmpty {
+            fileName = status.fileName
+            filePath = status.filePath
+        }
+    }
+
     private static func isUsableSKU(_ sku: String) -> Bool {
         !sku.isEmpty && sku.lowercased() != "undefined"
     }

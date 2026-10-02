@@ -3,6 +3,7 @@ import SwiftUI
 
 /// Everything about the selected title: cover, facts, summary, editions and tags.
 struct TitleDetailView: View {
+    @Environment(LibraryStore.self) private var store
     let item: LibraryTitle?
 
     var body: some View {
@@ -35,6 +36,8 @@ struct TitleDetailView: View {
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            // Looking at a title is the moment to learn whether its downloads are still current.
+            .task(id: item.id) { store.checkForFileUpdates(of: item) }
         } else {
             ContentUnavailableView("No Title Selected", systemImage: "book.closed")
         }

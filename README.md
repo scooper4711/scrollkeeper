@@ -40,6 +40,9 @@ download.
   Downloads run five at a time, with a list to watch and cancel them.
 - Downloaded files are kept on disk and can be opened straight from the app,
   with the default application or any other that handles the file type.
+- Marks a download that Paizo has updated since, and fetches the new file when
+  you ask. It checks a title when you open it and a few others each day, so
+  the checks stay small however much you have downloaded.
 
 ## Requirements
 

@@ -93,3 +93,16 @@ struct EntitlementRecord: Decodable {
         return result
     }
 }
+
+/// The wire format of the single-entitlement lookup, of which only the package is read.
+struct FileStatusRecord: Decodable {
+    let data: PackageHolderRecord?
+}
+
+struct PackageHolderRecord: Decodable {
+    let package: PackageRecord?
+
+    enum CodingKeys: String, CodingKey {
+        case package = "DigitalPackage"
+    }
+}

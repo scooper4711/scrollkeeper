@@ -134,6 +134,21 @@ private struct DownloadSettings: View {
             Text(footer)
                 .foregroundStyle(.secondary)
         }
+        Section {
+            LabeledContent("Last checked", value: lastUpdateCheck)
+        } header: {
+            Text("Updated Files")
+        } footer: {
+            Text("""
+            Scrollkeeper asks Paizo whether a downloaded file has been updated when you open its title, \
+            and for a few others each day. An updated file is marked so you can download it again.
+            """)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private var lastUpdateCheck: String {
+        store.lastUpdateCheck?.formatted(date: .abbreviated, time: .shortened) ?? "Never"
     }
 
     private var footer: String {
