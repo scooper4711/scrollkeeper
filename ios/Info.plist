@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Shows the app's Documents folder in Files (On My iPad ▸ Scrollkeeper). The generated Info.plist
+	     has no build setting for this key, so it lives here and Xcode merges it in. -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+</dict>
+</plist>
