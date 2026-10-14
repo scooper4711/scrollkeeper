@@ -8,16 +8,17 @@
 [![Platforms](https://img.shields.io/badge/platforms-macOS%2014%2B%20%7C%20iPadOS%2017%2B-informational)](#requirements)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
-An unofficial library manager for your Paizo purchases. A native app for the Mac
-and the iPad for browsing and downloading the digital library attached to your
-[paizo.com](https://store.paizo.com) account.
+Have you bought Paizo PDFs for years and now can't find the one you need? On paizo.com your purchases are one
+long list, every download is another click, a file-per-chapter edition arrives as a zip to unpack, and it is
+hard to tell which files Paizo has updated since you downloaded them.
 
-Scrollkeeper downloads the list of everything you own once, keeps it on your
-device, and gives you instant search, sorting, filtering, cover artwork,
-summaries and tags.
+Scrollkeeper is an unofficial library manager for your Paizo purchases, on the Mac and the iPad. It fetches the
+list of everything you own once and keeps it on your device, with covers, summaries and tags, so you can
+search, sort and filter a few thousand titles at once, online or off. Download a title, or several at a time,
+straight from the list: zips are unpacked for you, and a download Paizo has updated since is marked so you can
+fetch the new file.
 
-It is free, and it only accesses files that your own account is entitled to
-download.
+It is free and open source, and it only accesses files that your own account is entitled to download.
 
 ![Scrollkeeper on the Mac: rulebooks shown as covers, with the details of the selected title](docs/images/mac-library.png)
 
