@@ -67,15 +67,19 @@ and choose Open; from macOS 15 on, that shortcut no longer works.
 
 ## Society Toolkit
 
-Scrollkeeper is part of the Society Toolkit, free Mac apps for Pathfinder and Starfinder players and GMs. Like
-the toolkits in the game, each one grants a +1 item bonus to game prep.
+Scrollkeeper is part of the Society Toolkit, free apps for Pathfinder and Starfinder players and GMs, for the Mac
+and (Turnkeeper and Field Guide) the iPad. Like the toolkits in the game, each one grants a +1 item bonus to game
+prep.
 
-- **Scrollkeeper** keeps your Paizo library in order and
-  downloads your purchases.
+- **Scrollkeeper** keeps your Paizo library in order and downloads your purchases.
 - [Pluck](https://github.com/scooper4711/pluck) gets the art, text and stat blocks out of a PDF.
-- [Pawn Shop](https://github.com/scooper4711/pawn-shop) prints just the pawns you need, single-sided, from
-  your pawn PDFs.
+- [Pawn Shop](https://github.com/scooper4711/pawn-shop) prints just the pawns you need, single-sided, from your
+  pawn PDFs.
 - [Mapsmith](https://github.com/scooper4711/mapsmith) prints battle maps at true scale on ordinary paper.
+- [Turnkeeper](https://github.com/scooper4711/turnkeeper) builds encounters and runs initiative at the table, with
+  the battle card of whoever's turn it is, on the iPad and the Mac.
+- [Field Guide](https://github.com/scooper4711/field-guide) carries the Pathfinder and Starfinder compendium,
+  offline, on the iPad and the Mac.
 
 ## Supporting the project
 
