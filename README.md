@@ -65,10 +65,10 @@ The app is not notarized by Apple, so macOS blocks it the first time:
 After that it opens normally. On macOS 14 you can instead right-click the app
 and choose Open; from macOS 15 on, that shortcut no longer works.
 
-## Society Toolkit
+## Tableside Toolkit
 
-Scrollkeeper is part of the Society Toolkit, free apps for Pathfinder and Starfinder players and GMs, for the Mac
-and (Turnkeeper and Field Guide) the iPad. Like the toolkits in the game, each one grants a +1 item bonus to game
+Scrollkeeper is part of the Tableside Toolkit, free apps for running Pathfinder and Starfinder games in person, for
+the Mac and (Turnkeeper and Field Guide) the iPad. Like any good toolkit, each one grants a +1 item bonus to game
 prep.
 
 - **Scrollkeeper** keeps your Paizo library in order and downloads your purchases.
