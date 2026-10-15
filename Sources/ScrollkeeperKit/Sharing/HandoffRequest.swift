@@ -29,6 +29,14 @@ public enum HandoffApp: String, CaseIterable, Sendable {
         guard let type = UTType(filenameExtension: file.pathExtension) else { return false }
         return acceptedTypes.contains { type.conforms(to: $0) }
     }
+
+    /// The files of a download to send to the app. When a download holds PDFs only those are sent:
+    /// map packs repeat the PDF's pages as images at a lower resolution (150 against 300 ppi).
+    public func filesToSend(from files: [URL]) -> [URL] {
+        let accepted = files.filter(accepts)
+        let pdfs = accepted.filter { UTType(filenameExtension: $0.pathExtension)?.conforms(to: .pdf) == true }
+        return pdfs.isEmpty ? accepted : pdfs
+    }
 }
 
 /// What the requesting app wants done with the title.

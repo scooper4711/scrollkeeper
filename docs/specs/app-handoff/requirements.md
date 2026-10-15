@@ -42,7 +42,10 @@ first such app is Mapsmith, which lets the user pick a map by name.
     Otherwise it is downloaded first, through the normal download queue
     (5.3: at most five at a time), and opened when the download finishes.
 2.5 Only files the requesting app can open are sent to it; for Mapsmith these
-    are PDFs and images. When an archive unpacks to several, all are sent.
+    are PDFs and images. When an archive unpacks to several, its PDFs are sent
+    if it has any, otherwise all its images. Map packs repeat the PDF's pages
+    as images at half the resolution (150 against 300 ppi), so the images add
+    only duplicate windows.
 2.6 While a download runs, Scrollkeeper shows the title, so its progress is
     visible.
 2.7 When the request cannot be met, Scrollkeeper says why in an alert: the

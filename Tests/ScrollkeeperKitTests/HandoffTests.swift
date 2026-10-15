@@ -102,14 +102,24 @@ import Testing
         #expect(revised.paizo.http.count(of: "https://s3.example/signed") == 2)
     }
 
-    @Test func sendsEveryAcceptedFileOfAnUnpackedArchive() async throws {
+    @Test func sendsOnlyThePDFsOfAPackThatAlsoHoldsImages() async throws {
         let store = await harness.makeSyncedStore()
-        let pack = try Fixtures.zipArchive(files: ["a.pdf": "x", "b.jpg": "y", "notes.txt": "z"])
+        let pack = try Fixtures.zipArchive(files: ["a.pdf": "x", "side1.jpg": "y", "notes.txt": "z"])
         harness.paizo.http.on("https://s3.example/signed", data: pack)
 
         let files = try await store.handoffFiles(for: request("PACK"))
 
-        #expect(files.map(\.lastPathComponent).sorted() == ["a.pdf", "b.jpg"])
+        #expect(files.map(\.lastPathComponent) == ["a.pdf"])
+    }
+
+    @Test func sendsEveryImageOfAPackWithoutPDFs() async throws {
+        let store = await harness.makeSyncedStore()
+        let pack = try Fixtures.zipArchive(files: ["side1.jpg": "x", "side2.png": "y", "notes.txt": "z"])
+        harness.paizo.http.on("https://s3.example/signed", data: pack)
+
+        let files = try await store.handoffFiles(for: request("PACK"))
+
+        #expect(files.map(\.lastPathComponent).sorted() == ["side1.jpg", "side2.png"])
     }
 
     @Test func refusesWhenTheArchiveHoldsNothingTheAppOpens() async throws {

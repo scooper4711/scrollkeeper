@@ -73,7 +73,8 @@ to open the files with and the file types it accepts.
    while the target's state is pending it awaits the target's own task, or any
    running task while it waits its turn. A `.failed` or `.interrupted` state
    afterwards → `.downloadFailed`; cancelled → `.cancelled`.
-4. `files(in:)` filtered to the app's accepted types; none → `.noAcceptedFiles`.
+4. `HandoffApp.filesToSend(from:)` over `files(in:)`: the accepted types, and
+   of those only the PDFs when there are any; none → `.noAcceptedFiles`.
 
 ## App glue (macOS, `ScrollkeeperUI`)
 

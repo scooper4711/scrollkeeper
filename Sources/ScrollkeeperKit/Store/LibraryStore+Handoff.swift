@@ -13,7 +13,7 @@ extension LibraryStore {
             await waitForDownload(of: target)
             try checkDownloadFinished(target, of: item)
         }
-        let files = files(in: target).filter(request.app.accepts)
+        let files = request.app.filesToSend(from: files(in: target))
         guard !files.isEmpty else { throw .noAcceptedFiles(title: item.title, app: request.app.name) }
         return files
     }
