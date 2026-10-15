@@ -67,8 +67,8 @@ and choose Open; from macOS 15 on, that shortcut no longer works.
 
 ## Tableside Toolkit
 
-Scrollkeeper is part of the Tableside Toolkit, free apps for running Pathfinder and Starfinder games in person, for
-the Mac and (Turnkeeper and Field Guide) the iPad. Like any good toolkit, each one grants a +1 item bonus to game
+Scrollkeeper is part of the Tableside Toolkit, free Mac apps for running Pathfinder and Starfinder games in person;
+Turnkeeper and Field Guide run on the iPad too. Like any good toolkit, each one grants a +1 item bonus to game
 prep.
 
 - **Scrollkeeper** keeps your Paizo library in order and downloads your purchases.
