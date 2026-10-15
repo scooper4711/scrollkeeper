@@ -81,6 +81,11 @@ prep.
 - [Field Guide](https://github.com/scooper4711/field-guide) carries the Pathfinder and Starfinder compendium,
   offline, on the iPad and the Mac.
 
+On the Mac, Mapsmith's File › Open from Scrollkeeper… searches the maps you own. Scrollkeeper downloads the one you
+pick, if it is not on disk already, and opens it in Mapsmith. Mapsmith finds your maps in a list Scrollkeeper keeps
+for it (`Shared/maps.json`, titles and SKUs only) and asks for one with a `scrollkeeper://open?sku=…&app=mapsmith`
+link. Scrollkeeper opens files only in the toolkit apps it knows, and only through its normal download queue.
+
 ## Supporting the project
 
 The app is free and always will be. If it saves you time and you would like to
@@ -150,12 +155,14 @@ and the iPad each keep their own catalog, tags and downloads.
 |---|---|
 | Catalog, summaries, tags | `~/Library/Application Support/Scrollkeeper/` (inside the app's container on the iPad) |
 | Cover artwork | `~/Library/Application Support/Scrollkeeper/Covers/` |
+| Map list for Mapsmith | `~/Library/Application Support/Scrollkeeper/Shared/maps.json` (Mac only) |
 | Downloaded files | Mac: `~/Library/Application Support/Scrollkeeper/Files/` (changeable in Settings). iPad: the app's Documents folder, shown in Files |
 | Password | macOS Keychain, service `store.paizo.com` |
 
 ## Documentation
 
-The requirements and design are in [`docs/specs/library-manager`](docs/specs/library-manager).
+The requirements and design are in [`docs/specs/library-manager`](docs/specs/library-manager), and those for
+opening titles in other apps in [`docs/specs/app-handoff`](docs/specs/app-handoff).
 
 ## Licenses
 
