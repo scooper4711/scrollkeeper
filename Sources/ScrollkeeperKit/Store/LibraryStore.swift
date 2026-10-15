@@ -77,6 +77,8 @@ public final class LibraryStore {
     /// When Paizo was last asked whether downloaded files have been updated; nil when never.
     public internal(set) var lastUpdateCheck: Date?
     public internal(set) var locator: FileLocator
+    /// True once `start()` has loaded the stored catalog and account.
+    public internal(set) var isLoaded = false
 
     public var query = LibraryQuery() {
         didSet { refreshVisibleItems() }
@@ -131,6 +133,7 @@ public final class LibraryStore {
         if let stored = environment.credentials.load(), stored.isComplete {
             account = .signedIn(email: stored.email)
         }
+        isLoaded = true
         enqueueMissingMetadata()
         if account != .signedOut, !environment.settings.hasCompletedFullSync {
             startFullSync()

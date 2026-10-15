@@ -45,6 +45,17 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <string>Scrollkeeper</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>io.github.scooper4711.Scrollkeeper.handoff</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>scrollkeeper</string>
+            </array>
+        </dict>
+    </array>
     <key>CFBundleShortVersionString</key>
     <string>$VERSION</string>
     <key>CFBundleVersion</key>

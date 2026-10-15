@@ -4,6 +4,7 @@ extension LibraryStore {
     /// The files to send to the app that asked for a title, downloading the title first when it
     /// is missing or out of date. The download goes through the normal queue.
     public func handoffFiles(for request: HandoffRequest) async throws(HandoffError) -> [URL] {
+        await waitUntilLoaded()
         guard account != .signedOut else { throw .signedOut }
         guard let item = item(id: request.sku) else { throw .titleNotFound(sku: request.sku) }
         guard let target = handoffTarget(for: item) else { throw .noEdition(title: item.title) }
@@ -21,6 +22,13 @@ extension LibraryStore {
     func handoffTarget(for item: LibraryTitle) -> DownloadTarget? {
         let actions = quickActions(for: item)
         return actions.isUpdate ? actions.download : actions.open ?? actions.download
+    }
+
+    /// A link can arrive while the app is still starting; it waits for the catalog to be read.
+    private func waitUntilLoaded() async {
+        while !isLoaded {
+            try? await Task.sleep(for: .milliseconds(20))
+        }
     }
 
     /// Waits while the download runs or waits its turn behind others.

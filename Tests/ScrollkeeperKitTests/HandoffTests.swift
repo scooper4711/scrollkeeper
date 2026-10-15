@@ -152,6 +152,17 @@ import Testing
         #expect(files.count == 1)
     }
 
+    @Test func aRequestArrivingAtLaunchWaitsForTheCatalog() async throws {
+        _ = await harness.makeSyncedStore()
+        let store = harness.makeStore()
+        #expect(!store.isLoaded)
+
+        async let files = store.handoffFiles(for: request("MAP"))
+        await store.start()
+
+        #expect(try await files.count == 1)
+    }
+
     @Test func refusesTitlesWithoutAnEditionToDownload() async {
         let store = await harness.makeSyncedStore()
         await #expect(throws: HandoffError.noEdition(title: "Pathfinder Flip-Tiles JPGs")) {
