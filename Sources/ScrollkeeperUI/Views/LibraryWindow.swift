@@ -74,6 +74,9 @@ struct LibraryWindow: View {
             .environment(store)
         }
         #endif
+        #if os(macOS)
+        .modifier(HandoffHandler(selection: $selection))
+        #endif
         #if !os(macOS)
         // On the iPad the details cover part of the library, so they open when a title is chosen.
         .onChange(of: selection) { _, chosen in

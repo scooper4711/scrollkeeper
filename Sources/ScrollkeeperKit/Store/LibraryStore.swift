@@ -77,6 +77,8 @@ public final class LibraryStore {
     /// When Paizo was last asked whether downloaded files have been updated; nil when never.
     public internal(set) var lastUpdateCheck: Date?
     public internal(set) var locator: FileLocator
+    /// True once `start()` has loaded the stored catalog and account.
+    public internal(set) var isLoaded = false
 
     public var query = LibraryQuery() {
         didSet { refreshVisibleItems() }
@@ -104,6 +106,8 @@ public final class LibraryStore {
     var persistTask: Task<Void, Never>?
     var updateCheckLog = UpdateCheckLog()
     var updateCheckTask: Task<Void, Never>?
+    /// The map index entries last written; nil until the first write.
+    var writtenMapEntries: [MapIndex.Entry]?
 
     public init(environment: LibraryEnvironment) {
         self.environment = environment
@@ -129,6 +133,7 @@ public final class LibraryStore {
         if let stored = environment.credentials.load(), stored.isComplete {
             account = .signedIn(email: stored.email)
         }
+        isLoaded = true
         enqueueMissingMetadata()
         if account != .signedOut, !environment.settings.hasCompletedFullSync {
             startFullSync()
@@ -179,6 +184,7 @@ public final class LibraryStore {
         downloadedItemIDs = locator.downloadedItemIDs(among: items)
         outdatedItemIDs = locator.outdatedItemIDs(among: items.filter { downloadedItemIDs.contains($0.id) })
         refreshVisibleItems()
+        writeMapIndexIfChanged()
     }
 
     func refreshVisibleItems() {

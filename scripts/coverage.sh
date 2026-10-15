@@ -12,9 +12,9 @@ swift test --enable-code-coverage --quiet
 
 BIN_PATH="$(swift build --show-bin-path)"
 PROFILE="$BIN_PATH/codecov/default.profdata"
-# The test bundle is named after the package, as is the coverage file SwiftPM reports.
-PACKAGE="$(basename "$(swift test --show-codecov-path)" .json)"
-BINARY="$BIN_PATH/${PACKAGE}PackageTests.xctest/Contents/MacOS/${PACKAGE}PackageTests"
+# Older SwiftPM names the test bundle after the package, newer SwiftPM after the test target.
+BUNDLE="$(ls -dt "$BIN_PATH"/*Tests.xctest | head -n 1)"
+BINARY="$BUNDLE/Contents/MacOS/$(basename "$BUNDLE" .xctest)"
 
 xcrun llvm-cov export -summary-only -instr-profile "$PROFILE" "$BINARY" > "$BIN_PATH/coverage.json"
 
