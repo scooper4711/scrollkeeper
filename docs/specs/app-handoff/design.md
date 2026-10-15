@@ -34,9 +34,11 @@ refers here.
 - `MapIndex.make(from:)` keeps titles whose `classification.productLine` is
   `.maps` and that have a quick-downloadable edition (`Edition.isQuickDownloadable`),
   sorted by `titleSortKey`. `series` is omitted when empty.
-- `MapIndexWriter` keeps the entries it last wrote. `LibraryStore.rebuildItems()`
-  hands it the new entries; when they differ it queues a write through the
-  store's `persist` queue. The file is written atomically with ISO 8601 dates.
+- `LibraryStore.writeMapIndexIfChanged()`, called from `rebuildItems()`,
+  compares the new entries with those it last wrote; when they differ it
+  queues an atomic write through the store's `persist` queue. Nothing is
+  written while the catalog is empty, so Mapsmith can tell "not synced yet"
+  from "no maps".
 - The location is defined once, `MapIndex.fileName` under
   `LibraryEnvironment.sharedDirectory` (`<dataDirectory>/Shared`). In demo
   mode the data folder is temporary, so demo titles never reach Mapsmith.
@@ -59,7 +61,9 @@ to open the files with and the file types it accepts.
 
 `handoffFiles(for:) async throws -> [URL]`:
 
-1. Signed out → `HandoffError.signedOut`. Unknown SKU → `.titleNotFound`.
+1. A link can arrive while the app is starting, so it first waits for
+   `isLoaded` (set by `start()` once the stored catalog and account are read).
+   Signed out → `HandoffError.signedOut`. Unknown SKU → `.titleNotFound`.
 2. `handoffTarget(for:)` takes the quick action's `open` target unless it is
    outdated, else its `download` target; neither → `.noEdition`.
 3. When the target is missing or outdated it calls `download(_:)` and waits:
@@ -74,7 +78,7 @@ to open the files with and the file types it accepts.
   `CFBundleURLTypes`.
 - The library window has `.onOpenURL`, and `.handlesExternalEvents` keeps the
   request in the open window instead of opening another.
-- `HandoffCoordinator` selects the title, awaits `handoffFiles`, looks up the
+- `HandoffHandler`, a view modifier on the library window, selects the title, awaits `handoffFiles`, looks up the
   requesting app with `NSWorkspace.urlForApplication(withBundleIdentifier:)`
   and opens the files with it. Failures become an alert on the window.
 
