@@ -19,8 +19,10 @@ first such app is Mapsmith, which lets the user pick a map by name.
 1.2 The index lists every title classified as Maps that has an edition that
     can be downloaded with one click. Titles that are only an image pack or
     have no file attached are left out.
-1.3 Each entry gives the SKU, the title, and the series and number when
-    classification found them.
+1.3 Each entry gives the SKU, the title, the series and number when
+    classification found them, and whether an up-to-date copy is on disk.
+1.3a The index is rewritten when a download finishes or a copy becomes out of
+    date, so a requesting app can show which titles still need downloading.
 1.4 The index has a format version and the time it was written. A requesting
     app that does not know the version must not guess at its contents.
 1.5 The index is rewritten only when its entries change.
@@ -49,3 +51,7 @@ first such app is Mapsmith, which lets the user pick a map by name.
     the download holds no file the requesting app can open.
 2.8 One request handles one title (5.3b).
 2.9 The iPad app does not handle open requests.
+2.10 The Mac app also handles `scrollkeeper://download?sku=<SKU>&app=<app key>`:
+    the same as an open request, except that nothing is opened and the
+    library window's selection is left alone. The requesting app learns that
+    the download finished from the map index (1.3a).

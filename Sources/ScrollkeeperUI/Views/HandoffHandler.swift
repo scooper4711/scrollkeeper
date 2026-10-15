@@ -3,8 +3,9 @@ import AppKit
 import ScrollkeeperKit
 import SwiftUI
 
-/// Answers `scrollkeeper://open` links from other Tableside Toolkit apps: shows the title,
-/// downloads it when needed and opens its files in the app that asked.
+/// Answers `scrollkeeper://` links from other Tableside Toolkit apps. An open request shows the
+/// title, downloads it when needed and opens its files in the app that asked; a download request
+/// only downloads, in the background.
 struct HandoffHandler: ViewModifier {
     @Environment(LibraryStore.self) private var store
     @Binding var selection: LibraryTitle.ID?
@@ -29,9 +30,13 @@ struct HandoffHandler: ViewModifier {
     private func handle(_ url: URL) async {
         do {
             let request = try HandoffRequest(url: url)
-            selection = request.sku
+            if request.action == .open {
+                selection = request.sku
+            }
             let files = try await store.handoffFiles(for: request)
-            try await open(files, in: request.app)
+            if request.action == .open {
+                try await open(files, in: request.app)
+            }
         } catch {
             failure = error
         }

@@ -26,7 +26,7 @@ refers here.
   "generatedAt": "2026-10-15T18:00:00Z",
   "titles": [
     { "sku": "PZO31005", "title": "Pathfinder Flip-Mat Classics: Forest",
-      "series": "Flip-Mat Classics", "number": null }
+      "series": "Flip-Mat Classics", "number": null, "downloaded": false }
   ]
 }
 ```
@@ -34,7 +34,10 @@ refers here.
 - `MapIndex.make(from:)` keeps titles whose `classification.productLine` is
   `.maps` and that have a quick-downloadable edition (`Edition.isQuickDownloadable`),
   sorted by `titleSortKey`. `series` is omitted when empty.
-- `LibraryStore.writeMapIndexIfChanged()`, called from `rebuildItems()`,
+- `downloaded` is true when the title is in `downloadedItemIDs` and not in
+  `outdatedItemIDs`: then an open request needs no download.
+- `LibraryStore.writeMapIndexIfChanged()`, called from `refreshDownloadedItems()`
+  (which runs after every rebuild and every finished download),
   compares the new entries with those it last wrote; when they differ it
   queues an atomic write through the store's `persist` queue. Nothing is
   written while the catalog is empty, so Mapsmith can tell "not synced yet"
@@ -49,8 +52,8 @@ refers here.
 ## Open request (`Sharing/HandoffRequest.swift`)
 
 `HandoffRequest(url:)` parses the URL and throws `HandoffError` for anything
-other than scheme `scrollkeeper`, host `open`, a non-empty `sku` and a known
-`app`. `HandoffApp` is the allowlist: each case carries the bundle identifier
+other than scheme `scrollkeeper`, a host naming a `HandoffAction` (`open` or
+`download`), a non-empty `sku` and a known `app`. `HandoffApp` is the allowlist: each case carries the bundle identifier
 to open the files with and the file types it accepts.
 
 | Key | Bundle identifier | Accepts |
@@ -78,7 +81,8 @@ to open the files with and the file types it accepts.
   `CFBundleURLTypes`.
 - The library window has `.onOpenURL`, and `.handlesExternalEvents` keeps the
   request in the open window instead of opening another.
-- `HandoffHandler`, a view modifier on the library window, selects the title, awaits `handoffFiles`, looks up the
+- `HandoffHandler`, a view modifier on the library window, selects the title
+  (open requests only), awaits `handoffFiles`, looks up the
   requesting app with `NSWorkspace.urlForApplication(withBundleIdentifier:)`
   and opens the files with it. Failures become an alert on the window.
 

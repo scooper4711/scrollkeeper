@@ -178,13 +178,13 @@ public final class LibraryStore {
     func rebuildItems() {
         items = grouper.makeItems(from: snapshot, reusing: items)
         refreshDownloadedItems()
-        writeMapIndexIfChanged()
     }
 
     func refreshDownloadedItems() {
         downloadedItemIDs = locator.downloadedItemIDs(among: items)
         outdatedItemIDs = locator.outdatedItemIDs(among: items.filter { downloadedItemIDs.contains($0.id) })
         refreshVisibleItems()
+        writeMapIndexIfChanged()
     }
 
     func refreshVisibleItems() {

@@ -31,28 +31,39 @@ public enum HandoffApp: String, CaseIterable, Sendable {
     }
 }
 
-/// A request to open a title in another app: `scrollkeeper://open?sku=<SKU>&app=<app key>`.
+/// What the requesting app wants done with the title.
+public enum HandoffAction: String, Sendable {
+    /// Download when needed, then open the files in the requesting app.
+    case open
+    /// Only download, so the title is ready for later; nothing is opened.
+    case download
+}
+
+/// A request from another app: `scrollkeeper://<open|download>?sku=<SKU>&app=<app key>`.
 public struct HandoffRequest: Equatable, Sendable {
     public static let scheme = "scrollkeeper"
 
     public var sku: String
     public var app: HandoffApp
+    public var action: HandoffAction
 
-    public init(sku: String, app: HandoffApp) {
+    public init(sku: String, app: HandoffApp, action: HandoffAction = .open) {
         self.sku = sku
         self.app = app
+        self.action = action
     }
 
     public init(url: URL) throws(HandoffError) {
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        guard let components, components.scheme == Self.scheme, components.host == "open" else {
+        guard let components, components.scheme == Self.scheme,
+              let action = components.host.flatMap(HandoffAction.init(rawValue:)) else {
             throw .unrecognizedLink
         }
         let value = { (name: String) in components.queryItems?.first { $0.name == name }?.value ?? "" }
         let sku = value("sku")
         guard !sku.isEmpty else { throw .unrecognizedLink }
         guard let app = HandoffApp(rawValue: value("app")) else { throw .unknownApp(value("app")) }
-        self.init(sku: sku, app: app)
+        self.init(sku: sku, app: app, action: action)
     }
 }
 

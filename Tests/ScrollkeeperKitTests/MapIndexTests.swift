@@ -53,6 +53,24 @@ import Testing
         #expect(!FileManager.default.fileExists(atPath: url.path))
     }
 
+    @Test func marksTitlesOnceTheyAreDownloadedAndAgainWhenOutdated() async throws {
+        let store = await harness.makeSyncedStore()
+        #expect(try readIndex().titles.map(\.downloaded) == [false, false])
+
+        let item = try #require(store.item(id: "MAP1"))
+        let target = try #require(store.quickActions(for: item).download)
+        store.download(target)
+        await store.waitForDownloads()
+        await store.waitUntilIdle()
+        #expect(try readIndex().titles.map(\.downloaded) == [true, false])
+
+        store.outdatedItemIDs = []
+        store.downloadedItemIDs = []
+        store.writeMapIndexIfChanged()
+        await store.waitUntilIdle()
+        #expect(try readIndex().titles.map(\.downloaded) == [false, false])
+    }
+
     @Test func entriesCarrySeriesAndNumberWhenClassified() {
         var item = LibraryTitle(id: "M", sku: "M", title: "Flip-Mat #4", editions: [
             Edition(entitlement: Fixtures.entitlement("Flip-Mat #4 PDF", sku: "M"), kind: .singleFile, label: "")
@@ -61,9 +79,11 @@ import Testing
         item.classification.series = "Flip-Mat"
         item.classification.number = 4
 
-        let entries = MapIndex.entries(from: [item])
+        let entries = MapIndex.entries(from: [item], downloaded: ["M"])
 
-        #expect(entries == [MapIndex.Entry(sku: "M", title: "Flip-Mat #4", series: "Flip-Mat", number: 4)])
+        #expect(entries == [
+            MapIndex.Entry(sku: "M", title: "Flip-Mat #4", series: "Flip-Mat", number: 4, downloaded: true)
+        ])
     }
 
     @Test func encodesDatesAsISO8601() throws {

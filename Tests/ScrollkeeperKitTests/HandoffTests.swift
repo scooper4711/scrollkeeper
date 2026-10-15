@@ -12,12 +12,18 @@ import Testing
     @Test(arguments: [
         "https://open?sku=A&app=mapsmith",
         "scrollkeeper://delete?sku=A&app=mapsmith",
+        "scrollkeeper:?sku=A&app=mapsmith",
         "scrollkeeper://open?app=mapsmith",
         "scrollkeeper://open?sku=&app=mapsmith"
     ])
     func refusesLinksItDoesNotRecognize(link: String) throws {
         let url = try #require(URL(string: link))
         #expect(throws: HandoffError.unrecognizedLink) { try HandoffRequest(url: url) }
+    }
+
+    @Test func parsesADownloadOnlyRequest() throws {
+        let url = try #require(URL(string: "scrollkeeper://download?sku=PZO31005&app=mapsmith"))
+        #expect(try HandoffRequest(url: url) == HandoffRequest(sku: "PZO31005", app: .mapsmith, action: .download))
     }
 
     @Test func refusesAppsNotOnTheList() throws {

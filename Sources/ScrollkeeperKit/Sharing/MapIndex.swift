@@ -10,6 +10,8 @@ public struct MapIndex: Codable, Equatable, Sendable {
         public var title: String
         public var series: String?
         public var number: Int?
+        /// True when an up-to-date copy is on disk, so opening it needs no download.
+        public var downloaded: Bool
     }
 
     /// Raised when a change would break apps that read the index.
@@ -21,7 +23,8 @@ public struct MapIndex: Codable, Equatable, Sendable {
     public var titles: [Entry]
 
     /// The entries for the map titles that can be fetched with one click, in title order.
-    public static func entries(from items: [LibraryTitle]) -> [Entry] {
+    /// `downloaded` holds the titles with an up-to-date copy on disk.
+    public static func entries(from items: [LibraryTitle], downloaded: Set<String>) -> [Entry] {
         items
             .filter { $0.classification.productLine == .maps && $0.editions.contains(where: \.isQuickDownloadable) }
             .sorted { $0.titleSortKey < $1.titleSortKey }
@@ -30,7 +33,8 @@ public struct MapIndex: Codable, Equatable, Sendable {
                     sku: item.sku,
                     title: item.title,
                     series: item.series.isEmpty ? nil : item.series,
-                    number: item.classification.number
+                    number: item.classification.number,
+                    downloaded: downloaded.contains(item.id)
                 )
             }
     }
@@ -59,7 +63,7 @@ extension LibraryStore {
     /// before a catalog exists, so requesting apps can tell "not synced yet" from "no maps".
     func writeMapIndexIfChanged() {
         guard !items.isEmpty else { return }
-        let entries = MapIndex.entries(from: items)
+        let entries = MapIndex.entries(from: items, downloaded: downloadedItemIDs.subtracting(outdatedItemIDs))
         guard entries != writtenMapEntries else { return }
         writtenMapEntries = entries
         let index = MapIndex(generatedAt: environment.now(), titles: entries)
