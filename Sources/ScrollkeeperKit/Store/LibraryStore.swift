@@ -104,6 +104,8 @@ public final class LibraryStore {
     var persistTask: Task<Void, Never>?
     var updateCheckLog = UpdateCheckLog()
     var updateCheckTask: Task<Void, Never>?
+    /// The map index entries last written; nil until the first write.
+    var writtenMapEntries: [MapIndex.Entry]?
 
     public init(environment: LibraryEnvironment) {
         self.environment = environment
@@ -173,6 +175,7 @@ public final class LibraryStore {
     func rebuildItems() {
         items = grouper.makeItems(from: snapshot, reusing: items)
         refreshDownloadedItems()
+        writeMapIndexIfChanged()
     }
 
     func refreshDownloadedItems() {
