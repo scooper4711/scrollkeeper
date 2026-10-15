@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-10-15
+
+### Added
+- Send only the PDFs of map packs that also hold images
+- Tell other apps which maps are downloaded
+- Open titles in other apps from scrollkeeper links
+- Resolve open requests from other apps
+- Write an index of owned maps for other apps
+
+### Fixed
+- Find the test bundle under newer SwiftPM layouts
+- Enable file sharing in the iPad app's Info.plist
+- Stop the iPad install when its build fails
+
+### Changed
+- Match the handoff design to the code
+- Describe opening maps from Mapsmith
+- Add app handoff spec
+- Say the toolkit is Mac apps, two also on the iPad
+- Rename the suite the Tableside Toolkit
+- List every Society Toolkit app
+- Remove the statement about the use of AI
+- Open the README with the problem Scrollkeeper solves
+- Add the Society Toolkit section to the README
+
+[1.2.0]: https://github.com/scooper4711/scrollkeeper/releases/tag/v1.2.0
+
 ## [1.1.0] - 2026-10-03
 
 ### Added
