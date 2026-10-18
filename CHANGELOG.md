@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-18
+
+### Added
+- Preview the selected title with Space
+- Show how far a refresh has got
+
+### Fixed
+- Open the book before its maps and posters
+- Put Paizo Printables in a category of their own
+- Bundle the universal binary from where SwiftPM built it
+
+### Changed
+- Specify Space to preview a title
+- Specify Printables, refresh progress and book-first open
+- Allow trial release builds run by hand
+- Remove the empty 1.2.1 changelog entry
+
+[1.3.0]: https://github.com/scooper4711/scrollkeeper/releases/tag/v1.3.0
+
 ## [1.2.0] - 2026-10-15
 
 ### Added
