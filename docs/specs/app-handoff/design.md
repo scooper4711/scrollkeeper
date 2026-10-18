@@ -52,13 +52,26 @@ refers here.
 ## Open request (`Sharing/HandoffRequest.swift`)
 
 `HandoffRequest(url:)` parses the URL and throws `HandoffError` for anything
-other than scheme `scrollkeeper`, a host naming a `HandoffAction` (`open` or
-`download`), a non-empty `sku` and a known `app`. `HandoffApp` is the allowlist: each case carries the bundle identifier
+other than scheme `scrollkeeper`, a host naming a `HandoffAction` (`open`,
+`download` or `index`), a non-empty `sku` (except for `index`) and a known `app`. `HandoffApp` is the allowlist: each case carries the bundle identifier
 to open the files with and the file types it accepts.
 
 | Key | Bundle identifier | Accepts |
 |---|---|---|
 | `mapsmith` | `com.github.scooper4711.Mapsmith` | PDF, images |
+| `pluck` | `io.github.scooper4711.pluck` | PDF |
+
+`HandoffApp.canOpen(_:)` says whether an edition's download suits the app: a
+file of an accepted type, or a zip of documents.
+
+## Title index (`Sharing/TitleIndex.swift`)
+
+The format of the map index, with a `kind` (the product type's label) on each
+entry. `handoffIndex(for:)` waits for `isLoaded`, refuses with `.noCatalog`
+while there are no titles, writes `TitleIndex.entries(from:downloaded:for:)`
+to `LibraryEnvironment.titleIndexURL(for:)` and returns it; a failed write is
+`.indexNotWritten`. `scripts/build-app.sh` exports the file's type in
+`UTExportedTypeDeclarations`.
 
 ## Resolving a request (`Store/LibraryStore+Handoff.swift`)
 
@@ -76,23 +89,36 @@ to open the files with and the file types it accepts.
 4. `HandoffApp.filesToSend(from:)` over `files(in:)`: the accepted types, and
    of those only the PDFs when there are any; none → `.noAcceptedFiles`.
 
+## Status (`Sharing/HandoffStatus.swift`)
+
+`HandoffApp.statusScheme` names the scheme an app takes status links in (`pluck`
+for Pluck, none for Mapsmith). `HandoffStatus` (`downloading(fraction)`,
+`failed(reason)`, `done`) builds the link; `HandoffStatusThrottle` lets through a
+changed state or a whole-percent step; `LibraryStore.handoffStatus(for:)` reads
+the state of the download the request waits for. While `handoffFiles` waits,
+`HandoffHandler` polls it every 250 ms and opens each link through
+`NSWorkspace` with `activates = false`.
+
 ## App glue (macOS, `ScrollkeeperUI`)
 
 - `scripts/build-app.sh` declares the `scrollkeeper` URL scheme in
   `CFBundleURLTypes`.
 - The library window has `.onOpenURL`, and `.handlesExternalEvents` keeps the
   request in the open window instead of opening another.
-- `HandoffHandler`, a view modifier on the library window, selects the title
-  (open requests only), awaits `handoffFiles`, looks up the
+- `HandoffHandler`, a view modifier on the library window, sends an index
+  request's file to the app with `handoffIndex`; for other requests it selects
+  the title (open requests only), awaits `handoffFiles`, looks up the
   requesting app with `NSWorkspace.urlForApplication(withBundleIdentifier:)`
   and opens the files with it. Failures become an alert on the window.
 
 ## Sandboxing
 
-Neither app is sandboxed. If they become sandboxed, the URL handoff and the
-file opening keep working: Launch Services gives the receiving app access to
-the files it is asked to open. Reading `maps.json` from Scrollkeeper's folder
-does not. The index then moves to an App Group container shared by the
+Pluck is sandboxed; Scrollkeeper and Mapsmith are not yet. The URL handoff and
+the file opening work in the sandbox: Launch Services gives the receiving app
+access to the files it is asked to open. That is why a sandboxed app gets its
+list as a title index handed over by an index request, not by reading
+`maps.json` from Scrollkeeper's folder, which it cannot. Mapsmith can move to
+the same request. The index then moves to an App Group container shared by the
 Tableside Toolkit apps (`containerURL(forSecurityApplicationGroupIdentifier:)`),
 which needs a Developer ID team signature and entitlements in both build
 scripts. Only `LibraryEnvironment.sharedDirectory` and Mapsmith's matching
