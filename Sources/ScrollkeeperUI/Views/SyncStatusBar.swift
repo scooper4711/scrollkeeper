@@ -30,7 +30,11 @@ struct SyncStatusBar: View {
 
     private var catalogProgress: some View {
         HStack(spacing: 10) {
-            if store.sync.total > 0 {
+            if store.sync.isRefresh {
+                ProgressView()
+                    .controlSize(.small)
+                Text(store.sync.refreshStatus)
+            } else if store.sync.total > 0 {
                 ProgressView(value: store.sync.fraction)
                     .frame(maxWidth: 260)
                 Text("Loading library: \(store.sync.fetched) of \(store.sync.total) downloads listed")

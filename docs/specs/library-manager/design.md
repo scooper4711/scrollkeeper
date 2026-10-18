@@ -138,6 +138,10 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
   "Singel File", "(Single-File)").
 - `Classifier` — pure function of title, SKU and storefront metadata producing
   a `Classification`. `LevelRangeParser` reads level ranges from summaries.
+  A "Printables" store category or title wins over the title rules, which would
+  otherwise call the packs adventures.
+- `TitleNormalizer.baseTitle` also drops a name given twice over, as Paizo
+  does for some downloads.
 - The title and download folder name are derived from entitlement data only,
   never from storefront metadata, so that paths stay stable when metadata
   arrives later.
@@ -148,7 +152,8 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
 
 - **Full**: page 1, then all remaining pages with six concurrent requests.
 - **Refresh**: pages in order, stopping at the first page that contains no
-  unknown entitlement.
+  unknown entitlement. Each `SyncPage` carries its page number, and the store
+  keeps `SyncProgress.pagesChecked` and `newDownloads` for the status bar.
 - Each page is tried twice. A token reported as expired is renewed once, and a
   download request that fails with a server error is repeated once with a
   renewed token.
@@ -184,7 +189,9 @@ tags are unchanged.
 - a plain file goes to `<download folder>/<title>/<edition name>.<ext>`;
 - a zip of documents (`Edition.isUnpackedArchive`) is unpacked by `ArchiveExtractor` (the system's
   `ditto`) into `<download folder>/<title>/<edition name>/` and the zip is
-  removed. The folder only appears once unpacking has finished, and the
+  removed. Its files are listed with extras (`FileLocator.isExtra`: maps,
+  posters, handouts, pawns, tokens) last, and Open picks the one file that
+  isn't an extra. The folder only appears once unpacking has finished, and the
   upload identifiers Paizo prefixes to file names are stripped;
 - a zip whose name marks it as an asset pack (`Edition.isSavedElsewhere`:
   community use, JPG or PNG sets, logos, icons, audio) is downloaded to a

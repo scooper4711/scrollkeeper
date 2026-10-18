@@ -51,9 +51,12 @@ extension LibraryStore {
         return actions
     }
 
-    /// What opening a download opens: the file itself, or for several unpacked files their folder.
+    /// What opening a download opens: the file itself, the book when an unpacked archive holds one
+    /// beside its maps or posters, or else the folder of the unpacked files.
     public func openableURL(for target: DownloadTarget) -> URL {
         let files = locator.files(in: target)
-        return files.count == 1 ? files[0] : target.localURL
+        if files.count == 1 { return files[0] }
+        let books = files.filter { !FileLocator.isExtra($0) }
+        return books.count == 1 ? books[0] : target.localURL
     }
 }

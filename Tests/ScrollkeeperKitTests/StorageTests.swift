@@ -97,6 +97,18 @@ import Testing
         #expect(locator.localFiles(for: item).count == 2)
     }
 
+    @Test func listsTheBookBeforeItsMapsAndPosters() throws {
+        let item = makeItem()
+        let target = locator.target(for: item.editions[1], in: item)
+        for name in ["PZO13009E 4-Panel Poster.pdf", "PZO13009E Lost Omens High Seas Interactive Maps.pdf",
+                     "PZO13009E.pdf"] {
+            try write(target.localURL.appending(path: name))
+        }
+        #expect(locator.files(in: target).map(\.lastPathComponent) == [
+            "PZO13009E.pdf", "PZO13009E 4-Panel Poster.pdf", "PZO13009E Lost Omens High Seas Interactive Maps.pdf"
+        ])
+    }
+
     @Test func otherZipsAreSavedWhereTheUserChooses() {
         let entitlement = Fixtures.entitlement("Community Use Package: Runes", sku: "PZOCUP1E", file: "runes.zip")
         let item = EntitlementGrouper().makeItems(from: CatalogSnapshot(entitlements: [entitlement]))[0]

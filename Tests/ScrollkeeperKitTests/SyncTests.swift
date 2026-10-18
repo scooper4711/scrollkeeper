@@ -83,6 +83,7 @@ private actor PageLog {
 
         let pages = await log.pages
         #expect(pages.map { $0.entitlements.map(\.packageID) } == [["p1"], []])
+        #expect(pages.map(\.pageNumber) == [1, 2])
         #expect(pages.last?.fetchedCount == 6)
         #expect(paizo.http.count(of: "customer-library") == 2)
     }

@@ -14,7 +14,11 @@ import Testing
          "Starfinder Adventure: Tales from the Vast"),
         ("Pathfinder Flip-Mat: Boarding School - PDF", "Pathfinder Flip-Mat: Boarding School"),
         ("Mummy\u{2019}s Mask PDFs", "Mummy's Mask"),
-        ("Pathfinder Society Scenario #3-25: Storming the Gate", "Pathfinder Society Scenario #3-25: Storming the Gate")
+        ("Pathfinder Society Scenario #3-25: Storming the Gate",
+         "Pathfinder Society Scenario #3-25: Storming the Gate"),
+        ("PZO14505E Pathfinder Printables Over the Waves (Season 2) Adventure Pack 1 Pathfinder Printables Over the "
+         + "Waves (Season 2) Adventure Pack 1", "Pathfinder Printables Over the Waves (Season 2) Adventure Pack 1"),
+        ("Pathfinder Pathfinder", "Pathfinder")
     ])
     func baseTitleStripsSKUAndFormatSuffixes(name: String, expected: String) {
         #expect(TitleNormalizer.baseTitle(name) == expected)
