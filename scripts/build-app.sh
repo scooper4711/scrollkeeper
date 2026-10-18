@@ -58,6 +58,26 @@ cat > "$APP/Contents/Info.plist" <<PLIST
             </array>
         </dict>
     </array>
+    <key>UTExportedTypeDeclarations</key>
+    <array>
+        <dict>
+            <key>UTTypeIdentifier</key>
+            <string>io.github.scooper4711.scrollkeeper.index</string>
+            <key>UTTypeDescription</key>
+            <string>Scrollkeeper Library List</string>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.json</string>
+            </array>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <array>
+                    <string>scrollkeeperindex</string>
+                </array>
+            </dict>
+        </dict>
+    </array>
     <key>CFBundleShortVersionString</key>
     <string>$VERSION</string>
     <key>CFBundleVersion</key>

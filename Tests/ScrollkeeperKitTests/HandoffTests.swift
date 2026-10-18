@@ -26,6 +26,19 @@ import Testing
         #expect(try HandoffRequest(url: url) == HandoffRequest(sku: "PZO31005", app: .mapsmith, action: .download))
     }
 
+    @Test func parsesAnIndexRequestWithoutATitle() throws {
+        let url = try #require(URL(string: "scrollkeeper://index?app=pluck"))
+        #expect(try HandoffRequest(url: url) == HandoffRequest(sku: "", app: .pluck, action: .index))
+    }
+
+    @Test func pluckTakesPDFsOnly() {
+        let app = HandoffApp.pluck
+        #expect(app.accepts(URL(filePath: "/books/core.pdf")))
+        #expect(!app.accepts(URL(filePath: "/books/core.png")))
+        #expect(app.bundleIdentifier == "io.github.scooper4711.pluck")
+        #expect(app.name == "Pluck")
+    }
+
     @Test func refusesAppsNotOnTheList() throws {
         let url = try #require(URL(string: "scrollkeeper://open?sku=A&app=terminal"))
         #expect(throws: HandoffError.unknownApp("terminal")) { try HandoffRequest(url: url) }
@@ -45,7 +58,8 @@ import Testing
     @Test(arguments: [
         HandoffError.unrecognizedLink, .unknownApp("x"), .signedOut, .titleNotFound(sku: "S"),
         .noEdition(title: "T"), .downloadFailed(title: "T", reason: "R"), .cancelled(title: "T"),
-        .noAcceptedFiles(title: "T", app: "A"), .appNotInstalled(app: "A")
+        .noAcceptedFiles(title: "T", app: "A"), .appNotInstalled(app: "A"), .noCatalog,
+        .indexNotWritten(app: "A", reason: "R")
     ])
     func everyErrorExplainsWhatFailed(error: HandoffError) {
         let description = error.errorDescription ?? ""
