@@ -154,6 +154,11 @@ once, online or off.
       the Mac and as a preview of all of them on the iPad.
 6.5 Selecting a title shows its details: cover, summary, metadata, editions
     with their download actions, and tags.
+6.6 Space previews the selected title in Quick Look, as in Finder, in every
+    view: the files of the copy Open would open, starting with the book and
+    with arrows to its maps or posters, or the cover when nothing is
+    downloaded. Quick Look's own button opens the file in Preview; Space or
+    Escape closes it.
 
 ## 7. Classification
 

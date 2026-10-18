@@ -23,6 +23,7 @@ no command-line tools to call.
 |---|---|---|
 | Downloads folder | `~/Library/Application Support/…/Files`, changeable | the app's Documents folder, shown in the Files app |
 | Open | default application (`NSWorkspace`) | Quick Look preview in the app |
+| Space | Quick Look panel (`quickLookPreview`) of `previewFiles(for:)` | the same, with a keyboard |
 | Other applications | "Open With" menu | share sheet |
 | Zips the app does not keep | save panel, downloaded straight to the chosen place | downloaded to a temporary folder, then the share sheet |
 | File tags | Finder tags, both directions | none; tags live in the app |
