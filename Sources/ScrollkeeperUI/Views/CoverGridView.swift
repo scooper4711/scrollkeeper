@@ -5,6 +5,8 @@ import SwiftUI
 struct CoverGridView: View {
     @Environment(LibraryStore.self) private var store
     @Binding var selection: LibraryTitle.ID?
+    /// Clicking a cover takes the keyboard from the search field, so Space previews (`SpacePreview`).
+    @FocusState private var isFocused: Bool
 
     private let columns = [GridItem(.adaptive(minimum: 140, maximum: 190), spacing: 18, alignment: .top)]
 
@@ -13,11 +15,17 @@ struct CoverGridView: View {
             LazyVGrid(columns: columns, spacing: 20) {
                 ForEach(store.visibleItems) { item in
                     CoverCell(item: item, isSelected: selection == item.id)
-                        .onTapGesture { selection = item.id }
+                        .onTapGesture {
+                            selection = item.id
+                            isFocused = true
+                        }
                 }
             }
             .padding(18)
         }
+        .focusable()
+        .focusEffectDisabled()
+        .focused($isFocused)
     }
 }
 

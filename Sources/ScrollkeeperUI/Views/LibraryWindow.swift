@@ -48,6 +48,7 @@ struct LibraryWindow: View {
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220)
         } detail: {
             catalog
+                .modifier(SpacePreview(selection: selection))
                 .safeAreaInset(edge: .bottom, spacing: 0) { SyncStatusBar() }
                 .navigationTitle(title)
             #if os(macOS)
