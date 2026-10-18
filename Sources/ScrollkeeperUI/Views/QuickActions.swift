@@ -5,7 +5,7 @@ import SwiftUI
 import QuickLook
 #endif
 
-/// What the iPad previews when a title is opened: the tapped file and the others it came with.
+/// What Quick Look shows: the current file and the others it came with (the iPad's Open, and Space).
 struct PreviewRequest {
     var current: URL?
     var files: [URL] = []
