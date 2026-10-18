@@ -31,6 +31,7 @@ public enum ProductLine: String, Codable, Sendable, CaseIterable, Identifiable {
     case quest
     case bounty
     case oneShot
+    case printables
     case rulebook
     case setting
     case playerCompanion
@@ -51,6 +52,7 @@ public enum ProductLine: String, Codable, Sendable, CaseIterable, Identifiable {
         case .quest: "Quests"
         case .bounty: "Bounties"
         case .oneShot: "One-Shots"
+        case .printables: "Paizo Printables"
         case .rulebook: "Rulebooks"
         case .setting: "Setting"
         case .playerCompanion: "Player Companions"
@@ -71,6 +73,7 @@ public enum ProductLine: String, Codable, Sendable, CaseIterable, Identifiable {
         case .quest: "flag"
         case .bounty: "target"
         case .oneShot: "bolt"
+        case .printables: "printer"
         case .rulebook: "text.book.closed"
         case .setting: "globe"
         case .playerCompanion: "person.text.rectangle"

@@ -39,6 +39,32 @@ import Testing
         #expect(classify(title).productLine == expected)
     }
 
+    @Test func putsPaizoPrintablesInTheirOwnLine() {
+        let metadata = Fixtures.metadata(
+            sku: "PZO14501E", categories: ["Pathfinder", "Adventures", "Paizo Printables PDFs"]
+        )
+        #expect(classify("Hellfire Crisis Adventure Pack 1", metadata: metadata).productLine == .printables)
+        #expect(classify("Pathfinder Printables Over the Waves (Season 2) Adventure Pack 2").productLine == .printables)
+    }
+
+    @Test(arguments: [
+        ("Pathfinder Printables Hellfire Crisis (Season 1) Adventure Pack 3", "Hellfire Crisis", 1, 3 as Int?),
+        ("Pathfinder Printables Over the Waves (Season 2) BONUS Adventure Pack", "Over the Waves", 2, nil)
+    ])
+    func readsPrintablesSeriesSeasonAndPack(storeName: String, series: String, season: Int, pack: Int?) {
+        var metadata = Fixtures.metadata(sku: "PZO14503E", categories: ["Paizo Printables PDFs"])
+        metadata.name = storeName
+        let classification = classify("Hellfire Crisis Adventure Pack 3", metadata: metadata)
+        #expect(classification.series == series)
+        #expect(classification.season == season)
+        #expect(classification.number == pack)
+    }
+
+    @Test func readsPrintablesSeasonFromTheTitleWithoutAStoreName() {
+        let classification = classify("Pathfinder Printables Over the Waves (Season 2) Adventure Pack 1")
+        #expect(classification.series == "Over the Waves" && classification.season == 2 && classification.number == 1)
+    }
+
     @Test func fallsBackToStoreCategoryForProductLine() {
         let metadata = Fixtures.metadata(sku: "PZO22005E", categories: ["Starfinder", "Rulebooks", "Digital Editions"])
         #expect(classify("Starfinder Galactic Ancestries", metadata: metadata).productLine == .rulebook)

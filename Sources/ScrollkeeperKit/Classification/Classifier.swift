@@ -29,11 +29,11 @@ public struct Classifier: Sendable {
         result.levelRange = LevelRangeParser.parseField(input.metadata.startingLevel)
             ?? LevelRangeParser.parse(title)
             ?? LevelRangeParser.parse(input.metadata.summary)
-        applySeries(to: &result, title: title)
+        applySeries(to: &result, title: title, storeName: TitleNormalizer.plainPunctuation(input.metadata.name))
         return result
     }
 
-    private func applySeries(to result: inout Classification, title: String) {
+    private func applySeries(to result: inout Classification, title: String, storeName: String) {
         switch result.productLine {
         case .adventurePath:
             applyAdventurePath(to: &result, title: title)
@@ -41,6 +41,8 @@ public struct Classifier: Sendable {
             applySeason(to: &result, title: title)
         case .quest, .bounty, .oneShot:
             result.number = Self.hashNumber.captures(in: title).last.flatMap { Int($0) }
+        case .printables:
+            applyPrintablesPack(to: &result, name: storeName.isEmpty ? title : storeName)
         default:
             break
         }
@@ -69,6 +71,19 @@ public struct Classifier: Sendable {
         result.series = (result.gameSystem.isSecondEdition ? "Year " : "Season ") + String(season)
     }
 
+    /// A Paizo Printables pack: "Pathfinder Printables Hellfire Crisis (Season 1) Adventure Pack 3". Only the store
+    /// name is sure to carry the season; a bonus pack has no number.
+    private func applyPrintablesPack(to result: inout Classification, name: String) {
+        let captures = Self.printablesPack.captures(in: name)
+        guard captures.count == 4 else { return }
+        result.series = captures[1]
+        result.season = Int(captures[2])
+        result.number = Int(captures[3])
+    }
+
+    private static let printablesPack = TextPattern(
+        #"(?:.*Printables\s+)?(.+?)\s+\(Season\s+(\d+)\)\s+(?:BONUS\s+)?Adventure Pack(?:\s+(\d+))?"#
+    )
     private static let adventurePathVolume = TextPattern(#"Adventure Path #(\d+):.*\((.+?)\s+(\d+) of (\d+)\)"#)
     private static let adventurePathSeries = TextPattern(#"Adventure Path:\s*(.+)$"#)
     private static let adventurePathExtras = TextPattern(
@@ -83,10 +98,14 @@ public struct Classifier: Sendable {
 /// Ordered rules that decide the product type from the title, falling back to the store category.
 enum ProductLineRules {
     static func productLine(title: String, categoryPath: [String]) -> ProductLine {
+        let categories = categoryPath.joined(separator: " / ")
+        // Paizo Printables' adventure packs are adventures by name, but a catalog of their own.
+        if printables.matches(categories) || printables.matches(title) {
+            return .printables
+        }
         if let rule = titleRules.first(where: { $0.pattern.matches(title) }) {
             return rule.line
         }
-        let categories = categoryPath.joined(separator: " / ")
         return categoryRules.first(where: { $0.pattern.matches(categories) })?.line ?? .other
     }
 
@@ -102,6 +121,8 @@ enum ProductLineRules {
 
     // Order matters: a numbered adventure path volume wins over words in its campaign name,
     // and accessories named after a campaign (pawns, maps) win over the campaign's line.
+    private static let printables = TextPattern(#"\bPrintables\b"#)
+
     private static let titleRules = [
         Rule(.communityUse, #"Community Use"#),
         Rule(.adventurePath, #"Adventure Path #\d+"#),

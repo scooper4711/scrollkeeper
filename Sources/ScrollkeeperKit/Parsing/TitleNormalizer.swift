@@ -10,7 +10,16 @@ enum TitleNormalizer {
             previous = title
             title = trailingSuffixes.reduce(title) { $1.removingMatches(in: $0) }
         }
-        return title.trimmingCharacters(in: .whitespaces)
+        return withoutRepeat(title.trimmingCharacters(in: .whitespaces))
+    }
+
+    /// Paizo sometimes gives a name twice over ("Adventure Pack 1 Adventure Pack 1"); the second copy is dropped.
+    private static func withoutRepeat(_ title: String) -> String {
+        let words = title.split(separator: " ")
+        guard words.count >= 2, words.count.isMultiple(of: 2),
+              words[..<(words.count / 2)] == words[(words.count / 2)...]
+        else { return title }
+        return words[..<(words.count / 2)].joined(separator: " ")
     }
 
     /// Replaces typographic apostrophes and dashes so that patterns only deal with ASCII ones.
