@@ -5,16 +5,28 @@ import UniformTypeIdentifiers
 /// a link cannot make Scrollkeeper start an arbitrary application.
 public enum HandoffApp: String, CaseIterable, Sendable {
     case mapsmith
+    case pluck
 
     public var name: String {
         switch self {
         case .mapsmith: "Mapsmith"
+        case .pluck: "Pluck"
         }
     }
 
     public var bundleIdentifier: String {
         switch self {
         case .mapsmith: "com.github.scooper4711.Mapsmith"
+        case .pluck: "io.github.scooper4711.pluck"
+        }
+    }
+
+    /// The scheme of the links that tell the app how its request is going (`HandoffStatus`); nil when it
+    /// takes none and the user watches Scrollkeeper instead.
+    public var statusScheme: String? {
+        switch self {
+        case .mapsmith: nil
+        case .pluck: "pluck"
         }
     }
 
@@ -22,11 +34,21 @@ public enum HandoffApp: String, CaseIterable, Sendable {
     public var acceptedTypes: [UTType] {
         switch self {
         case .mapsmith: [.pdf, .image]
+        case .pluck: [.pdf]
         }
     }
 
     public func accepts(_ file: URL) -> Bool {
-        guard let type = UTType(filenameExtension: file.pathExtension) else { return false }
+        accepts(fileExtension: file.pathExtension)
+    }
+
+    /// True when the edition's download is a file the app opens, or a zip of documents that may hold some.
+    public func canOpen(_ edition: Edition) -> Bool {
+        edition.isUnpackedArchive || accepts(fileExtension: edition.entitlement.fileExtension)
+    }
+
+    private func accepts(fileExtension: String) -> Bool {
+        guard let type = UTType(filenameExtension: fileExtension) else { return false }
         return acceptedTypes.contains { type.conforms(to: $0) }
     }
 
@@ -45,9 +67,12 @@ public enum HandoffAction: String, Sendable {
     case open
     /// Only download, so the title is ready for later; nothing is opened.
     case download
+    /// Send the app the list of titles it can open (`TitleIndex`), as a file it is given access to.
+    case index
 }
 
-/// A request from another app: `scrollkeeper://<open|download>?sku=<SKU>&app=<app key>`.
+/// A request from another app: `scrollkeeper://<open|download>?sku=<SKU>&app=<app key>`, or
+/// `scrollkeeper://index?app=<app key>`, which names no title.
 public struct HandoffRequest: Equatable, Sendable {
     public static let scheme = "scrollkeeper"
 
@@ -69,7 +94,7 @@ public struct HandoffRequest: Equatable, Sendable {
         }
         let value = { (name: String) in components.queryItems?.first { $0.name == name }?.value ?? "" }
         let sku = value("sku")
-        guard !sku.isEmpty else { throw .unrecognizedLink }
+        guard action == .index || !sku.isEmpty else { throw .unrecognizedLink }
         guard let app = HandoffApp(rawValue: value("app")) else { throw .unknownApp(value("app")) }
         self.init(sku: sku, app: app, action: action)
     }
@@ -86,6 +111,8 @@ public enum HandoffError: Error, Equatable, LocalizedError {
     case cancelled(title: String)
     case noAcceptedFiles(title: String, app: String)
     case appNotInstalled(app: String)
+    case noCatalog
+    case indexNotWritten(app: String, reason: String)
 
     public var errorDescription: String? {
         switch self {
@@ -107,6 +134,10 @@ public enum HandoffError: Error, Equatable, LocalizedError {
             "Opening \(title) failed: its download holds no file \(app) can open."
         case let .appNotInstalled(app):
             "Opening the title failed: \(app) is not installed."
+        case .noCatalog:
+            "Sending your library failed: Scrollkeeper hasn't loaded it yet. Sign in from Settings."
+        case let .indexNotWritten(app, reason):
+            "Sending your library to \(app) failed: \(reason)"
         }
     }
 }

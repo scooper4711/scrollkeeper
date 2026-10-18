@@ -18,6 +18,26 @@ extension LibraryStore {
         return files
     }
 
+    /// Writes the list of titles `app` can open and returns where it is, for handing to the app.
+    public func handoffIndex(for app: HandoffApp) async throws(HandoffError) -> URL {
+        await waitUntilLoaded()
+        guard !items.isEmpty else { throw .noCatalog }
+        let downloaded = downloadedItemIDs.subtracting(outdatedItemIDs)
+        let index = TitleIndex(
+            generatedAt: environment.now(), titles: TitleIndex.entries(from: items, downloaded: downloaded, for: app)
+        )
+        let url = environment.titleIndexURL(for: app)
+        do {
+            try FileManager.default.createDirectory(
+                at: url.deletingLastPathComponent(), withIntermediateDirectories: true
+            )
+            try index.encoded().write(to: url, options: .atomic)
+        } catch {
+            throw .indexNotWritten(app: app.name, reason: error.localizedDescription)
+        }
+        return url
+    }
+
     /// The copy on disk when it is up to date, otherwise the edition the quick actions download.
     func handoffTarget(for item: LibraryTitle) -> DownloadTarget? {
         let actions = quickActions(for: item)
