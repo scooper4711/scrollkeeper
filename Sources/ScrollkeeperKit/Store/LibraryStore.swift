@@ -7,8 +7,20 @@ public struct SyncProgress: Equatable, Sendable {
     public var total = 0
     /// Why the last sync stopped early; empty when it did not.
     public var failure = ""
+    /// A refresh checks pages until one holds nothing new, so it can't tell how far it has to go.
+    public var isRefresh = false
+    public var pagesChecked = 0
+    public var newDownloads = 0
 
     public var fraction: Double { total > 0 ? min(1, Double(fetched) / Double(total)) : 0 }
+
+    /// What a running refresh has done so far, for the status bar.
+    public var refreshStatus: String {
+        guard pagesChecked > 0 else { return "Checking Paizo for new titles…" }
+        let pages = pagesChecked == 1 ? "1 page" : "\(pagesChecked) pages"
+        let found = newDownloads == 1 ? "1 new download" : "\(newDownloads) new downloads"
+        return "Checking for new titles: \(pages) checked, \(found) so far…"
+    }
 }
 
 public struct ArtworkProgress: Equatable, Sendable {

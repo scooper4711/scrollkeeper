@@ -72,6 +72,17 @@ import Testing
         #expect(store.item(id: "PZO3E")?.classification.productLine == .bounty)
         #expect(store.sync.fetched == 4)
         #expect(store.sync.failure.isEmpty)
+        #expect(store.sync.isRefresh && store.sync.newDownloads == 1 && store.sync.pagesChecked >= 1)
+    }
+
+    @Test(arguments: [
+        (0, 0, "Checking Paizo for new titles…"),
+        (1, 1, "Checking for new titles: 1 page checked, 1 new download so far…"),
+        (4, 9, "Checking for new titles: 4 pages checked, 9 new downloads so far…")
+    ])
+    func refreshStatusSaysHowFarARefreshHasGot(pages: Int, found: Int, expected: String) {
+        let progress = SyncProgress(isRunning: true, isRefresh: true, pagesChecked: pages, newDownloads: found)
+        #expect(progress.refreshStatus == expected)
     }
 
     @Test func fullSyncDropsEntitlementsPaizoNoLongerLists() async {

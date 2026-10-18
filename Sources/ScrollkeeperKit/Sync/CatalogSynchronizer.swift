@@ -5,6 +5,8 @@ public struct SyncPage: Sendable, Equatable {
     public var entitlements: [Entitlement]
     public var fetchedCount: Int
     public var totalCount: Int
+    /// The page's number in the listing; 0 when pages arrive out of order, as in a full sync.
+    public var pageNumber = 0
 }
 
 public typealias SyncPageHandler = @Sendable (SyncPage) async -> Void
@@ -63,7 +65,8 @@ public struct CatalogSynchronizer: Sendable {
             }
             let fresh = page.entitlements.filter { !known.contains($0.packageID) }
             known.formUnion(fresh.map(\.packageID))
-            await onPage(SyncPage(entitlements: fresh, fetchedCount: known.count, totalCount: page.totalCount))
+            await onPage(SyncPage(entitlements: fresh, fetchedCount: known.count, totalCount: page.totalCount,
+                                  pageNumber: number))
             if fresh.isEmpty {
                 return
             }

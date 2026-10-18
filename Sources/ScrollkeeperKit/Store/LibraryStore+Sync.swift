@@ -22,7 +22,7 @@ extension LibraryStore {
     /// Fetches only entitlements newer than the ones already known.
     public func startRefresh() {
         let known = Set(snapshot.entitlements.map(\.packageID))
-        runSync { store in
+        runSync(SyncProgress(isRunning: true, total: sync.total, isRefresh: true)) { store in
             try await CatalogSynchronizer(client: store.catalog).fetchNew(knownIDs: known) { page in
                 await store.merge(page)
             }
@@ -47,9 +47,12 @@ extension LibraryStore {
         await persistTask?.value
     }
 
-    private func runSync(_ work: @escaping @Sendable (LibraryStore) async throws -> Void) {
+    /// Runs `work` as the one sync, starting from `progress` (a full sync's when not given).
+    private func runSync(
+        _ progress: SyncProgress? = nil, _ work: @escaping @Sendable (LibraryStore) async throws -> Void
+    ) {
         guard !sync.isRunning else { return }
-        sync = SyncProgress(isRunning: true, fetched: 0, total: sync.total)
+        sync = progress ?? SyncProgress(isRunning: true, fetched: 0, total: sync.total)
         syncTask = Task { [weak self] in
             guard let self else { return }
             var failure = ""
@@ -92,6 +95,10 @@ extension LibraryStore {
             }
         }
         snapshot.entitlements.append(contentsOf: added)
+        if sync.isRefresh {
+            sync.pagesChecked = max(sync.pagesChecked, page.pageNumber)
+            sync.newDownloads += added.count
+        }
         sync.fetched = page.fetchedCount
         sync.total = page.totalCount
         rebuildItems()
