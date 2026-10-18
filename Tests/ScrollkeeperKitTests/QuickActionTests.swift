@@ -87,7 +87,7 @@ import Testing
         #expect(actions.download == nil)
     }
 
-    @Test func unpackedArchiveOpensItsFolderUnlessItHoldsOneFile() async throws {
+    @Test func unpackedArchiveOpensItsBookOrElseItsFolder() async throws {
         let store = await makeStore()
         let item = try #require(store.item(id: "CORE"))
         let chapters = try #require(item.editions.first { $0.kind == .filePerChapter })
@@ -103,6 +103,15 @@ import Testing
         store.download(target)
         await store.waitForDownloads()
         #expect(store.openableURL(for: target) == target.localURL)
+
+        let bookAndMaps = try Fixtures.zipArchive(files: [
+            "PZO90200 Seven Dooms for Sandpoint Interactive Maps.pdf": "x", "PZO90200E.pdf": "y",
+            "4-Panel Poster.pdf": "z"
+        ])
+        harness.paizo.http.on("https://s3.example/signed", data: bookAndMaps)
+        store.download(target)
+        await store.waitForDownloads()
+        #expect(store.openableURL(for: target).lastPathComponent == "PZO90200E.pdf")
     }
 }
 

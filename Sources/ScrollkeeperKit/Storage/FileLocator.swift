@@ -135,8 +135,20 @@ public struct FileLocator: Sendable {
             let isFile = (try? url.resourceValues(forKeys: Set(keys)).isRegularFile) ?? false
             return isFile && url.pathExtension != Self.partialExtension
         }
-        return files.sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
+        return files.sorted { first, second in
+            let (firstExtra, secondExtra) = (Self.isExtra(first), Self.isExtra(second))
+            if firstExtra != secondExtra { return secondExtra }
+            return first.path.localizedStandardCompare(second.path) == .orderedAscending
+        }
     }
+
+    /// True for a file that comes with the book rather than being it: its interactive maps, poster or
+    /// handouts. Those come last, so the book is what opens first.
+    public static func isExtra(_ file: URL) -> Bool {
+        extraFile.matches(file.deletingPathExtension().lastPathComponent)
+    }
+
+    private static let extraFile = TextPattern(#"\bmaps?\b|poster|handouts?|\bpawns?\b|\btokens?\b"#)
 
     /// Entitlements of one title can share a name; those get part of their identifier appended.
     private func baseName(for edition: Edition, in item: LibraryTitle) -> String {
