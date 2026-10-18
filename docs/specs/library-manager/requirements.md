@@ -48,7 +48,9 @@ once, online or off.
 2.5 The catalog is stored on disk and loaded at the next launch without
     contacting Paizo.
 2.6 The user can ask for a refresh. A refresh fetches only the newest
-    entitlements and stops when it reaches ones that are already known.
+    entitlements and stops when it reaches ones that are already known. Since
+    it can't know how many pages that takes, it shows how many pages it has
+    checked and how many new downloads it has found instead of a progress bar.
 2.7 The user can ask for a full resync.
 2.8 The user can cancel a running sync. What was already fetched is kept.
 2.9 A failed page is retried; if it still fails, the sync reports the error and
@@ -146,8 +148,10 @@ once, online or off.
       zips that ask where to be saved (5.2a) are never picked.
     - Update, when a copy on disk is out of date (5.8).
     - Open, when there is a copy on disk. It opens with the default
-      application for the file; several unpacked files open as their folder
-      on the Mac and as a preview of all of them on the iPad.
+      application for the file. When an unpacked zip holds the book beside
+      its maps, posters or handouts, the book opens, and is first in the
+      iPad's preview; other sets of unpacked files open as their folder on
+      the Mac and as a preview of all of them on the iPad.
 6.5 Selecting a title shows its details: cover, summary, metadata, editions
     with their download actions, and tags.
 
@@ -157,11 +161,17 @@ once, online or off.
     Edition, Pathfinder Second Edition, Starfinder First Edition, Starfinder
     Second Edition, Adventure Card Game, or other.
 7.2 Each title is classified by product type: adventure path, adventure,
-    society scenario, quest, bounty, one-shot, rulebook, setting, player
-    companion, maps, pawns, cards, fiction, community use, or other.
+    society scenario, quest, bounty, one-shot, Paizo Printables, rulebook,
+    setting, player companion, maps, pawns, cards, fiction, community use, or
+    other. Paizo Printables, a separate catalog of adventure packs, are
+    recognized by their store category or name even though they are
+    adventures.
 7.3 Adventure path volumes record the campaign name, the volume number and the
     part within the campaign.
 7.4 Society scenarios record their season (or year) and scenario number.
+    Paizo Printables packs record their series, season and pack number, read
+    from the store name when there is one, since not every download name
+    carries the season.
 7.5 The level range an adventure is written for is recorded: from the
     storefront's starting level when it gives one, otherwise from the title or
     summary.
