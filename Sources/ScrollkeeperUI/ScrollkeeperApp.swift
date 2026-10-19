@@ -26,6 +26,9 @@ public struct ScrollkeeperApp: App {
                 }
             #endif
         }
+        // Request links go to the library window already open; without this, a link that launches the
+        // app also gets a window of its own besides the one opened at launch.
+        .handlesExternalEvents(matching: [])
         .commands {
             LibraryCommands(store: store)
             #if os(macOS)
