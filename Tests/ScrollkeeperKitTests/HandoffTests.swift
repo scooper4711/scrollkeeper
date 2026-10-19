@@ -51,7 +51,7 @@ import Testing
         #expect(app.accepts(URL(filePath: "/maps/forest.png")))
         #expect(!app.accepts(URL(filePath: "/maps/readme.txt")))
         #expect(!app.accepts(URL(filePath: "/maps/noextension")))
-        #expect(app.bundleIdentifier == "com.github.scooper4711.Mapsmith")
+        #expect(app.bundleIdentifier == "io.github.scooper4711.Mapsmith")
         #expect(app.name == "Mapsmith")
     }
 

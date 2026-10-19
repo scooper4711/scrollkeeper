@@ -16,7 +16,7 @@ public enum HandoffApp: String, CaseIterable, Sendable {
 
     public var bundleIdentifier: String {
         switch self {
-        case .mapsmith: "com.github.scooper4711.Mapsmith"
+        case .mapsmith: "io.github.scooper4711.Mapsmith"
         case .pluck: "io.github.scooper4711.pluck"
         }
     }
