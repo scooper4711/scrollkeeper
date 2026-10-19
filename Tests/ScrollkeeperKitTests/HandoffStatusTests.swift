@@ -13,8 +13,9 @@ import Testing
         #expect(status.url(for: .pluck, sku: "PZO1")?.absoluteString == expected)
     }
 
-    @Test func sendsNothingToAnAppThatTakesNoStatus() {
-        #expect(HandoffStatus.done.url(for: .mapsmith, sku: "PZO1") == nil)
+    @Test func usesEachAppsOwnScheme() {
+        #expect(HandoffStatus.done.url(for: .mapsmith, sku: "PZO1")?.absoluteString
+            == "mapsmith://handoff?sku=PZO1&state=done")
     }
 
     @Test func throttlesProgressToWholePercents() {

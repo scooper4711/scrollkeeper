@@ -35,6 +35,20 @@ import Testing
         #expect(index.titles.first { $0.sku == "CRADLE" }?.downloaded == true)
     }
 
+    @Test func listsOnlyMapsForMapsmith() async throws {
+        let store = await StoreHarness(records: [
+            Fixtures.record(id: "forest", name: "Pathfinder Flip-Mat Classics: Forest PDF", sku: "MAP1"),
+            Fixtures.record(id: "core", name: "Core Rules PDF", sku: "CORE")
+        ]).makeSyncedStore()
+
+        let url = try await store.handoffIndex(for: .mapsmith)
+
+        #expect(url.lastPathComponent == "mapsmith.scrollkeeperindex")
+        let index = try Self.decode(url)
+        #expect(index.titles.map(\.sku) == ["MAP1"])
+        #expect(index.titles.first?.kind == ProductLine.maps.label)
+    }
+
     @Test func refusesBeforeThereIsALibrary() async {
         let store = await StoreHarness(records: []).makeSyncedStore()
         await #expect(throws: HandoffError.noCatalog) { try await store.handoffIndex(for: .pluck) }

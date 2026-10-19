@@ -21,12 +21,20 @@ public enum HandoffApp: String, CaseIterable, Sendable {
         }
     }
 
-    /// The scheme of the links that tell the app how its request is going (`HandoffStatus`); nil when it
-    /// takes none and the user watches Scrollkeeper instead.
-    public var statusScheme: String? {
+    /// The scheme of the links that tell the app how its request is going (`HandoffStatus`).
+    public var statusScheme: String {
         switch self {
-        case .mapsmith: nil
+        case .mapsmith: "mapsmith"
         case .pluck: "pluck"
+        }
+    }
+
+    /// Whether the app's list of titles (`TitleIndex`) includes the title: Mapsmith lists maps only, so
+    /// it doesn't offer rulebooks whose PDFs it could open but has no use for.
+    public func lists(_ item: LibraryTitle) -> Bool {
+        switch self {
+        case .mapsmith: item.classification.productLine == .maps
+        case .pluck: true
         }
     }
 

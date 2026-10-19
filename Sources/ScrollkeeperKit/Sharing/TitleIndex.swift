@@ -25,11 +25,11 @@ public struct TitleIndex: Codable, Equatable, Sendable {
     public var generatedAt: Date
     public var titles: [Entry]
 
-    /// The titles with a one-click edition `app` can open, in title order. `downloaded` holds the titles
+    /// The titles `app` lists with a one-click edition it can open, in title order. `downloaded` holds the titles
     /// with an up-to-date copy on disk.
     public static func entries(from items: [LibraryTitle], downloaded: Set<String>, for app: HandoffApp) -> [Entry] {
         items
-            .filter { item in item.editions.contains { $0.isQuickDownloadable && app.canOpen($0) } }
+            .filter { item in app.lists(item) && item.editions.contains { $0.isQuickDownloadable && app.canOpen($0) } }
             .sorted { $0.titleSortKey < $1.titleSortKey }
             .map { item in
                 Entry(

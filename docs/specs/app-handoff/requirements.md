@@ -59,7 +59,8 @@ does the same for any title with a PDF.
 2.10 The Mac app also handles `scrollkeeper://download?sku=<SKU>&app=<app key>`:
     the same as an open request, except that nothing is opened and the
     library window's selection is left alone. The requesting app learns that
-    the download finished from the map index (1.3a).
+    the download finished from a status link (4.2), or, for Mapsmith 1.1 and
+    earlier, from the map index (1.3a).
 
 ## 3. Title index request
 
@@ -71,7 +72,8 @@ does the same for any title with a PDF.
     access to it, which reading Scrollkeeper's folder would not (1.1).
 3.3 The index lists every title with an edition that can be downloaded with
     one click and that the app can open: a file of a type it accepts, or a zip
-    of documents, which may hold some. Each entry gives the SKU, the title,
+    of documents, which may hold some. Mapsmith's index lists only maps; Pluck's
+    lists every such title. Each entry gives the SKU, the title,
     the product type, the series and number when classification found them,
     and whether an up-to-date copy is on disk.
 3.4 Like the map index, it has a format version and the time it was written,
@@ -86,7 +88,7 @@ does the same for any title with a PDF.
 ## 4. Status for the requesting app
 
 4.1 A requesting app may show how its request is going itself, so the user
-    need not look at Scrollkeeper. Pluck does; Mapsmith does not yet.
+    need not look at Scrollkeeper. Pluck and Mapsmith both do.
 4.2 For such an app, Scrollkeeper opens links in the app's own scheme, in the
     background: `<scheme>://handoff?sku=<SKU>&state=downloading&fraction=<0…1>`
     while the title downloads (at most once per whole percent), `state=done`
