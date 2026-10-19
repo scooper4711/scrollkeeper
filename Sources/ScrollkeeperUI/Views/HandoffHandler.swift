@@ -1,33 +1,33 @@
 #if os(macOS)
 import AppKit
+import Observation
 import ScrollkeeperKit
 import SwiftUI
 
 /// Answers `scrollkeeper://` links from other Tableside Toolkit apps. An open request shows the
 /// title, downloads it when needed and opens its files in the app that asked; a download request
 /// only downloads, in the background; an index request hands the app the list of titles it can open.
-struct HandoffHandler: ViewModifier {
-    @Environment(LibraryStore.self) private var store
-    @Binding var selection: LibraryTitle.ID?
-    @State private var failure: HandoffError?
+///
+/// The app delegate passes it the links, so a request is answered whether or not the library window
+/// is open, including the one that launched the app.
+@MainActor
+@Observable
+final class HandoffCoordinator {
+    /// The title an open request asked for, until the library window selects it.
+    var requestedSelection: LibraryTitle.ID?
+    /// Why the last request failed, for the library window to show.
+    var failure: HandoffError?
+    @ObservationIgnored private let store: LibraryStore
 
-    func body(content: Content) -> some View {
-        content
-            .onOpenURL { url in
-                Task { await handle(url) }
-            }
-            // Links reach the open library window instead of opening another.
-            .handlesExternalEvents(preferring: [HandoffRequest.scheme], allowing: [HandoffRequest.scheme])
-            .alert(isPresented: isShowingFailure, error: failure) {
-                Button("OK") { failure = nil }
-            }
+    init(store: LibraryStore) {
+        self.store = store
     }
 
-    private var isShowingFailure: Binding<Bool> {
-        Binding(get: { failure != nil }, set: { if !$0 { failure = nil } })
+    func handle(_ url: URL) {
+        Task { await handleLink(url) }
     }
 
-    private func handle(_ url: URL) async {
+    private func handleLink(_ url: URL) async {
         let request: HandoffRequest
         do {
             request = try HandoffRequest(url: url)
@@ -49,7 +49,7 @@ struct HandoffHandler: ViewModifier {
             return
         }
         if request.action == .open {
-            selection = request.sku
+            requestedSelection = request.sku
         }
         let reporter = reportProgress(of: request)
         defer { reporter.cancel() }
@@ -92,6 +92,29 @@ struct HandoffHandler: ViewModifier {
         } catch {
             throw .appNotInstalled(app: app.name)
         }
+    }
+}
+
+/// Shows the library window's part in requests: it selects the title an open request names and shows
+/// why a request failed.
+struct HandoffHandler: ViewModifier {
+    @Environment(HandoffCoordinator.self) private var handoff
+    @Binding var selection: LibraryTitle.ID?
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: handoff.requestedSelection, initial: true) { _, requested in
+                guard let requested else { return }
+                selection = requested
+                handoff.requestedSelection = nil
+            }
+            .alert(isPresented: isShowingFailure, error: handoff.failure) {
+                Button("OK") { handoff.failure = nil }
+            }
+    }
+
+    private var isShowingFailure: Binding<Bool> {
+        Binding(get: { handoff.failure != nil }, set: { if !$0 { handoff.failure = nil } })
     }
 }
 #endif

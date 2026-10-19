@@ -104,13 +104,18 @@ the state of the download the request waits for. While `handoffFiles` waits,
 
 - `scripts/build-app.sh` declares the `scrollkeeper` URL scheme in
   `CFBundleURLTypes`.
-- The library window has `.onOpenURL`, and `.handlesExternalEvents` keeps the
-  request in the open window instead of opening another.
-- `HandoffHandler`, a view modifier on the library window, sends an index
-  request's file to the app with `handoffIndex`; for other requests it selects
-  the title (open requests only), awaits `handoffFiles`, looks up the
+- The Mac `AppDelegate` owns the `LibraryStore`, starts it at launch and takes
+  the links in `application(_:open:)`, so a request is answered whether or not
+  a library window is open, including the one that launched the app. The
+  window group has `.handlesExternalEvents(matching: [])`, so SwiftUI opens no
+  window for a link (it would otherwise open a second window when a link
+  launches the app, and drop a link that arrives before the window exists).
+- `HandoffCoordinator` handles each link: it sends an index request's file to
+  the app with `handoffIndex`; for other requests it asks for the title to be
+  selected (open requests only), awaits `handoffFiles`, looks up the
   requesting app with `NSWorkspace.urlForApplication(withBundleIdentifier:)`
-  and opens the files with it. Failures become an alert on the window.
+  and opens the files with it. `HandoffHandler`, a view modifier on the library
+  window, selects the title and shows failures as an alert.
 
 ## Sandboxing
 
