@@ -94,6 +94,5 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-# Ad-hoc signature: enough to run locally; Gatekeeper will still ask on other Macs.
-codesign --force --sign - "$APP"
+scripts/sign-app.sh "$APP"
 echo "Built $APP ($VERSION)"

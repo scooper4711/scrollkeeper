@@ -10,9 +10,21 @@ A Swift package with three targets, plus an Xcode project for the iPad app:
 | `ScrollkeeperUI` | library | SwiftUI views and the `App` itself. They render `LibraryStore` state and forward user actions to it. Builds for macOS and iPadOS; the few differences are behind `#if os(...)`. |
 | `Scrollkeeper` | executable | The macOS entry point: one file that starts the shared `App`. |
 
-`scripts/build-app.sh` wraps the macOS executable in an ad-hoc signed `.app`
-bundle. `ios/Scrollkeeper.xcodeproj` builds the iPad app from the same
-package: its only source file starts the shared `App`.
+`scripts/build-app.sh` wraps the macOS executable in a `.app` bundle.
+`ios/Scrollkeeper.xcodeproj` builds the iPad app from the same package: its only
+source file starts the shared `App`.
+
+`scripts/sign-app.sh` signs the app with the first Developer ID Application
+certificate in the keychain, with the hardened runtime and a secure timestamp,
+or ad hoc when there is none (`SIGNING_IDENTITY` overrides it). On GitHub,
+`scripts/add-signing-certificate.sh` puts the certificate from the
+`DEVELOPER_ID_CERTIFICATE` and `DEVELOPER_ID_CERTIFICATE_PASSWORD` secrets into
+a temporary keychain; without it a release fails and a trial build is signed ad
+hoc. For a release, `scripts/notarize.sh` signs the disk image, has Apple's
+notary service check it (the `NOTARY_APPLE_ID`, `NOTARY_TEAM_ID` and
+`NOTARY_PASSWORD` secrets, or a notarytool keychain profile on a Mac) and
+staples the ticket to it. The team ID is kept only in the secrets and the
+keychain.
 
 The package depends on ZIPFoundation for unpacking archives, because iPadOS has
 no command-line tools to call.
