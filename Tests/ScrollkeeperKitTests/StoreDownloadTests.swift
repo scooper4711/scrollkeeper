@@ -165,6 +165,49 @@ import Testing
 
         store.resetDownloadDirectory()
         #expect(store.downloadDirectory == harness.environment.defaultDownloadDirectory)
+        #expect(harness.environment.settings.downloadDirectoryBookmark == nil)
+    }
+
+    @Test func chosenFolderIsFoundAfterItMoves() throws {
+        let folder = try makeFolder("Books")
+        harness.makeStore().setDownloadDirectory(folder)
+        #expect(harness.environment.settings.downloadDirectoryBookmark != nil)
+
+        let moved = harness.directory.url.appending(path: "Moved Books", directoryHint: .isDirectory)
+        try FileManager.default.moveItem(at: folder, to: moved)
+
+        #expect(realPath(of: harness.makeStore().downloadDirectory) == realPath(of: moved))
+        #expect(realPath(of: URL(filePath: harness.environment.settings.downloadDirectoryPath)) == realPath(of: moved))
+    }
+
+    @Test func folderChosenBeforeBookmarksGetsOne() throws {
+        let folder = try makeFolder("Books")
+        harness.environment.settings.downloadDirectoryPath = folder.path
+
+        #expect(harness.makeStore().downloadDirectory.path == folder.path)
+        #expect(harness.environment.settings.downloadDirectoryBookmark != nil)
+    }
+
+    @Test func missingChosenFolderKeepsItsBookmark() throws {
+        let folder = try makeFolder("Books")
+        harness.makeStore().setDownloadDirectory(folder)
+        let bookmark = harness.environment.settings.downloadDirectoryBookmark
+        try FileManager.default.removeItem(at: folder)
+
+        #expect(harness.makeStore().downloadDirectory.path == folder.path)
+        #expect(harness.environment.settings.downloadDirectoryBookmark == bookmark)
+    }
+
+    private func makeFolder(_ name: String) throws -> URL {
+        let folder = harness.directory.url.appending(path: name, directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
+    /// The temporary folder is reached through a symbolic link, which a resolved bookmark leaves out, so paths
+    /// are compared in one form.
+    private func realPath(of folder: URL) -> String {
+        folder.resolvingSymlinksInPath().path
     }
 }
 

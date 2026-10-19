@@ -95,3 +95,28 @@ does the same for any title with a PDF.
     just before the files are opened, and `state=failed&reason=<text>` when
     the request cannot be met, with the text of the alert (2.7, 3.6). A failed
     index request has an empty SKU.
+
+## 5. Shared download folder (planned)
+
+Planned for when Scrollkeeper runs in the App Sandbox, which needs the
+Developer ID (scrollkeeper#22, #23). Mac only; the iPad app keeps its
+downloads in its Documents folder (10.3 of the library-manager requirements).
+
+5.1 Scrollkeeper's default download folder is in a folder shared by the
+    Tableside Toolkit apps, so that an app that imports many titles at once,
+    such as Pawn Shop, Field Guide or Turnkeeper, can read the downloads
+    without the user pointing it at them.
+5.2 The first time it runs in the sandbox, Scrollkeeper moves the downloads in
+    its old default folder into the shared folder. Nothing is downloaded
+    again, and the move takes no longer than renaming a folder.
+5.3 A download folder the user chose stays where it is. Other apps then ask
+    the user for it, as they do today.
+5.4 Only Scrollkeeper writes to the shared folder; other apps only read it,
+    with the same layout as the download folder:
+    `<title>/<edition name>.<ext>` and `<title>/<edition name>/`.
+5.5 An app that reads the shared folder looks there first and asks the user
+    for a folder only when it is missing or empty: when Scrollkeeper is not
+    installed, has not yet run in the sandbox, or downloads to a folder the
+    user chose.
+5.6 Apps that open one title at a time, such as Mapsmith and Pluck, keep
+    asking through the handoff (2, 3), which also downloads what is missing.

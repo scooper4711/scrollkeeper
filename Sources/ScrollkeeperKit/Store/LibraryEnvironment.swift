@@ -86,6 +86,13 @@ public struct SettingsStore: Sendable {
         nonmutating set { defaults.set(newValue, forKey: Self.downloadDirectoryKey) }
     }
 
+    /// A bookmark of the folder the user chose for downloads, which reaches it from inside the App Sandbox.
+    /// Nil for the default folder, and for a folder chosen before bookmarks were kept.
+    public var downloadDirectoryBookmark: Data? {
+        get { defaults.data(forKey: Self.downloadDirectoryBookmarkKey) }
+        nonmutating set { defaults.set(newValue, forKey: Self.downloadDirectoryBookmarkKey) }
+    }
+
     /// False until a full sync has run to the end, so an interrupted first sync is started again.
     public var hasCompletedFullSync: Bool {
         get { defaults.bool(forKey: Self.completedFullSyncKey) }
@@ -111,6 +118,7 @@ public struct SettingsStore: Sendable {
     /// The key of `checksForUpdatesAtLaunch`, for views that bind a switch to it.
     public static let updateCheckAtLaunchKey = "checksForUpdatesAtLaunch"
     private static let downloadDirectoryKey = "downloadDirectoryPath"
+    private static let downloadDirectoryBookmarkKey = "downloadDirectoryBookmark"
     private static let completedFullSyncKey = "hasCompletedFullSync"
     private static let metadataVersionKey = "metadataVersion"
 }
