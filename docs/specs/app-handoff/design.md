@@ -67,7 +67,8 @@ file of an accepted type, or a zip of documents.
 ## Title index (`Sharing/TitleIndex.swift`)
 
 The format of the map index, with a `kind` (the product type's label) on each
-entry. `handoffIndex(for:)` waits for `isLoaded`, refuses with `.noCatalog`
+entry. `HandoffApp.lists(_:)` picks the titles an app lists: maps for Mapsmith,
+every title for Pluck. `handoffIndex(for:)` waits for `isLoaded`, refuses with `.noCatalog`
 while there are no titles, writes `TitleIndex.entries(from:downloaded:for:)`
 to `LibraryEnvironment.titleIndexURL(for:)` and returns it; a failed write is
 `.indexNotWritten`. `scripts/build-app.sh` exports the file's type in
@@ -91,8 +92,8 @@ to `LibraryEnvironment.titleIndexURL(for:)` and returns it; a failed write is
 
 ## Status (`Sharing/HandoffStatus.swift`)
 
-`HandoffApp.statusScheme` names the scheme an app takes status links in (`pluck`
-for Pluck, none for Mapsmith). `HandoffStatus` (`downloading(fraction)`,
+`HandoffApp.statusScheme` names the scheme an app takes status links in (`pluck`,
+`mapsmith`). `HandoffStatus` (`downloading(fraction)`,
 `failed(reason)`, `done`) builds the link; `HandoffStatusThrottle` lets through a
 changed state or a whole-percent step; `LibraryStore.handoffStatus(for:)` reads
 the state of the download the request waits for. While `handoffFiles` waits,
@@ -117,9 +118,6 @@ Pluck is sandboxed; Scrollkeeper and Mapsmith are not yet. The URL handoff and
 the file opening work in the sandbox: Launch Services gives the receiving app
 access to the files it is asked to open. That is why a sandboxed app gets its
 list as a title index handed over by an index request, not by reading
-`maps.json` from Scrollkeeper's folder, which it cannot. Mapsmith can move to
-the same request. The index then moves to an App Group container shared by the
-Tableside Toolkit apps (`containerURL(forSecurityApplicationGroupIdentifier:)`),
-which needs a Developer ID team signature and entitlements in both build
-scripts. Only `LibraryEnvironment.sharedDirectory` and Mapsmith's matching
-default location change.
+`maps.json` from Scrollkeeper's folder, which it cannot. Mapsmith now uses
+the same request. `maps.json` is still written for Mapsmith 1.1 and earlier,
+and can go once those versions are no longer in use.
