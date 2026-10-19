@@ -199,6 +199,15 @@ tags are unchanged.
   location the user picks in a save panel (`LibraryStore.export`) and is not
   tracked afterwards.
 
+A download folder the user chose in Settings is kept by `ChosenDownloadFolder`
+both as a path and as a security-scoped bookmark (5.4a). The bookmark comes
+first: it reaches the folder from inside the App Sandbox and follows it when
+moved. The path is the fallback when the bookmark no longer resolves, such as
+for a disk that isn't connected, and the bookmark is then kept for when it is.
+A folder chosen before bookmarks were kept has only its path, and gets a
+bookmark the first time the store reads it, while the app runs outside the
+sandbox.
+
 Paizo's download API reads the members of the request body by position, so
 the body is written with its members in the order the web library uses:
 `key`, `legacy`, `token`, `customer`.

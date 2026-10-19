@@ -130,7 +130,8 @@ public final class LibraryStore {
         metadataSynchronizer = MetadataSynchronizer(
             storefront: StorefrontClient(http: environment.http), http: environment.http, covers: covers
         )
-        locator = FileLocator(root: Self.downloadDirectory(in: environment))
+        let chosenFolder = ChosenDownloadFolder(settings: environment.settings).open()
+        locator = FileLocator(root: chosenFolder ?? environment.defaultDownloadDirectory)
     }
 
     /// Loads the stored catalog and, when an account exists but the library has never been
@@ -167,13 +168,13 @@ public final class LibraryStore {
 
     /// Moves future downloads to another folder. Files already downloaded stay where they are.
     public func setDownloadDirectory(_ url: URL) {
-        environment.settings.downloadDirectoryPath = url.path
+        ChosenDownloadFolder(settings: environment.settings).remember(url)
         locator = FileLocator(root: url)
         refreshDownloadedItems()
     }
 
     public func resetDownloadDirectory() {
-        environment.settings.downloadDirectoryPath = ""
+        ChosenDownloadFolder(settings: environment.settings).forget()
         locator = FileLocator(root: environment.defaultDownloadDirectory)
         refreshDownloadedItems()
     }
@@ -214,12 +215,5 @@ public final class LibraryStore {
             await previous?.value
             try? await write(repository)
         }
-    }
-
-    private static func downloadDirectory(in environment: LibraryEnvironment) -> URL {
-        let chosen = environment.settings.downloadDirectoryPath
-        return chosen.isEmpty
-            ? environment.defaultDownloadDirectory
-            : URL(filePath: chosen, directoryHint: .isDirectory)
     }
 }

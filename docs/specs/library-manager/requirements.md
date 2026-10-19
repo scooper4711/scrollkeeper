@@ -110,6 +110,10 @@ once, online or off.
     titles, in one step.
 5.4 A downloaded file is kept on disk. Its location is a folder inside the
     user's Library directory by default and can be changed in Settings.
+5.4a A download folder the user chose is remembered so the app can still reach
+     it when it runs in the App Sandbox, and is found again after the user
+     moves or renames it. A folder on a disk that isn't connected stays
+     chosen.
 5.5 Once a file is downloaded, the app offers "Open", "Open With" and "Show in
     Finder" instead of "Download". "Open With" lists every application that
     has registered itself for the file's type.
