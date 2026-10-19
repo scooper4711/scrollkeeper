@@ -119,10 +119,11 @@ import Testing
     private let paizo = FakePaizo()
     private let updated = "Tue Jul 21 2026 20:35:38 GMT+0000 (Coordinated Universal Time)"
 
-    private func makeClient() -> LibraryCatalogClient {
+    /// A signed-in client whose library requests go to `http`, or to the fake Paizo when nil.
+    private func makeClient(http: (any HTTPClient)? = nil) -> LibraryCatalogClient {
         paizo.installSignedInStore()
         let session = PaizoSession(http: paizo.http, credentials: MemoryCredentialStore(FakePaizo.account))
-        return LibraryCatalogClient(http: paizo.http, session: session)
+        return LibraryCatalogClient(http: http ?? paizo.http, session: session)
     }
 
     @Test func fileStatusCarriesTheUpdateDateAndTheCurrentFile() async throws {
@@ -160,13 +161,16 @@ import Testing
 
     @Test func fetchingStopsAtTheFirstFailure() async {
         paizo.installFileStatus(updated: ["a": "", "b": "", "d": "", "e": "", "f": "", "g": ""])
-        let fetcher = FileStatusFetcher(client: makeClient(), concurrentLookups: 2)
+        // d's lookup only ends when it is canceled, so c's failure, after its retry, lands while d is still
+        // running, however the lookups are scheduled. Answering d at once let d, e and f finish first at times.
+        let client = makeClient(http: HoldingHTTPClient(inner: paizo.http, held: ["d"]))
+        let fetcher = FileStatusFetcher(client: client, concurrentLookups: 2)
 
         let learned = await fetcher.fetch(["a", "b", "c", "d", "e", "f", "g"])
 
-        #expect(Set(learned.map(\.packageID)).isSuperset(of: ["a", "b"]))
-        #expect(!learned.map(\.packageID).contains("c"))
-        #expect(paizo.http.count(of: "/customer/g?") == 0)
+        #expect(Set(learned.map(\.packageID)) == ["a", "b"])
+        #expect(paizo.http.count(of: "/customer/c?") == 2)
+        #expect(paizo.http.count(of: "/customer/e?") == 0)
     }
 
     @Test func fetchingNothingAsksNothing() async {
@@ -189,5 +193,23 @@ import Testing
                                      filePath: "https://bucket.example/v2.pdf"))
         #expect(entitlement.dateUpdated == newer)
         #expect(entitlement.fileName == "v2.pdf")
+    }
+}
+
+/// Answers like `inner`, except that requests for the `held` packages wait until they are canceled, so a test
+/// decides which lookups are still running when another one fails.
+private struct HoldingHTTPClient: HTTPClient {
+    let inner: StubHTTPClient
+    let held: Set<String>
+
+    func send(_ request: URLRequest) async throws -> HTTPResponse {
+        if held.contains(request.url?.lastPathComponent ?? "") {
+            try await Task.sleep(for: .seconds(3600))
+        }
+        return try await inner.send(request)
+    }
+
+    func download(_ request: URLRequest, to destination: URL, progress: @escaping ProgressHandler) async throws {
+        try await inner.download(request, to: destination, progress: progress)
     }
 }
