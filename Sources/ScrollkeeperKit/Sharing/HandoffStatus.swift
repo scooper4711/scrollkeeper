@@ -9,11 +9,10 @@ public enum HandoffStatus: Equatable, Sendable {
     /// The files are about to be opened in the app.
     case done
 
-    /// The link that tells `app` about the title; nil for an app that doesn't take them.
+    /// The link that tells `app` about the title.
     public func url(for app: HandoffApp, sku: String) -> URL? {
-        guard let scheme = app.statusScheme else { return nil }
         var components = URLComponents()
-        components.scheme = scheme
+        components.scheme = app.statusScheme
         components.host = "handoff"
         components.queryItems = [URLQueryItem(name: "sku", value: sku)] + queryItems
         return components.url
