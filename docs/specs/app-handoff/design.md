@@ -119,10 +119,45 @@ the state of the download the request waits for. While `handoffFiles` waits,
 
 ## Sandboxing
 
-Pluck is sandboxed; Scrollkeeper and Mapsmith are not yet. The URL handoff and
-the file opening work in the sandbox: Launch Services gives the receiving app
-access to the files it is asked to open. That is why a sandboxed app gets its
-list as a title index handed over by an index request, not by reading
-`maps.json` from Scrollkeeper's folder, which it cannot. Mapsmith now uses
-the same request. `maps.json` is still written for Mapsmith 1.1 and earlier,
-and can go once those versions are no longer in use.
+Pluck and Field Guide run in the App Sandbox; Mapsmith, Pawn Shop and
+Turnkeeper are moving to it, and Scrollkeeper follows once it is signed with
+the Developer ID (scrollkeeper#22, #23). The URL handoff and the file opening
+work in the sandbox: Launch Services gives the receiving app access to the
+files it is asked to open. That is why a sandboxed app gets its list as a
+title index handed over by an index request, not by reading `maps.json` from
+Scrollkeeper's folder, which it cannot. Mapsmith now uses the same request.
+`maps.json` is still written for Mapsmith 1.1 and earlier, and can go once
+those versions are no longer in use.
+
+### Shared download folder (planned, requirements 5)
+
+The apps that import many titles at once read Scrollkeeper's downloads
+directly; asking for each title through the handoff would be too slow for
+them. In the sandbox that needs a folder both sides may reach:
+
+- **App Group.** Scrollkeeper, Pawn Shop, Field Guide and Turnkeeper get the
+  `com.apple.security.application-groups` entitlement for one group,
+  `<team ID>.io.github.scooper4711.tableside`. On the Mac the identifier must
+  start with the team ID, and the apps must be signed by that team; an
+  ad-hoc-signed app is refused or prompts for access to other apps' data. The
+  team ID is not committed: `build-app.sh` fills it in from a gitignored
+  setting, as `ios/Local.xcconfig` does for the iPad app.
+- **Location.** `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)`
+  gives `~/Library/Group Containers/<group>/`; downloads go to its
+  `Scrollkeeper/Files/`. `LibraryEnvironment.live()` makes that the default
+  download folder on the Mac, and falls back to `<data folder>/Files` when the
+  group container is unavailable (an unsigned development build).
+- **Moving the downloads.** `container-migration.plist` moves
+  `${ApplicationSupport}/Scrollkeeper` into Scrollkeeper's own container at the
+  first sandboxed launch. The store then moves `<data folder>/Files` to the
+  shared folder with `FileManager.moveItem` when the shared folder does not
+  exist yet. Both are renames on the same volume, so a library of several
+  gigabytes moves at once. If the move fails, the old folder stays the
+  download folder.
+- **Chosen folder.** A folder the user chose is kept as a security-scoped
+  bookmark (`ChosenDownloadFolder`, 5.4a of the library-manager requirements),
+  made while the app still runs outside the sandbox, so it stays reachable
+  after the switch.
+- **Readers.** Each importing app looks for `Scrollkeeper/Files` in the group
+  container first and keeps its folder picker, with a remembered bookmark, as
+  the fallback (5.5). Readers never write there.
