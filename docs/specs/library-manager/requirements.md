@@ -223,6 +223,13 @@ once, online or off.
 10.7 Settings are reached from a button in the toolbar.
 10.8 The Mac and the iPad each sync with Paizo on their own; catalog, tags and
      downloads are not shared between devices.
+10.9 The iPad app runs on the iPhone too (iOS 17 or later), one screen at a
+     time: the scopes, then the library. The bar holds the title, the
+     filters, the downloads and a menu with the view (covers or list), Check
+     for New Titles and Settings. The columns view needs more width than a
+     phone has, so the list shows instead. Choosing a title opens its details
+     as a sheet; closing it clears the choice, so the same title opens again.
+     The downloads list stays a popover.
 
 ## 11. Paizo's Community Use Policy
 
