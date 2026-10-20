@@ -29,9 +29,15 @@ enum ViewMode: String, CaseIterable, Identifiable {
 struct LibraryWindow: View {
     @Environment(LibraryStore.self) private var store
     @Environment(\.scenePhase) private var scenePhase
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     @AppStorage("viewMode") private var viewMode = ViewMode.covers
     @AppStorage("showInspector") private var showInspector = LibraryWindow.showsInspectorAtFirst
     @State private var selection: LibraryTitle.ID?
+    /// An iPhone's details sheet, open while a title is chosen. Not kept between launches like `showInspector`,
+    /// which would open an empty sheet at launch.
+    @State private var showsPhoneDetails = false
 
     /// - Parameter selecting: the title to show in the details at first; used for previews.
     init(selecting title: LibraryTitle.ID? = nil) {
@@ -60,7 +66,7 @@ struct LibraryWindow: View {
                 // iPadOS only shows toolbar items that are attached inside a navigation column.
                 .toolbar { toolbar }
                 .searchable(text: $store.query.searchText, prompt: "Title, author, SKU, series or tag")
-                .inspector(isPresented: $showInspector) {
+                .inspector(isPresented: showsOneColumn ? $showsPhoneDetails : $showInspector) {
                     TitleDetailView(item: store.item(id: selection))
                         .inspectorColumnWidth(min: 300, ideal: 360, max: 520)
                 }
@@ -81,9 +87,16 @@ struct LibraryWindow: View {
         #if !os(macOS)
         // On the iPad the details cover part of the library, so they open when a title is chosen.
         .onChange(of: selection) { _, chosen in
-            if chosen != nil {
+            guard chosen != nil else { return }
+            if showsOneColumn {
+                showsPhoneDetails = true
+            } else {
                 showInspector = true
             }
+        }
+        // Choosing the same title again opens its details again.
+        .onChange(of: showsPhoneDetails) { _, isShown in
+            if !isShown { selection = nil }
         }
         #endif
         .onChange(of: scenePhase) { _, phase in
@@ -123,12 +136,52 @@ struct LibraryWindow: View {
             switch viewMode {
             case .covers: CoverGridView(selection: $selection)
             case .list: TitleListView(selection: $selection)
+            // A phone is too narrow for the columns, so it shows the list.
+            case .columns where showsOneColumn: TitleListView(selection: $selection)
             case .columns: TitleTableView(selection: $selection)
             }
         }
     }
 
+    /// Whether the window shows one column at a time, as on an iPhone. Read here, outside the split view, because
+    /// the columns have a compact width on the iPad too.
+    private var showsOneColumn: Bool {
+        #if os(iOS)
+        sizeClass == .compact
+        #else
+        false
+        #endif
+    }
+
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        if showsOneColumn {
+            phoneToolbar
+        } else {
+            fullToolbar
+        }
+    }
+
+    /// An iPhone's bar has room for the title and two buttons; the rest is in a menu. Choosing a title opens its
+    /// details there, so it has no Details button.
+    @ToolbarContentBuilder private var phoneToolbar: some ToolbarContent {
+        ToolbarItem { FilterMenu(pulse: filterPulse) }
+        ToolbarItem { DownloadsButton() }
+        ToolbarItem {
+            Menu {
+                Picker("View", selection: $viewMode) {
+                    ForEach([ViewMode.covers, .list]) { mode in
+                        Label(mode.label, systemImage: mode.symbolName).tag(mode)
+                    }
+                }
+                refreshButton
+                settingsButton
+            } label: {
+                Label("More", systemImage: "ellipsis")
+            }
+        }
+    }
+
+    @ToolbarContentBuilder private var fullToolbar: some ToolbarContent {
         ToolbarItem(placement: Self.viewPickerPlacement) {
             Picker("View", selection: $viewMode) {
                 ForEach(ViewMode.allCases) { mode in
@@ -144,23 +197,9 @@ struct LibraryWindow: View {
         }
         ToolbarItem { FilterMenu(pulse: filterPulse) }
         ToolbarItem { DownloadsButton() }
-        ToolbarItem {
-            Button {
-                store.startRefresh()
-            } label: {
-                Label("Check for New Titles", systemImage: "arrow.clockwise")
-            }
-            .disabled(store.account == .signedOut || store.sync.isRunning)
-            .help("Check Paizo for titles added since the last sync")
-        }
+        ToolbarItem { refreshButton }
         #if !os(macOS)
-        ToolbarItem {
-            Button {
-                showSettings = true
-            } label: {
-                Label("Settings", systemImage: "gearshape")
-            }
-        }
+        ToolbarItem { settingsButton }
         #endif
         ToolbarItem {
             Button {
@@ -169,6 +208,24 @@ struct LibraryWindow: View {
                 Label("Details", systemImage: "sidebar.trailing")
             }
             .help("Show or hide the details of the selected title")
+        }
+    }
+
+    private var refreshButton: some View {
+        Button {
+            store.startRefresh()
+        } label: {
+            Label("Check for New Titles", systemImage: "arrow.clockwise")
+        }
+        .disabled(store.account == .signedOut || store.sync.isRunning)
+        .help("Check Paizo for titles added since the last sync")
+    }
+
+    private var settingsButton: some View {
+        Button {
+            showSettings = true
+        } label: {
+            Label("Settings", systemImage: "gearshape")
         }
     }
 
@@ -185,68 +242,5 @@ struct LibraryWindow: View {
     private var subtitle: String {
         let shown = store.visibleItems.count
         return shown == store.items.count ? "\(shown) titles" : "\(shown) of \(store.items.count) titles"
-    }
-}
-
-/// Shown when the search and filters match nothing. With filters set, it offers to clear them.
-struct NoResultsView: View {
-    @Environment(LibraryStore.self) private var store
-
-    var body: some View {
-        if store.query.hasFilters {
-            ContentUnavailableView {
-                Label("No Results", systemImage: "magnifyingglass")
-            } description: {
-                Text(filteredDescription)
-            } actions: {
-                Button("Clear the Current Filters") { store.query.clearFilters() }
-            }
-        } else {
-            ContentUnavailableView.search(text: store.query.searchText)
-        }
-    }
-
-    private var filteredDescription: String {
-        let search = store.query.searchText.trimmingCharacters(in: .whitespaces)
-        return search.isEmpty
-            ? "No titles match the current filters."
-            : "Check the spelling or try a new search, or clear the current filters."
-    }
-}
-
-/// Shown while there is no catalog: either no account yet, or the first sync is running.
-struct EmptyLibraryView: View {
-    @Environment(LibraryStore.self) private var store
-    /// Opens the settings on the iPad, where they are a sheet of the window.
-    let openSettings: () -> Void
-
-    var body: some View {
-        if store.account == .signedOut {
-            ContentUnavailableView {
-                Label("No Paizo Account", systemImage: "person.crop.circle.badge.questionmark")
-            } description: {
-                Text("Add your Paizo account in Settings to load your library.")
-            } actions: {
-                #if os(macOS)
-                SettingsLink { Text("Open Settings…") }
-                #else
-                Button("Open Settings…", action: openSettings)
-                #endif
-            }
-        } else if store.sync.isRunning {
-            ContentUnavailableView {
-                Label("Loading Your Library", systemImage: "books.vertical")
-            } description: {
-                Text("Listing everything you own takes a few minutes. Titles appear here as they arrive.")
-            }
-        } else {
-            ContentUnavailableView {
-                Label("No Titles", systemImage: "books.vertical")
-            } description: {
-                Text(store.sync.failure.isEmpty ? "Your library is empty." : store.sync.failure)
-            } actions: {
-                Button("Load Library") { store.startFullSync() }
-            }
-        }
     }
 }

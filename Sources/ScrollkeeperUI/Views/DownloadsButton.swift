@@ -33,8 +33,11 @@ struct DownloadsButton: View {
         .help("Show downloads in progress")
         .popover(isPresented: $isShowingList, arrowEdge: .bottom) {
             DownloadsList()
-                .frame(width: 380)
+                // Narrower on an iPhone, where the popover has to fit the screen.
+                .frame(minWidth: 300, idealWidth: 380, maxWidth: 380)
                 .frame(minHeight: 120, maxHeight: 420)
+                // An iPhone would otherwise turn the short list into a sheet the height of the screen.
+                .presentationCompactAdaptation(.popover)
         }
     }
 }

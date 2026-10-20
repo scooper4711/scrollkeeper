@@ -5,16 +5,16 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=scooper4711_scrollkeeper&metric=coverage)](https://sonarcloud.io/summary/new_code?id=scooper4711_scrollkeeper)
 [![GitHub Release](https://img.shields.io/github/v/release/scooper4711/scrollkeeper)](https://github.com/scooper4711/scrollkeeper/releases)
 [![GitHub Downloads](https://img.shields.io/github/downloads/scooper4711/scrollkeeper/total)](https://github.com/scooper4711/scrollkeeper/releases)
-[![Platforms](https://img.shields.io/badge/platforms-macOS%2014%2B%20%7C%20iPadOS%2017%2B-informational)](#requirements)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%2014%2B%20%7C%20iPadOS%2017%2B%20%7C%20iOS%2017%2B-informational)](#requirements)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 Have you bought Paizo PDFs for years and now can't find the one you need? On paizo.com your purchases are one
 long list, every download is another click, a file-per-chapter edition arrives as a zip to unpack, and it is
 hard to tell which files Paizo has updated since you downloaded them.
 
-Scrollkeeper is an unofficial library manager for your Paizo purchases, on the Mac and the iPad. It fetches the
-list of everything you own once and keeps it on your device, with covers, summaries and tags, so you can
-search, sort and filter a few thousand titles at once, online or off. Download a title, or several at a time,
+Scrollkeeper is an unofficial library manager for your Paizo purchases, on the Mac, the iPad and the iPhone. It
+fetches the list of everything you own once and keeps it on your device, with covers, summaries and tags, so you
+can search, sort and filter a few thousand titles at once, online or off. Download a title, or several at a time,
 straight from the list: zips are unpacked for you, and a download Paizo has updated since is marked so you can
 fetch the new file.
 
@@ -47,7 +47,7 @@ It is free and open source, and it only accesses files that your own account is 
 
 ## Requirements
 
-macOS 14 or later, or iPadOS 17 or later.
+macOS 14 or later, iPadOS 17 or later, or iOS 17 or later on the iPhone.
 
 ## Installing a release
 
@@ -135,6 +135,9 @@ the Scrollkeeper-iPad scheme.
 
 `make ipad-simulator` builds the app and starts it in an iPad simulator.
 `make ipad-uitest` runs the UI tests there.
+
+The same app runs on the iPhone. To install it on one, turn on Developer Mode
+on the iPhone too and run `IPAD=<the iPhone's name> make ipad-install`.
 
 ## Demo mode
 

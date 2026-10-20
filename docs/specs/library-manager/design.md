@@ -41,6 +41,15 @@ no command-line tools to call.
 | File tags | Finder tags, both directions | none; tags live in the app |
 | Settings | Settings window | sheet opened from the toolbar |
 
+On the iPhone (`TARGETED_DEVICE_FAMILY` 1,2) the split view collapses to one
+column at a time. `LibraryWindow` reads the horizontal size class itself, outside
+the split view, because the columns are compact on the iPad too, and on a
+compact window it builds `phoneToolbar` (filters, downloads, a menu with the
+view, Check for New Titles and Settings), shows the list for the columns view,
+and binds the inspector to an unsaved `showsPhoneDetails`: the saved
+`showInspector` would open an empty sheet at launch. The downloads popover keeps
+`.presentationCompactAdaptation(.popover)`.
+
 ## How the Paizo library works
 
 These facts were established by observing the web library. None of it is a
