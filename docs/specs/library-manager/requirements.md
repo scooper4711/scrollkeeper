@@ -202,6 +202,9 @@ once, online or off.
 9.2 No account data, tokens or credentials are written to logs or committed to
     the repository.
 9.3 The app does not change anything on the Paizo account.
+9.4 Every request names the app, its version and its project page in the user
+    agent, after Safari's, so Paizo can tell the app's traffic apart, measure
+    it and block it if it ever has to.
 
 ## 10. iPad
 
