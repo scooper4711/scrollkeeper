@@ -125,7 +125,8 @@ private struct DownloadSettings: View {
                 Button("Choose…") { chooseFolder() }
             }
             #else
-            LabeledContent("Folder", value: "Files › On My iPad › Scrollkeeper")
+            // Files names the device's own storage after its kind: On My iPad, On My iPhone.
+            LabeledContent("Folder", value: "Files › On My \(UIDevice.current.model) › Scrollkeeper")
             Button(PlatformText.showInFileBrowser) { showFolder() }
             #endif
         } header: {
@@ -155,7 +156,7 @@ private struct DownloadSettings: View {
         #if os(macOS)
         "Files already downloaded stay where they are; move them yourself if you change the folder."
         #else
-        "Downloads are kept on this iPad and also appear in the Files app."
+        "Downloads are kept on this \(UIDevice.current.model) and also appear in the Files app."
         #endif
     }
 
