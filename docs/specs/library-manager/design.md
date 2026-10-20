@@ -130,6 +130,9 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
 
 - `HTTPClient` — protocol with `send(_:)` and `download(_:to:progress:)`.
   `URLSessionHTTPClient` is the production implementation; tests use a stub.
+  Its user agent is Safari's, so paizo.com serves the app as it serves a
+  browser, followed by `Scrollkeeper/<CFBundleShortVersionString>
+  (+https://github.com/scooper4711/scrollkeeper)` (requirement 9.4).
 - `PaizoSession` — actor. Signs in and hands out customer tokens, reusing one
   until shortly before the expiry it carries.
 - `FlightPayloadParser` — extracts the `LibraryPage` from library page HTML.

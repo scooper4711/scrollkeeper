@@ -18,7 +18,7 @@ public final class URLSessionHTTPClient: HTTPClient {
         configuration.urlCache = nil
         configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
         configuration.timeoutIntervalForRequest = 180
-        configuration.httpAdditionalHeaders = ["User-Agent": userAgent]
+        configuration.httpAdditionalHeaders = ["User-Agent": userAgent(version: appVersion)]
         return configuration
     }
 
@@ -68,8 +68,17 @@ public final class URLSessionHTTPClient: HTTPClient {
         (response as? HTTPURLResponse)?.statusCode ?? 0
     }
 
-    private static let userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
-        + "(KHTML, like Gecko) Version/18.0 Safari/605.1.15 Scrollkeeper/1.0"
+    /// Safari's user agent, so paizo.com treats the app like a browser, then the app's name, version and project
+    /// page, so Paizo can tell its requests apart, measure them and block them if it ever has to.
+    static func userAgent(version: String) -> String {
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 "
+            + "Safari/605.1.15 Scrollkeeper/\(version) (+https://github.com/scooper4711/scrollkeeper)"
+    }
+
+    /// The running app's version; "0" where there is no app bundle, as in the unit tests.
+    private static var appVersion: String {
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0"
+    }
 }
 
 /// Reports the fraction completed of one download task.
