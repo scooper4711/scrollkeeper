@@ -55,7 +55,9 @@ Download the disk image from the
 [releases page](https://github.com/scooper4711/scrollkeeper/releases), open it
 and drag Scrollkeeper to Applications.
 
-The app is not notarized by Apple, so macOS blocks it the first time:
+Releases are signed with the Developer ID and notarized by Apple, so macOS opens
+them like any other app. Older releases aren't, and macOS blocks them the first
+time:
 
 1. Open Scrollkeeper once. macOS says it cannot be opened; click Done.
 2. Open System Settings › Privacy & Security and scroll down to the message
@@ -103,9 +105,10 @@ make coverage # runs the tests and enforces the coverage threshold
 make dmg      # packages the app into a disk image
 ```
 
-Building needs Xcode 16 or later (Swift 6 toolchain). The app is ad-hoc signed;
-after a rebuild, macOS may ask again for permission to use the saved Keychain
-item.
+Building needs Xcode 16 or later (Swift 6 toolchain). `scripts/sign-app.sh`
+signs the app with the Developer ID when the keychain holds a Developer ID
+Application certificate, and ad hoc otherwise; after an ad-hoc rebuild, macOS
+may ask again for permission to use the saved Keychain item.
 
 ## Building for iPad
 
