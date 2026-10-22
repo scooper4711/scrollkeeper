@@ -74,4 +74,14 @@ import Testing
 
         #expect(harness.paizo.http.count(of: "/api/library/entitlement/customer/builtin-") == 0)
     }
+
+    @Test func fieldGuideCanAskForTitles() throws {
+        let url = try #require(URL(string: "scrollkeeper://open?sku=PZO13003WS&app=fieldguide"))
+        #expect(try HandoffRequest(url: url) == HandoffRequest(sku: "PZO13003WS", app: .fieldguide))
+        #expect(HandoffApp.fieldguide.name == "Field Guide")
+        #expect(HandoffApp.fieldguide.bundleIdentifier == "io.github.scooper4711.FieldGuide")
+        #expect(HandoffApp.fieldguide.statusScheme == "fieldguide")
+        #expect(HandoffApp.fieldguide.accepts(URL(filePath: "/a/book.pdf")))
+        #expect(!HandoffApp.fieldguide.accepts(URL(filePath: "/a/map.jpg")))
+    }
 }

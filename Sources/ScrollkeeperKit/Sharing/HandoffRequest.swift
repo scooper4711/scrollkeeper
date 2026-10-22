@@ -6,11 +6,13 @@ import UniformTypeIdentifiers
 public enum HandoffApp: String, CaseIterable, Sendable {
     case mapsmith
     case pluck
+    case fieldguide
 
     public var name: String {
         switch self {
         case .mapsmith: "Mapsmith"
         case .pluck: "Pluck"
+        case .fieldguide: "Field Guide"
         }
     }
 
@@ -18,6 +20,7 @@ public enum HandoffApp: String, CaseIterable, Sendable {
         switch self {
         case .mapsmith: "io.github.scooper4711.Mapsmith"
         case .pluck: "io.github.scooper4711.pluck"
+        case .fieldguide: "io.github.scooper4711.FieldGuide"
         }
     }
 
@@ -26,6 +29,7 @@ public enum HandoffApp: String, CaseIterable, Sendable {
         switch self {
         case .mapsmith: "mapsmith"
         case .pluck: "pluck"
+        case .fieldguide: "fieldguide"
         }
     }
 
@@ -34,7 +38,7 @@ public enum HandoffApp: String, CaseIterable, Sendable {
     public func lists(_ item: LibraryTitle) -> Bool {
         switch self {
         case .mapsmith: item.classification.productLine == .maps
-        case .pluck: true
+        case .pluck, .fieldguide: true
         }
     }
 
@@ -42,7 +46,7 @@ public enum HandoffApp: String, CaseIterable, Sendable {
     public var acceptedTypes: [UTType] {
         switch self {
         case .mapsmith: [.pdf, .image]
-        case .pluck: [.pdf]
+        case .pluck, .fieldguide: [.pdf]
         }
     }
 
