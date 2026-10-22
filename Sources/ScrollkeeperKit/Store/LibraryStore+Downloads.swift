@@ -141,8 +141,8 @@ extension LibraryStore {
     private func performDownload(_ target: DownloadTarget) async {
         let partial = target.partialURL
         do {
-            let signed = try await catalog.signedDownloadURL(for: target.remote)
-            try await environment.http.download(.get(signed), to: partial) { [weak self] fraction in
+            let source = try await downloadURL(of: target.remote)
+            try await environment.http.download(.get(source), to: partial) { [weak self] fraction in
                 Task { @MainActor in self?.reportProgress(fraction, for: target) }
             }
             try await moveIntoPlace(partial, for: target)
@@ -159,6 +159,12 @@ extension LibraryStore {
         try? FileManager.default.removeItem(at: partial)
         downloadTasks[target.id] = nil
         startNextWaiting()
+    }
+
+    /// Where the file comes from: a public file's own address, or a link Paizo signs for the signed-in customer.
+    private func downloadURL(of remote: RemoteFile) async throws -> URL {
+        if remote.isPublic, let url = URL(string: remote.filePath) { return url }
+        return try await catalog.signedDownloadURL(for: remote)
     }
 
     private func moveIntoPlace(_ partial: URL, for target: DownloadTarget) async throws {

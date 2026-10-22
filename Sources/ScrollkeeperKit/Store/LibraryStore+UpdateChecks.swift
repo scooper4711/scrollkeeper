@@ -72,6 +72,8 @@ extension LibraryStore {
     private func candidates(in titles: [LibraryTitle]) -> [CheckCandidate] {
         titles.flatMap { item in
             item.editions
+                // Paizo's library doesn't know the built-in titles, so it can't say whether they changed.
+                .filter { !BuiltInTitles.contains($0.entitlement) }
                 .filter { locator.isDownloaded(locator.target(for: $0, in: item)) }
                 .map { edition in
                     let entitlement = edition.entitlement
