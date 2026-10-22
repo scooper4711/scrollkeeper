@@ -308,3 +308,18 @@ Paizo than one who has downloaded a little.
 14.9 Settings shows when update dates were last checked.
 14.10 The numbers in this section live in one place in the code
       (`UpdateCheckPolicy`), so they can be tuned together.
+
+## 15. Free titles
+
+Some free Paizo downloads are useful to every library but aren't in Paizo's
+library listing. Field Guide reads two of them for deities' lore.
+
+15.1 Every synced library lists the Divine Mysteries Web Supplement (every
+     deity's stat lines) and the Gods & Magic Web Supplement (divine
+     intercessions) as titles of their own, with their own summaries.
+15.2 They download from their public address, with no sign-in and no request
+     to Paizo's library.
+15.3 They are never stored with what Paizo lists, so a full sync (2) never
+     drops them, and they're never looked up in the store or checked for
+     updates (14).
+15.4 A library that hasn't been read yet still lists nothing.

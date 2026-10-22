@@ -13,6 +13,8 @@ public struct LibraryEnvironment: Sendable {
     public var updateCheckPolicy = UpdateCheckPolicy.standard
     /// The current time. Tests supply their own.
     public var now: @Sendable () -> Date = { Date() }
+    /// The free titles added to every library; the app adds `BuiltInTitles.all`.
+    public var builtInTitles: [BuiltInTitle] = []
 
     public init(
         http: HTTPClient,
@@ -40,6 +42,7 @@ public struct LibraryEnvironment: Sendable {
             dataDirectory: support.appending(path: "Scrollkeeper", directoryHint: .isDirectory),
             settings: SettingsStore(suiteName: "")
         )
+        environment.builtInTitles = BuiltInTitles.all
         #if os(iOS)
         if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             environment.defaultDownloadDirectory = documents

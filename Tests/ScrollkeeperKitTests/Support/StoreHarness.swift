@@ -10,6 +10,8 @@ final class StoreHarness {
     let settingsSuite = "ScrollkeeperKitTests-" + UUID().uuidString
     let clock = Clock()
     var updateCheckPolicy = UpdateCheckPolicy.standard
+    /// The free titles added to the library; none unless a test asks for them.
+    var builtInTitles: [BuiltInTitle] = []
 
     static let records: [[String: Any]] = [
         Fixtures.record(id: "ap-single", name: "Pathfinder Adventure PDF - Single File", sku: "PZO1E"),
@@ -40,6 +42,7 @@ final class StoreHarness {
             settings: SettingsStore(suiteName: settingsSuite)
         )
         environment.updateCheckPolicy = updateCheckPolicy
+        environment.builtInTitles = builtInTitles
         environment.now = { [clock] in clock.now }
         return environment
     }

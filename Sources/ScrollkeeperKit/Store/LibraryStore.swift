@@ -189,7 +189,7 @@ public final class LibraryStore {
 
     /// Rebuilds titles from the snapshot after entitlements, metadata or tags changed.
     func rebuildItems() {
-        items = grouper.makeItems(from: snapshot, reusing: items)
+        items = grouper.makeItems(from: snapshot.adding(environment.builtInTitles), reusing: items)
         refreshDownloadedItems()
     }
 

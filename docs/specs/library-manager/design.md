@@ -249,6 +249,18 @@ order, while the library held 270 dated ones; ascending and descending gave
 nearly the same page. The category and game filters do not help either: only
 some updated files carry them.
 
+### Free titles
+
+`BuiltInTitles` declares each free title as a `BuiltInTitle`: an `Entitlement`
+whose package ID starts with `builtin-` and whose `filePath` is the public URL,
+and the `ProductMetadata` the store would otherwise supply. `LibraryEnvironment
+.builtInTitles` holds the ones to add (`BuiltInTitles.all` in the app, none in
+tests unless asked for), and `rebuildItems()` groups `snapshot.adding(_:)`, so
+they never reach `catalog.json`, `merge` or full-sync pruning. `RemoteFile
+.isPublic` makes `performDownload` fetch the public URL instead of a signed
+one; `candidates(in:)` leaves them out of update checks, and `needsMetadata`
+never asks the store about their SKUs.
+
 ### Checking for updated files
 
 Since the list cannot say what changed, the app asks about one edition at a

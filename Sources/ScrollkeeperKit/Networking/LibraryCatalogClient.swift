@@ -6,12 +6,15 @@ public struct RemoteFile: Sendable, Equatable {
     public var fileName: String
     public var filePath: String
     public var customerID: String
+    /// True for a free file at a public address (`BuiltInTitles`), downloaded without a signed link.
+    public var isPublic: Bool
 
-    public init(displayName: String, fileName: String, filePath: String, customerID: String) {
+    public init(displayName: String, fileName: String, filePath: String, customerID: String, isPublic: Bool = false) {
         self.displayName = displayName
         self.fileName = fileName
         self.filePath = filePath
         self.customerID = customerID
+        self.isPublic = isPublic
     }
 
     public init(entitlement: Entitlement) {
@@ -19,7 +22,8 @@ public struct RemoteFile: Sendable, Equatable {
             displayName: entitlement.displayName,
             fileName: entitlement.fileName,
             filePath: entitlement.filePath,
-            customerID: entitlement.customerID
+            customerID: entitlement.customerID,
+            isPublic: BuiltInTitles.contains(entitlement)
         )
     }
 
