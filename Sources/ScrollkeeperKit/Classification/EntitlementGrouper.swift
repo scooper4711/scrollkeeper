@@ -41,7 +41,8 @@ public struct EntitlementGrouper: Sendable {
         }
         let reusable = Dictionary(previous.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         return order.map { key in
-            let group = GroupInput(id: key, entitlements: groups[key] ?? [], snapshot: snapshot)
+            let entitlements = PlaceholderNames.repairing(groups[key] ?? [])
+            let group = GroupInput(id: key, entitlements: entitlements, snapshot: snapshot)
             if let existing = reusable[key], group.matches(existing) {
                 return existing
             }
@@ -128,8 +129,12 @@ public struct EntitlementGrouper: Sendable {
         let label: String
         if kind == .other {
             label = remainder.isEmpty ? fallbackLabel(entitlement) : remainder
+        } else if remainder.isEmpty {
+            label = kind.label
         } else {
-            label = remainder.isEmpty ? kind.label : "\(remainder) – \(kind.label)"
+            // "Single File (updated 2026-09-21)" already says what kind of edition it is.
+            let saysKind = remainder.range(of: kind.label, options: .caseInsensitive) != nil
+            label = saysKind ? remainder : "\(remainder) – \(kind.label)"
         }
         return Edition(entitlement: entitlement, kind: kind, label: label)
     }
