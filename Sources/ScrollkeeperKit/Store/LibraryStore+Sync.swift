@@ -128,6 +128,7 @@ extension LibraryStore {
     }
 
     private func needsMetadata(_ sku: String) -> Bool {
+        guard !BuiltInTitles.contains(sku: sku) else { return false }
         guard let known = snapshot.metadata[sku] else { return true }
         return !known.coverURL.isEmpty && !covers.hasCover(sku: sku)
     }

@@ -60,6 +60,7 @@ to open the files with and the file types it accepts.
 |---|---|---|
 | `mapsmith` | `io.github.scooper4711.Mapsmith` | PDF, images |
 | `pluck` | `io.github.scooper4711.pluck` | PDF |
+| `fieldguide` | `io.github.scooper4711.FieldGuide` | PDF |
 
 `HandoffApp.canOpen(_:)` says whether an edition's download suits the app: a
 file of an accepted type, or a zip of documents.
