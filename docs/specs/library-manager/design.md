@@ -167,6 +167,15 @@ Views ──► LibraryStore ──► CatalogSynchronizer ──► LibraryCata
   otherwise call the packs adventures.
 - `TitleNormalizer.baseTitle` also drops a name given twice over, as Paizo
   does for some downloads.
+- `PlaceholderNames` renames entitlements whose name is a placeholder ("Test",
+  "Accidental duplicate package - disregard") although their file is the real
+  book, before grouping, so both the edition label and the file name use the
+  new name. A placeholder takes the name of a properly named edition of the same
+  product with the same file type and number of files, with its update date
+  added ("… Single File (updated 2026-09-21)"): such a placeholder is sometimes
+  the newer upload. Otherwise it is named from the product name, as Paizo names
+  editions ("<product> - Single File" for a PDF). A label that already names its
+  edition kind doesn't repeat it.
 - The title and download folder name are derived from entitlement data only,
   never from storefront metadata, so that paths stay stable when metadata
   arrives later.
