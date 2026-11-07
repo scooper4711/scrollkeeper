@@ -10,7 +10,9 @@ A Swift package with three targets, plus an Xcode project for the iPad app:
 | `ScrollkeeperUI` | library | SwiftUI views and the `App` itself. They render `LibraryStore` state and forward user actions to it. Builds for macOS and iPadOS; the few differences are behind `#if os(...)`. |
 | `Scrollkeeper` | executable | The macOS entry point: one file that starts the shared `App`. |
 
-`scripts/build-app.sh` wraps the macOS executable in a `.app` bundle.
+`scripts/build-app.sh` wraps the macOS executable in a `.app` bundle and signs
+it with `Resources/Scrollkeeper.entitlements`, which turn on the App Sandbox
+(see the app-handoff design, Sandboxing).
 `ios/Scrollkeeper.xcodeproj` builds the iPad app from the same package: its only
 source file starts the shared `App`.
 
@@ -33,7 +35,7 @@ no command-line tools to call.
 
 | | Mac | iPad |
 |---|---|---|
-| Downloads folder | `~/Library/Application Support/…/Files`, changeable | the app's Documents folder, shown in the Files app |
+| Downloads folder | `~/Library/Group Containers/<team ID>.io.github.scooper4711.tableside/Scrollkeeper/Files`, shared with the toolkit apps, changeable | the app's Documents folder, shown in the Files app |
 | Open | default application (`NSWorkspace`) | Quick Look preview in the app |
 | Space | Quick Look panel (`quickLookPreview`) of `previewFiles(for:)` | the same, with a keyboard |
 | Other applications | "Open With" menu | share sheet |
@@ -190,8 +192,9 @@ background, so artwork fills in while the catalog is still loading.
 
 ### Persistence
 
-`LibraryRepository` reads and writes JSON files in
-`~/Library/Application Support/Scrollkeeper/`:
+`LibraryRepository` reads and writes JSON files in the data folder,
+`~/Library/Application Support/Scrollkeeper/` inside the app's container
+(`~/Library/Containers/io.github.scooper4711.Scrollkeeper/Data/` on the Mac):
 
 | File | Contents |
 |---|---|
