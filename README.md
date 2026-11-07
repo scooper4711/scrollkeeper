@@ -162,8 +162,9 @@ and the iPad each keep their own catalog, tags and downloads.
 | What | Where |
 |---|---|
 | Catalog, summaries, tags | `Library/Application Support/Scrollkeeper/` in the app's container: on the Mac `~/Library/Containers/io.github.scooper4711.Scrollkeeper/Data/` |
-| Cover artwork | `Covers/` in the same folder |
+| Cover artwork | Mac: `Covers/` in the shared folder below. iPad: `Covers/` in the app's data folder |
 | Downloaded files | Mac: `~/Library/Group Containers/<team ID>.io.github.scooper4711.tableside/Scrollkeeper/Files/`, shared with the other Tableside Toolkit apps (changeable in Settings). iPad: the app's Documents folder, shown in Files |
+| Library list for the toolkit apps | Mac: `library.json` in the shared folder (`…/Scrollkeeper/`) |
 | Password | macOS Keychain, service `store.paizo.com` |
 
 ## Documentation

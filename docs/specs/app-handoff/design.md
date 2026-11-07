@@ -148,19 +148,23 @@ them. In the sandbox that needs a folder both sides may reach:
   `scripts/build-app.sh` puts in the team of the Developer ID certificate in
   the keychain (or `TEAM_ID` from the environment). An ad hoc build
   (`SIGNING_IDENTITY=-`, or no certificate) leaves the group out.
-- **Finding the group.** `SharedDownloadFolder.url()` reads the groups from the
+- **Finding the group.** `ToolkitFolder.url()` reads the groups from the
   app's own entitlements (`SecTaskCopyValueForEntitlement`), so the code needs
   no team ID either, picks the one ending in `.io.github.scooper4711.tableside`
   and asks `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)`
-  for `~/Library/Group Containers/<group>/`. Downloads go to its
-  `Scrollkeeper/Files/`. With no group (an ad hoc build, the tests, the iPad)
-  it returns nil and `LibraryEnvironment.live()` keeps `<data folder>/Files`.
+  for `~/Library/Group Containers/<group>/`; Scrollkeeper's toolkit folder is
+  its `Scrollkeeper/`, kept as `LibraryEnvironment.toolkitFolder`. Downloads go
+  to its `Files/` and covers to its `Covers/` (`coversDirectory`). With no
+  group (an ad hoc build, the tests, the iPad) it returns nil, and
+  `LibraryEnvironment.live()` keeps `<data folder>/Files` and
+  `<data folder>/Covers`. Demo mode has no toolkit folder.
 - **Moving the downloads.** `container-migration.plist` moves
   `${ApplicationSupport}/Scrollkeeper` and the preferences into Scrollkeeper's
-  own container at the first sandboxed launch. `live()` then asks
-  `DownloadFolderMove.defaultFolder(legacy:shared:)` for the default folder: when
-  `<data folder>/Files` holds files and the shared folder holds none (hidden
-  files aside), it renames the one to the other with `FileManager.moveItem`.
+  own container at the first sandboxed launch. `live()` then calls
+  `useToolkitFolder(_:)`, which asks `FolderMove.destination(legacy:shared:)`
+  for the downloads and the covers in turn: when the old folder holds files
+  and the shared one holds none (hidden files aside), it renames the one to
+  the other with `FileManager.moveItem`.
   Both moves are renames on the same volume, so a library of several
   gigabytes moves at once. If the move fails, the old folder stays the
   default download folder; once the shared folder has files, the old one is
@@ -172,3 +176,45 @@ them. In the sandbox that needs a folder both sides may reach:
 - **Readers.** Each importing app looks for `Scrollkeeper/Files` in the group
   container first and keeps its folder picker, with a remembered bookmark, as
   the fallback (5.5). Readers never write there.
+
+### Library list (`Sharing/LibraryIndex.swift`, requirements 6)
+
+```json
+{
+  "formatVersion": 1,
+  "generatedAt": "2026-11-07T18:00:00Z",
+  "downloadFolder": { "isShared": true },
+  "titles": [
+    { "sku": "PZO90150", "title": "Abomination Vaults", "kind": "Adventure Paths",
+      "gameSystem": "Pathfinder 2E", "series": "Abomination Vaults", "number": 150,
+      "levels": { "lowest": 1, "highest": 4 }, "cover": "Covers/PZO90150.jpg",
+      "downloaded": true,
+      "editions": [
+        { "name": "Pathfinder Adventure Path #150 PDF - Single File", "kind": "Single File",
+          "path": "Abomination Vaults/Pathfinder Adventure Path #150 PDF - Single File.pdf",
+          "isFolder": false, "downloaded": true, "outdated": false }
+      ] }
+  ]
+}
+```
+
+- `library.json` in the toolkit folder (`LibraryEnvironment.libraryIndexURL`,
+  nil without a toolkit folder). Keys are sorted, optional ones are left out
+  when empty, and new fields may be added without a version change; a change
+  that breaks readers raises `formatVersion`.
+- `LibraryIndexBuilder.entries(from:)` keeps the titles with an
+  `isQuickDownloadable` edition, in `titleSortKey` order, and lists those
+  editions. `path` is the edition's `FileLocator` target relative to the
+  download folder. Only the editions of titles in `downloadedItemIDs` are
+  looked for on disk, so a write in a large library stays quick. `cover` is
+  set when the covers are in the toolkit folder and `CoverStore.storedFileNames()`
+  (one listing of the folder) holds the title's file.
+- `downloadFolder.isShared` is true when the download folder is the toolkit
+  folder's `Files`; otherwise `path` gives the folder in use.
+- `LibraryStore.writeLibraryIndexIfChanged()` runs from
+  `refreshDownloadedItems()`, after `writeMapIndexIfChanged()`. It compares the
+  new list with the last one written (`hasSameContents(as:)`, which ignores
+  `generatedAt`), and queues an atomic write through the `persist` queue
+  followed by the Darwin notification
+  `io.github.scooper4711.tableside.library-changed` (`notify_post`, which the
+  sandbox allows). Readers watch it with `notify_register_dispatch`.

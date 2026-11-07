@@ -128,3 +128,34 @@ requirements).
     user chose.
 5.6 Apps that open one title at a time, such as Mapsmith and Pluck, keep
     asking through the handoff (2, 3), which also downloads what is missing.
+
+## 6. Shared library list and covers
+
+So the other toolkit apps need not work out titles from folder names,
+Scrollkeeper shares what it knows about the library next to the downloads
+(scrollkeeper#51). Mac only, like 5.
+
+6.1 The cover artwork is kept in the shared folder, where any toolkit app can
+    show it. Covers already fetched move there with the downloads (5.2).
+6.2 Whenever the library or what is on disk changes, Scrollkeeper writes a
+    library list to the shared folder. It lists every title with an edition
+    that can be downloaded with one click: the SKU, the title, the product
+    type, the game, the series, number and level range when classification
+    found them, the cover when one is stored, and whether an up-to-date copy
+    is on disk.
+6.3 For each such edition the list gives its name and kind, where it is kept
+    relative to the download folder (a file, or the folder an archive is
+    unpacked into, 5.4), whether it is on disk, and whether Paizo has updated
+    it since.
+6.4 The list says whether the downloads are in the shared folder or in a
+    folder the user chose, and gives that folder's path, so an app that has to
+    ask the user for it (5.3) can start there.
+6.5 Like the indexes (1.4, 1.5), the list has a format version and the time it
+    was written, is written only when its contents change, and is not written
+    before a catalog exists. It holds no account email or token (9.2 of the
+    library-manager requirements); unlike them it gives file locations, which
+    only the toolkit apps can read.
+6.6 After each write Scrollkeeper tells the other apps the list has changed,
+    so they can refresh without checking for it.
+6.7 Nothing is shared in demo mode, or by a build outside the shared folder
+    (5.2a).

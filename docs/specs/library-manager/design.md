@@ -202,7 +202,7 @@ background, so artwork fills in while the catalog is still loading.
 | `metadata.json` | storefront metadata by SKU |
 | `userdata.json` | tags by title id |
 | `updatechecks.json` | when each edition was last checked for an update |
-| `Covers/<sku>.jpg` | cover artwork |
+| `Covers/<sku>.jpg` | cover artwork, in the toolkit folder instead when the app is in the App Group (app-handoff design, Sandboxing) |
 
 Titles are derived from these at load time, so improving the classifier never
 needs a migration. Classifying a few thousand titles takes a few hundred
