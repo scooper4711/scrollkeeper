@@ -11,8 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.19"),
-        // Moves to the release with TablesideShared once scooper4711/tabletop-kit#28 is merged.
-        .package(url: "https://github.com/scooper4711/tabletop-kit.git", branch: "feat/tableside-shared")
+        .package(url: "https://github.com/scooper4711/tabletop-kit.git", from: "0.16.0")
     ],
     targets: [
         .target(
