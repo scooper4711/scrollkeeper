@@ -31,8 +31,9 @@ public struct LibraryEnvironment: Sendable {
 
     /// The real thing: URLSession, the Keychain and the app's own folders.
     ///
-    /// On a Mac downloads go into the Library folder unless the user chooses another place. On an
-    /// iPad they go into the app's Documents folder, which the Files app shows.
+    /// On a Mac downloads go into the folder the Tableside Toolkit apps share, unless the user chooses another
+    /// place; a build outside the App Group keeps them in the data folder. On an iPad they go into the app's
+    /// Documents folder, which the Files app shows.
     public static func live() -> LibraryEnvironment {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
@@ -43,6 +44,11 @@ public struct LibraryEnvironment: Sendable {
             settings: SettingsStore(suiteName: "")
         )
         environment.builtInTitles = BuiltInTitles.all
+        if let shared = SharedDownloadFolder.url() {
+            environment.defaultDownloadDirectory = DownloadFolderMove().defaultFolder(
+                legacy: environment.defaultDownloadDirectory, shared: shared
+            )
+        }
         #if os(iOS)
         if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             environment.defaultDownloadDirectory = documents
