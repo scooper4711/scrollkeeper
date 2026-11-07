@@ -120,17 +120,20 @@ the state of the download the request waits for. While `handoffFiles` waits,
 
 ## Sandboxing
 
-Pluck and Field Guide run in the App Sandbox; Mapsmith, Pawn Shop and
-Turnkeeper are moving to it, and Scrollkeeper follows once it is signed with
-the Developer ID (scrollkeeper#22, #23). The URL handoff and the file opening
-work in the sandbox: Launch Services gives the receiving app access to the
+All the Tableside Toolkit apps run in the App Sandbox. The URL handoff and the
+file opening work there: Launch Services gives the receiving app access to the
 files it is asked to open. That is why a sandboxed app gets its list as a
 title index handed over by an index request, not by reading `maps.json` from
-Scrollkeeper's folder, which it cannot. Mapsmith now uses the same request.
-`maps.json` is still written for Mapsmith 1.1 and earlier, and can go once
-those versions are no longer in use.
+Scrollkeeper's folder, which it cannot. `maps.json` is still written, but
+Mapsmith 1.1 and earlier, which read it from outside the sandbox, no longer
+find it once Scrollkeeper's data folder moves into its container; it can go.
 
-### Shared download folder (planned, requirements 5)
+`Resources/Scrollkeeper.entitlements` turns on the sandbox, network access
+(paizo.com, covers, the update check), read-write access to a folder the user
+picks and its app-scoped bookmark, the Downloads folder (where the updater
+saves the new disk image) and the App Group below.
+
+### Shared download folder (requirements 5)
 
 The apps that import many titles at once read Scrollkeeper's downloads
 directly; asking for each title through the handoff would be too slow for
@@ -141,20 +144,33 @@ them. In the sandbox that needs a folder both sides may reach:
   `<team ID>.io.github.scooper4711.tableside`. On the Mac the identifier must
   start with the team ID, and the apps must be signed by that team; an
   ad-hoc-signed app is refused or prompts for access to other apps' data. The
-  team ID is not committed: `build-app.sh` fills it in from a gitignored
-  setting, as `ios/Local.xcconfig` does for the iPad app.
-- **Location.** `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)`
-  gives `~/Library/Group Containers/<group>/`; downloads go to its
-  `Scrollkeeper/Files/`. `LibraryEnvironment.live()` makes that the default
-  download folder on the Mac, and falls back to `<data folder>/Files` when the
-  group container is unavailable (an unsigned development build).
+  team ID is not committed: the entitlements say `TEAM_ID`, and
+  `scripts/build-app.sh` puts in the team of the Developer ID certificate in
+  the keychain (or `TEAM_ID` from the environment). An ad hoc build
+  (`SIGNING_IDENTITY=-`, or no certificate) leaves the group out.
+- **Finding the group.** tabletop-kit's `TablesideShared`, which every
+  toolkit app uses for this, gives `ToolkitGroup.scrollkeeperFolder()`: it
+  reads the groups from the app's own entitlements
+  (`SecTaskCopyValueForEntitlement`), so the code needs no team ID either,
+  picks the one ending in `.io.github.scooper4711.tableside`, and returns
+  `~/Library/Group Containers/<group>/Scrollkeeper/`. `live()` asks for it on
+  the Mac only (the iPad is scrollkeeper#52) and keeps it as
+  `LibraryEnvironment.toolkitFolder`. Downloads go
+  to its `Files/` and covers to its `Covers/` (`coversDirectory`). With no
+  group (an ad hoc build, the tests, the iPad) it returns nil, and
+  `LibraryEnvironment.live()` keeps `<data folder>/Files` and
+  `<data folder>/Covers`. Demo mode has no toolkit folder.
 - **Moving the downloads.** `container-migration.plist` moves
-  `${ApplicationSupport}/Scrollkeeper` into Scrollkeeper's own container at the
-  first sandboxed launch. The store then moves `<data folder>/Files` to the
-  shared folder with `FileManager.moveItem` when the shared folder does not
-  exist yet. Both are renames on the same volume, so a library of several
+  `${ApplicationSupport}/Scrollkeeper` and the preferences into Scrollkeeper's
+  own container at the first sandboxed launch. `live()` then calls
+  `useToolkitFolder(_:)`, which asks `FolderMove.destination(legacy:shared:)`
+  for the downloads and the covers in turn: when the old folder holds files
+  and the shared one holds none (hidden files aside), it renames the one to
+  the other with `FileManager.moveItem`.
+  Both moves are renames on the same volume, so a library of several
   gigabytes moves at once. If the move fails, the old folder stays the
-  download folder.
+  default download folder; once the shared folder has files, the old one is
+  left alone.
 - **Chosen folder.** A folder the user chose is kept as a security-scoped
   bookmark (`ChosenDownloadFolder`, 5.4a of the library-manager requirements),
   made while the app still runs outside the sandbox, so it stays reachable
@@ -162,3 +178,51 @@ them. In the sandbox that needs a folder both sides may reach:
 - **Readers.** Each importing app looks for `Scrollkeeper/Files` in the group
   container first and keeps its folder picker, with a remembered bookmark, as
   the fallback (5.5). Readers never write there.
+
+### Library list (`Sharing/LibraryIndex.swift`, requirements 6)
+
+The format is `ScrollkeeperLibrary` in tabletop-kit's `TablesideShared`
+(`docs/specs/tableside-shared` there), so Scrollkeeper writes with the same
+`Codable` types the readers decode, along with their version check, choice of
+files to open and change observer. Scrollkeeper adds only the writing.
+
+```json
+{
+  "formatVersion": 1,
+  "generatedAt": "2026-11-07T18:00:00Z",
+  "downloadFolder": { "isShared": true },
+  "titles": [
+    { "sku": "PZO90150", "title": "Abomination Vaults", "kind": "Adventure Paths",
+      "gameSystem": "Pathfinder 2E", "series": "Abomination Vaults", "number": 150,
+      "levels": { "lowest": 1, "highest": 4 }, "cover": "Covers/PZO90150.jpg",
+      "downloaded": true,
+      "editions": [
+        { "name": "Pathfinder Adventure Path #150 PDF - Single File", "kind": "Single File",
+          "path": "Abomination Vaults/Pathfinder Adventure Path #150 PDF - Single File.pdf",
+          "isFolder": false, "downloaded": true, "outdated": false }
+      ] }
+  ]
+}
+```
+
+- `library.json` in the toolkit folder (`LibraryEnvironment.libraryIndexURL`,
+  nil without a toolkit folder). Keys are sorted, optional ones are left out
+  when empty, and new fields may be added without a version change; a change
+  that breaks readers raises `formatVersion`.
+- `LibraryIndexBuilder.titles(from:)` keeps the titles with an
+  `isQuickDownloadable` edition, in `titleSortKey` order, and lists those
+  editions. `path` is the edition's `FileLocator` target relative to the
+  download folder. Only the editions of titles in `downloadedItemIDs` are
+  looked for on disk, so a write in a large library stays quick. `cover` is
+  set when the covers are in the toolkit folder and `CoverStore.storedFileNames()`
+  (one listing of the folder) holds the title's file.
+- `downloadFolder.isShared` is true when the download folder is the toolkit
+  folder's `Files`; otherwise `path` gives the folder in use.
+- `LibraryStore.writeLibraryIndexIfChanged()` runs from
+  `refreshDownloadedItems()`, after `writeMapIndexIfChanged()`. It compares the
+  new list with the last one written (`hasSameContents(as:)`, which ignores
+  `generatedAt`), and queues an atomic write through the `persist` queue
+  followed by the Darwin notification
+  `io.github.scooper4711.tableside.library-changed` (`LibraryChange.post()`,
+  a `notify_post`, which the sandbox allows). Readers follow it with
+  `LibraryChangeObserver`.

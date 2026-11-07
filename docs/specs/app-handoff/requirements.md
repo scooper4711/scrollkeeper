@@ -18,7 +18,10 @@ does the same for any title with a PDF.
 
 1.1 Whenever the catalog changes, the Mac app writes the map index to
     `<data folder>/Shared/maps.json`, where the data folder is
-    `~/Library/Application Support/Scrollkeeper`.
+    `~/Library/Containers/io.github.scooper4711.Scrollkeeper/Data/Library/Application Support/Scrollkeeper`
+    in the App Sandbox. Only Mapsmith 1.1 and earlier, which ran outside the
+    sandbox, read it, from `~/Library/Application Support/Scrollkeeper`, where
+    it no longer is once Scrollkeeper runs in the sandbox.
 1.2 The index lists every title classified as Maps that has an edition that
     can be downloaded with one click. Titles that are only an image pack or
     have no file attached are left out.
@@ -96,11 +99,12 @@ does the same for any title with a PDF.
     the request cannot be met, with the text of the alert (2.7, 3.6). A failed
     index request has an empty SKU.
 
-## 5. Shared download folder (planned)
+## 5. Shared download folder
 
-Planned for when Scrollkeeper runs in the App Sandbox, which needs the
-Developer ID (scrollkeeper#22, #23). Mac only; the iPad app keeps its
-downloads in its Documents folder (10.3 of the library-manager requirements).
+The Mac app runs in the App Sandbox and keeps its downloads in a folder the
+Tableside Toolkit apps share (scrollkeeper#22). Mac only; the iPad app keeps
+its downloads in its Documents folder (10.3 of the library-manager
+requirements).
 
 5.1 Scrollkeeper's default download folder is in a folder shared by the
     Tableside Toolkit apps, so that an app that imports many titles at once,
@@ -108,7 +112,11 @@ downloads in its Documents folder (10.3 of the library-manager requirements).
     without the user pointing it at them.
 5.2 The first time it runs in the sandbox, Scrollkeeper moves the downloads in
     its old default folder into the shared folder. Nothing is downloaded
-    again, and the move takes no longer than renaming a folder.
+    again, and the move takes no longer than renaming a folder. If the move
+    fails, the old folder stays the download folder.
+5.2a A build that is not signed by the toolkit's team, such as an ad hoc
+    development build, cannot use the shared folder; it keeps its downloads
+    in its own container.
 5.3 A download folder the user chose stays where it is. Other apps then ask
     the user for it, as they do today.
 5.4 Only Scrollkeeper writes to the shared folder; other apps only read it,
@@ -120,3 +128,34 @@ downloads in its Documents folder (10.3 of the library-manager requirements).
     user chose.
 5.6 Apps that open one title at a time, such as Mapsmith and Pluck, keep
     asking through the handoff (2, 3), which also downloads what is missing.
+
+## 6. Shared library list and covers
+
+So the other toolkit apps need not work out titles from folder names,
+Scrollkeeper shares what it knows about the library next to the downloads
+(scrollkeeper#51). Mac only, like 5.
+
+6.1 The cover artwork is kept in the shared folder, where any toolkit app can
+    show it. Covers already fetched move there with the downloads (5.2).
+6.2 Whenever the library or what is on disk changes, Scrollkeeper writes a
+    library list to the shared folder. It lists every title with an edition
+    that can be downloaded with one click: the SKU, the title, the product
+    type, the game, the series, number and level range when classification
+    found them, the cover when one is stored, and whether an up-to-date copy
+    is on disk.
+6.3 For each such edition the list gives its name and kind, where it is kept
+    relative to the download folder (a file, or the folder an archive is
+    unpacked into, 5.4), whether it is on disk, and whether Paizo has updated
+    it since.
+6.4 The list says whether the downloads are in the shared folder or in a
+    folder the user chose, and gives that folder's path, so an app that has to
+    ask the user for it (5.3) can start there.
+6.5 Like the indexes (1.4, 1.5), the list has a format version and the time it
+    was written, is written only when its contents change, and is not written
+    before a catalog exists. It holds no account email or token (9.2 of the
+    library-manager requirements); unlike them it gives file locations, which
+    only the toolkit apps can read.
+6.6 After each write Scrollkeeper tells the other apps the list has changed,
+    so they can refresh without checking for it.
+6.7 Nothing is shared in demo mode, or by a build outside the shared folder
+    (5.2a).

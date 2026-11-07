@@ -12,6 +12,10 @@ final class StoreHarness {
     var updateCheckPolicy = UpdateCheckPolicy.standard
     /// The free titles added to the library; none unless a test asks for them.
     var builtInTitles: [BuiltInTitle] = []
+    /// True to run the store as a build in the App Group would, with a toolkit folder.
+    var usesToolkitFolder = false
+
+    var toolkitFolder: URL { directory.url.appending(path: "toolkit", directoryHint: .isDirectory) }
 
     static let records: [[String: Any]] = [
         Fixtures.record(id: "ap-single", name: "Pathfinder Adventure PDF - Single File", sku: "PZO1E"),
@@ -44,6 +48,7 @@ final class StoreHarness {
         environment.updateCheckPolicy = updateCheckPolicy
         environment.builtInTitles = builtInTitles
         environment.now = { [clock] in clock.now }
+        if usesToolkitFolder { environment.useToolkitFolder(toolkitFolder) }
         return environment
     }
 

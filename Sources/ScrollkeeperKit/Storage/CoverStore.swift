@@ -9,7 +9,17 @@ public struct CoverStore: Sendable {
     }
 
     public func url(sku: String) -> URL {
-        directory.appending(path: FileNameSanitizer.sanitize(sku) + ".jpg")
+        directory.appending(path: Self.fileName(sku: sku))
+    }
+
+    /// The name of a title's cover file.
+    public static func fileName(sku: String) -> String {
+        FileNameSanitizer.sanitize(sku) + ".jpg"
+    }
+
+    /// The names of the covers stored, found with one listing of the folder.
+    public func storedFileNames() -> Set<String> {
+        Set((try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? [])
     }
 
     public func hasCover(sku: String) -> Bool {

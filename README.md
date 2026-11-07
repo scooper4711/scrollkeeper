@@ -108,7 +108,9 @@ make dmg      # packages the app into a disk image
 Building needs Xcode 16 or later (Swift 6 toolchain). `scripts/sign-app.sh`
 signs the app with the Developer ID when the keychain holds a Developer ID
 Application certificate, and ad hoc otherwise; after an ad-hoc rebuild, macOS
-may ask again for permission to use the saved Keychain item.
+may ask again for permission to use the saved Keychain item. The app runs in
+the App Sandbox; an ad hoc build can't join the Tableside Toolkit's App Group,
+so it keeps its downloads in its own container.
 
 ## Building for iPad
 
@@ -159,10 +161,10 @@ and the iPad each keep their own catalog, tags and downloads.
 
 | What | Where |
 |---|---|
-| Catalog, summaries, tags | `~/Library/Application Support/Scrollkeeper/` (inside the app's container on the iPad) |
-| Cover artwork | `~/Library/Application Support/Scrollkeeper/Covers/` |
-| Map list for Mapsmith | `~/Library/Application Support/Scrollkeeper/Shared/maps.json` (Mac only) |
-| Downloaded files | Mac: `~/Library/Application Support/Scrollkeeper/Files/` (changeable in Settings). iPad: the app's Documents folder, shown in Files |
+| Catalog, summaries, tags | `Library/Application Support/Scrollkeeper/` in the app's container: on the Mac `~/Library/Containers/io.github.scooper4711.Scrollkeeper/Data/` |
+| Cover artwork | Mac: `Covers/` in the shared folder below. iPad: `Covers/` in the app's data folder |
+| Downloaded files | Mac: `~/Library/Group Containers/<team ID>.io.github.scooper4711.tableside/Scrollkeeper/Files/`, shared with the other Tableside Toolkit apps (changeable in Settings). iPad: the app's Documents folder, shown in Files |
+| Library list for the toolkit apps | Mac: `library.json` in the shared folder (`…/Scrollkeeper/`) |
 | Password | macOS Keychain, service `store.paizo.com` |
 
 ## Documentation

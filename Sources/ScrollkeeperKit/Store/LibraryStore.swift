@@ -1,4 +1,5 @@
 import Foundation
+import TablesideShared
 import Observation
 
 public struct SyncProgress: Equatable, Sendable {
@@ -120,13 +121,15 @@ public final class LibraryStore {
     var updateCheckTask: Task<Void, Never>?
     /// The map index entries last written; nil until the first write.
     var writtenMapEntries: [MapIndex.Entry]?
+    /// The library list last written to the toolkit folder; nil until the first write.
+    var writtenLibraryIndex: ScrollkeeperLibrary?
 
     public init(environment: LibraryEnvironment) {
         self.environment = environment
         session = PaizoSession(http: environment.http, credentials: environment.credentials)
         catalog = LibraryCatalogClient(http: environment.http, session: session)
         repository = LibraryRepository(directory: environment.dataDirectory)
-        covers = CoverStore(directory: environment.dataDirectory.appending(path: "Covers", directoryHint: .isDirectory))
+        covers = CoverStore(directory: environment.coversDirectory)
         metadataSynchronizer = MetadataSynchronizer(
             storefront: StorefrontClient(http: environment.http), http: environment.http, covers: covers
         )
@@ -198,6 +201,7 @@ public final class LibraryStore {
         outdatedItemIDs = locator.outdatedItemIDs(among: items.filter { downloadedItemIDs.contains($0.id) })
         refreshVisibleItems()
         writeMapIndexIfChanged()
+        writeLibraryIndexIfChanged()
     }
 
     func refreshVisibleItems() {

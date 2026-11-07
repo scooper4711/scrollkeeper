@@ -1,13 +1,19 @@
 import Foundation
+import TablesideShared
 
 /// The outside world the store depends on. Tests supply stubs and temporary directories.
 public struct LibraryEnvironment: Sendable {
     public var http: HTTPClient
     public var credentials: CredentialStore
-    /// Holds the catalog, metadata, tags and cover artwork.
+    /// Holds the catalog, metadata and tags.
     public var dataDirectory: URL
     /// Where downloaded files go unless the user chooses another folder.
     public var defaultDownloadDirectory: URL
+    /// Cover artwork, one image per SKU.
+    public var coversDirectory: URL
+    /// Scrollkeeper's folder in the Tableside Toolkit's App Group (`ToolkitGroup.scrollkeeperFolder()`), where the
+    /// other toolkit apps find its downloads, covers and library list; nil outside the group, and in demo mode.
+    public var toolkitFolder: URL?
     public var settings: SettingsStore
     /// How much the app asks Paizo about updated files.
     public var updateCheckPolicy = UpdateCheckPolicy.standard
@@ -26,13 +32,15 @@ public struct LibraryEnvironment: Sendable {
         self.credentials = credentials
         self.dataDirectory = dataDirectory
         defaultDownloadDirectory = dataDirectory.appending(path: "Files", directoryHint: .isDirectory)
+        coversDirectory = dataDirectory.appending(path: "Covers", directoryHint: .isDirectory)
         self.settings = settings
     }
 
     /// The real thing: URLSession, the Keychain and the app's own folders.
     ///
-    /// On a Mac downloads go into the Library folder unless the user chooses another place. On an
-    /// iPad they go into the app's Documents folder, which the Files app shows.
+    /// On a Mac downloads and covers go into the toolkit folder the Tableside Toolkit apps share, unless the user
+    /// chooses another place for downloads; a build outside the App Group keeps them in the data folder. On an
+    /// iPad downloads go into the app's Documents folder, which the Files app shows.
     public static func live() -> LibraryEnvironment {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
@@ -43,12 +51,30 @@ public struct LibraryEnvironment: Sendable {
             settings: SettingsStore(suiteName: "")
         )
         environment.builtInTitles = BuiltInTitles.all
+        #if os(macOS)
+        if let toolkit = ToolkitGroup.scrollkeeperFolder() {
+            environment.useToolkitFolder(toolkit)
+        }
+        #endif
         #if os(iOS)
         if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             environment.defaultDownloadDirectory = documents
         }
         #endif
         return environment
+    }
+
+    /// Keeps the downloads and covers in `folder` from now on, moving those in the data folder there the first
+    /// time.
+    mutating func useToolkitFolder(_ folder: URL) {
+        let move = FolderMove()
+        toolkitFolder = folder
+        defaultDownloadDirectory = move.destination(
+            legacy: defaultDownloadDirectory, shared: folder.appending(path: "Files", directoryHint: .isDirectory)
+        )
+        coversDirectory = move.destination(
+            legacy: coversDirectory, shared: folder.appending(path: "Covers", directoryHint: .isDirectory)
+        )
     }
 }
 
