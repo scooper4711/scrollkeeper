@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scooper4711/tabletop-kit.git",
       "state" : {
-        "revision" : "dcf4eac97d73121a12decd842bde01c322b0f2d2",
-        "version" : "0.16.0"
+        "revision" : "cf371316ea56ba724012bbbf654c93e3aaf0e65f",
+        "version" : "0.17.0"
       }
     },
     {

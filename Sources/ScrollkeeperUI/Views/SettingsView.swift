@@ -1,5 +1,6 @@
 import ScrollkeeperKit
 import SwiftUI
+import TablesideShared
 
 #if os(macOS)
 import AppKit
@@ -113,10 +114,16 @@ private struct DownloadSettings: View {
         Section {
             #if os(macOS)
             LabeledContent("Folder") {
-                Text(store.downloadDirectory.path(percentEncoded: false))
-                    .textSelection(.enabled)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.trailing)
+                // The shared folder reads as Scrollkeeper, not as a path into the App Group; the path is in the
+                // help tag.
+                let name = FolderName(url: store.downloadDirectory)
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(name.title)
+                    Text(name.location).font(.caption).foregroundStyle(.secondary)
+                }
+                .lineLimit(2)
+                .multilineTextAlignment(.trailing)
+                .help(store.downloadDirectory.path(percentEncoded: false))
             }
             HStack {
                 Spacer()
