@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.19"),
-        .package(url: "https://github.com/scooper4711/tabletop-kit.git", from: "0.16.0")
+        .package(url: "https://github.com/scooper4711/tabletop-kit.git", from: "0.17.0")
     ],
     targets: [
         .target(
@@ -21,7 +21,9 @@ let package = Package(
                 .product(name: "TablesideShared", package: "tabletop-kit")
             ]
         ),
-        .target(name: "ScrollkeeperUI", dependencies: ["ScrollkeeperKit"]),
+        .target(name: "ScrollkeeperUI", dependencies: [
+            "ScrollkeeperKit", .product(name: "TablesideShared", package: "tabletop-kit")
+        ]),
         .executableTarget(name: "Scrollkeeper", dependencies: ["ScrollkeeperUI"]),
         .testTarget(
             name: "ScrollkeeperKitTests",
