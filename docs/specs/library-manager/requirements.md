@@ -110,6 +110,9 @@ once, online or off.
     titles, in one step.
 5.4 A downloaded file is kept on disk. Its location is a folder inside the
     user's Library directory by default and can be changed in Settings.
+    Settings names the folder rather than showing its path: the default
+    reads "Scrollkeeper", on this Mac, as the other Tableside Toolkit apps
+    show it; the path is in the help tag.
 5.4a A download folder the user chose is remembered so the app can still reach
      it when it runs in the App Sandbox, and is found again after the user
      moves or renames it. A folder on a disk that isn't connected stays
