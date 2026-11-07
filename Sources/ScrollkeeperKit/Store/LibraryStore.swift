@@ -1,4 +1,5 @@
 import Foundation
+import TablesideShared
 import Observation
 
 public struct SyncProgress: Equatable, Sendable {
@@ -121,7 +122,7 @@ public final class LibraryStore {
     /// The map index entries last written; nil until the first write.
     var writtenMapEntries: [MapIndex.Entry]?
     /// The library list last written to the toolkit folder; nil until the first write.
-    var writtenLibraryIndex: LibraryIndex?
+    var writtenLibraryIndex: ScrollkeeperLibrary?
 
     public init(environment: LibraryEnvironment) {
         self.environment = environment

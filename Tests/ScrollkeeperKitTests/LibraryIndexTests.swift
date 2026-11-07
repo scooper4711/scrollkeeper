@@ -1,6 +1,7 @@
 import Foundation
 import notify
 @testable import ScrollkeeperKit
+import TablesideShared
 import Testing
 
 @MainActor
@@ -12,14 +13,14 @@ import Testing
         harness.usesToolkitFolder = true
     }
 
-    private func readIndex() throws -> LibraryIndex {
-        let url = try #require(harness.environment.libraryIndexURL)
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(LibraryIndex.self, from: Data(contentsOf: url))
+    private func readIndex() throws -> ScrollkeeperLibrary {
+        guard case let .loaded(library) = ScrollkeeperLibrary.read(from: harness.toolkitFolder) else {
+            throw LibraryIndexTestError.notWritten
+        }
+        return library
     }
 
-    private func entry(_ sku: String) throws -> LibraryIndex.Entry {
+    private func entry(_ sku: String) throws -> ScrollkeeperLibrary.Title {
         try #require(try readIndex().titles.first { $0.sku == sku })
     }
 
@@ -27,9 +28,9 @@ import Testing
         _ = await harness.makeSyncedStore()
 
         let index = try readIndex()
-        #expect(index.formatVersion == LibraryIndex.currentFormatVersion)
+        #expect(index.formatVersion == ScrollkeeperLibrary.currentFormatVersion)
         #expect(index.generatedAt == harness.clock.now)
-        #expect(index.downloadFolder == LibraryIndex.DownloadFolder(isShared: true, path: nil))
+        #expect(index.downloadFolder == ScrollkeeperLibrary.DownloadFolder(isShared: true))
         #expect(Set(index.titles.map(\.sku)) == ["PZO1E", "PZO2E"])
 
         let book = try entry("PZO1E")
@@ -92,7 +93,7 @@ import Testing
 
     @Test func tellsTheReadersAfterEachWrite() async throws {
         var token: Int32 = 0
-        #expect(notify_register_check(LibraryIndex.changeNotification, &token) == NOTIFY_STATUS_OK)
+        #expect(notify_register_check(LibraryChange.notificationName, &token) == NOTIFY_STATUS_OK)
         defer { notify_cancel(token) }
         var changed: Int32 = 0
         notify_check(token, &changed)
@@ -121,4 +122,8 @@ import Testing
         #expect(outside.environment.libraryIndexURL == nil)
         #expect(!FileManager.default.fileExists(atPath: outside.toolkitFolder.path))
     }
+}
+
+enum LibraryIndexTestError: Error {
+    case notWritten
 }

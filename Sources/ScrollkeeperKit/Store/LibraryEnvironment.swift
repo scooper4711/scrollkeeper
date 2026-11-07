@@ -1,4 +1,5 @@
 import Foundation
+import TablesideShared
 
 /// The outside world the store depends on. Tests supply stubs and temporary directories.
 public struct LibraryEnvironment: Sendable {
@@ -10,8 +11,8 @@ public struct LibraryEnvironment: Sendable {
     public var defaultDownloadDirectory: URL
     /// Cover artwork, one image per SKU.
     public var coversDirectory: URL
-    /// Scrollkeeper's folder in the Tableside Toolkit's App Group, where the other toolkit apps find its
-    /// downloads, covers and library list (`ToolkitFolder`); nil outside the group, and in demo mode.
+    /// Scrollkeeper's folder in the Tableside Toolkit's App Group (`ToolkitGroup.scrollkeeperFolder()`), where the
+    /// other toolkit apps find its downloads, covers and library list; nil outside the group, and in demo mode.
     public var toolkitFolder: URL?
     public var settings: SettingsStore
     /// How much the app asks Paizo about updated files.
@@ -50,9 +51,11 @@ public struct LibraryEnvironment: Sendable {
             settings: SettingsStore(suiteName: "")
         )
         environment.builtInTitles = BuiltInTitles.all
-        if let toolkit = ToolkitFolder.url() {
+        #if os(macOS)
+        if let toolkit = ToolkitGroup.scrollkeeperFolder() {
             environment.useToolkitFolder(toolkit)
         }
+        #endif
         #if os(iOS)
         if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             environment.defaultDownloadDirectory = documents

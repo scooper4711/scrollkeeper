@@ -2,22 +2,6 @@ import Foundation
 @testable import ScrollkeeperKit
 import Testing
 
-@Suite struct ToolkitFolderTests {
-    @Test func findsTheToolkitGroupAmongTheSignedGroups() {
-        let groups = ["ABCDE12345.io.github.scooper4711.other", "ABCDE12345.io.github.scooper4711.tableside"]
-        #expect(ToolkitFolder.tablesideGroup(in: groups) == "ABCDE12345.io.github.scooper4711.tableside")
-    }
-
-    @Test func hasNoGroupWhenUnsignedOrOutsideTheToolkit() {
-        #expect(ToolkitFolder.tablesideGroup(in: []) == nil)
-        #expect(ToolkitFolder.tablesideGroup(in: ["group.example.other"]) == nil)
-    }
-
-    @Test func testsRunOutsideTheGroup() {
-        #expect(ToolkitFolder.url() == nil)
-    }
-}
-
 @Suite struct FolderMoveTests {
     private let directory = TemporaryDirectory()
     private var legacy: URL { directory.url.appending(path: "Application Support/Scrollkeeper/Files") }

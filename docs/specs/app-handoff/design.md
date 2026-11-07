@@ -148,12 +148,14 @@ them. In the sandbox that needs a folder both sides may reach:
   `scripts/build-app.sh` puts in the team of the Developer ID certificate in
   the keychain (or `TEAM_ID` from the environment). An ad hoc build
   (`SIGNING_IDENTITY=-`, or no certificate) leaves the group out.
-- **Finding the group.** `ToolkitFolder.url()` reads the groups from the
-  app's own entitlements (`SecTaskCopyValueForEntitlement`), so the code needs
-  no team ID either, picks the one ending in `.io.github.scooper4711.tableside`
-  and asks `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)`
-  for `~/Library/Group Containers/<group>/`; Scrollkeeper's toolkit folder is
-  its `Scrollkeeper/`, kept as `LibraryEnvironment.toolkitFolder`. Downloads go
+- **Finding the group.** tabletop-kit's `TablesideShared`, which every
+  toolkit app uses for this, gives `ToolkitGroup.scrollkeeperFolder()`: it
+  reads the groups from the app's own entitlements
+  (`SecTaskCopyValueForEntitlement`), so the code needs no team ID either,
+  picks the one ending in `.io.github.scooper4711.tableside`, and returns
+  `~/Library/Group Containers/<group>/Scrollkeeper/`. `live()` asks for it on
+  the Mac only (the iPad is scrollkeeper#52) and keeps it as
+  `LibraryEnvironment.toolkitFolder`. Downloads go
   to its `Files/` and covers to its `Covers/` (`coversDirectory`). With no
   group (an ad hoc build, the tests, the iPad) it returns nil, and
   `LibraryEnvironment.live()` keeps `<data folder>/Files` and
@@ -179,6 +181,11 @@ them. In the sandbox that needs a folder both sides may reach:
 
 ### Library list (`Sharing/LibraryIndex.swift`, requirements 6)
 
+The format is `ScrollkeeperLibrary` in tabletop-kit's `TablesideShared`
+(`docs/specs/tableside-shared` there), so Scrollkeeper writes with the same
+`Codable` types the readers decode, along with their version check, choice of
+files to open and change observer. Scrollkeeper adds only the writing.
+
 ```json
 {
   "formatVersion": 1,
@@ -202,7 +209,7 @@ them. In the sandbox that needs a folder both sides may reach:
   nil without a toolkit folder). Keys are sorted, optional ones are left out
   when empty, and new fields may be added without a version change; a change
   that breaks readers raises `formatVersion`.
-- `LibraryIndexBuilder.entries(from:)` keeps the titles with an
+- `LibraryIndexBuilder.titles(from:)` keeps the titles with an
   `isQuickDownloadable` edition, in `titleSortKey` order, and lists those
   editions. `path` is the edition's `FileLocator` target relative to the
   download folder. Only the editions of titles in `downloadedItemIDs` are
@@ -216,5 +223,6 @@ them. In the sandbox that needs a folder both sides may reach:
   new list with the last one written (`hasSameContents(as:)`, which ignores
   `generatedAt`), and queues an atomic write through the `persist` queue
   followed by the Darwin notification
-  `io.github.scooper4711.tableside.library-changed` (`notify_post`, which the
-  sandbox allows). Readers watch it with `notify_register_dispatch`.
+  `io.github.scooper4711.tableside.library-changed` (`LibraryChange.post()`,
+  a `notify_post`, which the sandbox allows). Readers follow it with
+  `LibraryChangeObserver`.
