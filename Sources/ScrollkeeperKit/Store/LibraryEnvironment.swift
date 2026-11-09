@@ -21,6 +21,8 @@ public struct LibraryEnvironment: Sendable {
     public var now: @Sendable () -> Date = { Date() }
     /// The free titles added to every library; the app adds `BuiltInTitles.all`.
     public var builtInTitles: [BuiltInTitle] = []
+    /// True for the demo library (`demo()`), whose data is thrown away when it ends.
+    public var isDemo = false
 
     public init(
         http: HTTPClient,
@@ -109,6 +111,7 @@ extension LibraryEnvironment {
             dataDirectory: FileManager.default.temporaryDirectory.appending(path: "ScrollkeeperDemo-" + run),
             settings: SettingsStore(suiteName: "ScrollkeeperDemo-" + run)
         )
+        environment.isDemo = true
         // The free titles every library has, downloaded from Paizo as in a real one (13.6).
         environment.builtInTitles = BuiltInTitles.all
         #if os(macOS)

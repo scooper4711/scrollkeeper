@@ -115,3 +115,32 @@ import Testing
         #expect(FileManager.default.fileExists(atPath: folder.appending(path: ScrollkeeperLibrary.fileName).path))
     }
 }
+
+/// Ending the demo library from the app (#44).
+@MainActor
+@Suite struct DemoEndingTests {
+    @Test func theDemoKnowsItIsTheDemoAndLeavesNothingBehind() async throws {
+        let store = LibraryStore(environment: .demo(downloadDuration: 30, outside: StubHTTPClient()))
+        await store.start()
+        await store.waitUntilIdle()
+        let item = try #require(store.item(id: "DEMO1003E"))
+        store.download(try #require(store.quickActions(for: item).download))
+        #expect(store.isDemo && !store.downloadJobs.isEmpty)
+        let data = store.environment.dataDirectory
+        #expect(FileManager.default.fileExists(atPath: data.path))
+
+        store.endDemo()
+        await store.waitForDownloads()
+
+        #expect(store.downloadJobs.isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: data.path))
+    }
+
+    @Test func aRealLibraryIsNotEnded() async throws {
+        let harness = StoreHarness()
+        let store = await harness.makeSyncedStore()
+        #expect(!store.isDemo)
+        store.endDemo()
+        #expect(FileManager.default.fileExists(atPath: harness.environment.dataDirectory.path))
+    }
+}

@@ -6,10 +6,11 @@ public struct ScrollkeeperApp: App {
     #if os(macOS)
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     @State private var updater = AppUpdater.live()
-    private var store: LibraryStore { appDelegate.store }
+    private var session: LibrarySession { appDelegate.session }
     #else
-    @State private var store = LibraryStore(environment: .forLaunch())
+    @State private var session = LibrarySession()
     #endif
+    private var store: LibraryStore { session.store }
 
     public init() {}
 
@@ -21,7 +22,7 @@ public struct ScrollkeeperApp: App {
         // launches the app would otherwise get a window of its own besides the one opened at launch.
         .handlesExternalEvents(matching: [])
         .commands {
-            LibraryCommands(store: store)
+            LibraryCommands(session: session)
             #if os(macOS)
             AboutCommands(updater: updater)
             #endif
@@ -38,6 +39,7 @@ public struct ScrollkeeperApp: App {
     private var libraryWindow: some View {
         LibraryWindow()
             .environment(store)
+            .environment(session)
         #if os(macOS)
             .environment(appDelegate.handoff)
             .frame(minWidth: 900, minHeight: 520)
@@ -49,7 +51,7 @@ public struct ScrollkeeperApp: App {
                 }
             }
         #else
-            .task { await store.start() }
+            .task { await session.start() }
         #endif
     }
 }
@@ -59,11 +61,11 @@ public struct ScrollkeeperApp: App {
 /// request is answered even while no library window is open.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    let store = LibraryStore(environment: .forLaunch())
-    lazy var handoff = HandoffCoordinator(store: store)
+    let session = LibrarySession()
+    lazy var handoff = HandoffCoordinator(session: session)
 
     func applicationDidFinishLaunching(_: Notification) {
-        Task { await store.start() }
+        Task { await session.start() }
     }
 
     func application(_: NSApplication, open urls: [URL]) {
@@ -100,7 +102,8 @@ struct AboutCommands: Commands {
 
 /// The Library menu: refresh and full reload.
 struct LibraryCommands: Commands {
-    let store: LibraryStore
+    let session: LibrarySession
+    private var store: LibraryStore { session.store }
 
     var body: some Commands {
         CommandMenu("Library") {

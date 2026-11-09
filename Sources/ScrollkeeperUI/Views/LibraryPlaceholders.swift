@@ -30,6 +30,7 @@ struct NoResultsView: View {
 /// Shown while there is no catalog: either no account yet, or the first sync is running.
 struct EmptyLibraryView: View {
     @Environment(LibraryStore.self) private var store
+    @Environment(LibrarySession.self) private var session
     /// Opens the settings on the iPad, where they are a sheet of the window.
     let openSettings: () -> Void
 
@@ -38,13 +39,15 @@ struct EmptyLibraryView: View {
             ContentUnavailableView {
                 Label("No Paizo Account", systemImage: "person.crop.circle.badge.questionmark")
             } description: {
-                Text("Add your Paizo account in Settings to load your library.")
+                Text("Add your Paizo account in Settings to load your library, or try Scrollkeeper with a demo "
+                     + "library of sample titles and files, which the other Tableside Toolkit apps can use too.")
             } actions: {
                 #if os(macOS)
                 SettingsLink { Text("Open Settings…") }
                 #else
                 Button("Open Settings…", action: openSettings)
                 #endif
+                Button("Try the Demo Library", action: session.startDemo)
             }
         } else if store.sync.isRunning {
             ContentUnavailableView {
@@ -60,6 +63,25 @@ struct EmptyLibraryView: View {
             } actions: {
                 Button("Load Library") { store.startFullSync() }
             }
+        }
+    }
+}
+
+/// Across the top of the library while the demo library is open: what it is, and the way back to signing in (#44).
+struct DemoBanner: View {
+    @Environment(LibrarySession.self) private var session
+
+    var body: some View {
+        if session.isDemo {
+            HStack {
+                Label("Demo library: sample titles with placeholder files.", systemImage: "sparkles")
+                    .font(.callout)
+                Spacer()
+                Button("Leave Demo", action: session.leaveDemo)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(.yellow.opacity(0.2))
         }
     }
 }

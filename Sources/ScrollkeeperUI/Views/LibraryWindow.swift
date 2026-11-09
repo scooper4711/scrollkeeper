@@ -56,6 +56,7 @@ struct LibraryWindow: View {
             catalog
                 .modifier(SpacePreview(selection: selection))
                 .safeAreaInset(edge: .bottom, spacing: 0) { SyncStatusBar() }
+                .safeAreaInset(edge: .top, spacing: 0) { DemoBanner() }
                 .navigationTitle(title)
             #if os(macOS)
                 .navigationSubtitle(subtitle)

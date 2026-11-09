@@ -17,10 +17,12 @@ final class HandoffCoordinator {
     var requestedSelection: LibraryTitle.ID?
     /// Why the last request failed, for the library window to show.
     var failure: HandoffError?
-    @ObservationIgnored private let store: LibraryStore
+    @ObservationIgnored private let session: LibrarySession
+    /// The library shown now: a request is answered from the demo library while it is open.
+    private var store: LibraryStore { session.store }
 
-    init(store: LibraryStore) {
-        self.store = store
+    init(session: LibrarySession) {
+        self.session = session
     }
 
     func handle(_ url: URL) {
