@@ -277,7 +277,11 @@ tests unless asked for), and `rebuildItems()` groups `snapshot.adding(_:)`, so
 they never reach `catalog.json`, `merge` or full-sync pruning. `RemoteFile
 .isPublic` makes `performDownload` fetch the public URL instead of a signed
 one; `candidates(in:)` leaves them out of update checks, and `needsMetadata`
-never asks the store about their SKUs.
+never asks the store about their SKUs. Their `coverURL` is the parent book's
+storefront image (15.5), found once from the storefront's answer for its SKU
+(`PZO13003E`, `PZO9303E`); `start()` calls `downloadMissingBuiltInCovers()`,
+which fetches each missing one through `MetadataSynchronizer.downloadCover(for:)`
+on `builtInCoverTask` and rebuilds the items, so `library.json` gets them too.
 
 ### Checking for updated files
 
@@ -371,17 +375,17 @@ an alert on the Mac.
 ## Demo library
 
 - **Catalog** (`DemoCatalog`): the invented titles, each edition naming the file it serves, plus the PDFs' own
-  titles (pawn collections, token set, Battle Cards, Field Guide's sample sourcebook). `LibraryEnvironment.demo()`
+  titles (pawn collections, token set, Battle Cards, Field Guide's two sample sourcebooks). `LibraryEnvironment.demo()`
   adds `BuiltInTitles.all`.
 - **Files** (`Demo/Files`, a resource of `ScrollkeeperKit`): written by tabletop-kit's `DemoLibraryTool` from a
   checkout beside this one (the battle maps at Flip-Mat size, 24 by 30 inches), with the Community Use art from
-  `../community-use-artwork`, plus `../field-guide/Resources/Review/Field Guide Sample Monster Core.pdf` (Monster
-  Core's ORC stat blocks beside Paizo blog art, with placeholder lore); `make demo-pdfs` (`scripts/
+  `../community-use-artwork`, plus Field Guide's two samples from `../field-guide/Resources/Review/` (Monster
+  Core's has its ORC stat blocks beside Paizo blog art; both have placeholder lore); `make demo-pdfs` (`scripts/
   make-demo-pdfs.sh`) rewrites them, and they are committed, so CI and the iPad build need neither checkout.
 - **Server** (`DemoHTTPClient`): a download ticket carries the requested file's name (`downloadKey`), its signed
   address is `https://files.demo.invalid/<file>`, and the download copies that bundled file, or a one-page PDF for
-  a file it doesn't have (the ePubs). Addresses outside the demo (the free titles' `downloads.paizo.com`) go to
-  a real `HTTPClient`, which tests replace. Covers: each product's `defaultImage` is
+  a file it doesn't have (the ePubs). Addresses outside the demo (the free titles' `downloads.paizo.com`, and
+  their covers' host, which `send` checks first) go to a real `HTTPClient`, which tests replace. Covers: each product's `defaultImage` is
   `https://covers.demo.invalid/<SKU>.jpg`, answered with `DemoCover`, the title's name on a band of color.
 - **Sharing** (13.7, `DemoSharing`): on the Mac, `demo()` uses `ToolkitGroup.scrollkeeperFolder()` when it holds
   no `library.json`, or one the demo wrote, which `.demo-library` beside it marks. Downloads and covers then go to
