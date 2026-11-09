@@ -372,6 +372,13 @@ an alert on the Mac.
   its `Files` and `Covers`, and `library.json` is written as for a real library. `live()` removes the demo's
   `Files`, `Covers`, `library.json` and mark before moving a real library in (`DemoSharing.removeDemo(from:)`).
 
+- **From the sign-in screen** (13.8): `LibrarySession` (ScrollkeeperUI) owns the `LibraryStore` the app shows;
+  the Mac's `AppDelegate` and the iPad's app hold one. `startDemo()` replaces the store with one on `demo()`;
+  `leaveDemo()` calls the demo store's `endDemo()` (cancels its downloads, removes its temporary data folder) and
+  replaces it with one on `live()`. Views, `LibraryCommands` and `HandoffCoordinator` read `session.store` when
+  they need it, so they follow the switch. `EmptyLibraryView` offers **Try the Demo Library** while signed out;
+  `DemoBanner` above the catalog shows while `isDemo`, with **Leave Demo**.
+
 ## Testing
 
 `ios/UITests` holds XCUITest cases that drive the iPad app in a simulator. They

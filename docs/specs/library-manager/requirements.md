@@ -303,6 +303,12 @@ once, online or off.
      reviewer's new Mac. It marks what it shares as the demo's, and the next
      launch with a real account removes it before using the folder. A real
      library is never touched.
+13.8 Without an account, the library window offers to try the demo library,
+     on the Mac, the iPad and the iPhone, so App Review and anyone curious can
+     use the app without signing in. While it is open a banner says so, with
+     Leave Demo, which returns to signing in and leaves none of the demo's
+     own data behind (what it shared through the App Group stays for the
+     other apps, as 13.7 says). The launch argument (13.1) still opens it.
 
 ## 14. Checking for updated files
 

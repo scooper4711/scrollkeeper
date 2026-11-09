@@ -169,6 +169,17 @@ public final class LibraryStore {
 
     public var downloadDirectory: URL { locator.root }
 
+    /// True while this is the demo library.
+    public var isDemo: Bool { environment.isDemo }
+
+    /// Ends the demo library: cancels its downloads and removes its data, which lived in a temporary folder. What
+    /// it shared through the App Group stays, for the other apps, until a real library takes the folder over.
+    public func endDemo() {
+        guard isDemo else { return }
+        downloadJobs.map(\.target).forEach(cancelDownload)
+        try? FileManager.default.removeItem(at: environment.dataDirectory)
+    }
+
     /// Moves future downloads to another folder. Files already downloaded stay where they are.
     public func setDownloadDirectory(_ url: URL) {
         ChosenDownloadFolder(settings: environment.settings).remember(url)
