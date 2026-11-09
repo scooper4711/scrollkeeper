@@ -1,3 +1,4 @@
+#if !APP_STORE
 import Foundation
 @testable import ScrollkeeperKit
 import Testing
@@ -195,3 +196,4 @@ import Testing
         #expect(AppUpdater.live().state == .idle)
     }
 }
+#endif

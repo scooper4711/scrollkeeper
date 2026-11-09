@@ -1,3 +1,4 @@
+#if !APP_STORE
 import Foundation
 import Observation
 
@@ -227,3 +228,4 @@ public final class AppUpdater {
         }
     }
 }
+#endif

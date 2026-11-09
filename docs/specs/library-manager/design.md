@@ -397,3 +397,11 @@ coverage is the closest measure and is used in its place.
 
 SwiftUI view declarations are not unit tested and are not part of the measured
 target.
+
+## The Mac App Store build
+`scripts/build-app.sh` reads `CHANNEL`. For `appstore` it adds `-Xswiftc -DAPP_STORE`; `AppUpdater`, `UpdatePrompt`,
+the update setting in About, the Check for Updates command and both Ko-fi links sit in `#if !APP_STORE`. The unit
+tests of the updater are excluded the same way, so `swift test -Xswiftc -DAPP_STORE` checks that the rest still builds
+and passes. After signing, the script greps the binary for the updater and the donation page, then hands the bundle to
+tabletop-kit's `package-appstore.sh` (Assets.car, profile, Apple Distribution signature, installer package). The
+privacy manifest lives in `Resources/` for the Mac and `ios/App/` for the iPad; keep the two identical.

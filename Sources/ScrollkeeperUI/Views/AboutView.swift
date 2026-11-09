@@ -23,8 +23,11 @@ enum AboutInfo {
 
     static let policyURL = URL(string: "https://paizo.com/licenses/communityuse")
     static let paizoURL = URL(string: "https://paizo.com")
-    /// Donations are optional; nothing in the app depends on them.
+    #if !APP_STORE
+    /// Donations are optional; nothing in the app depends on them. The App Store build leaves the link out:
+    /// Apple restricts links to outside payment pages (guideline 3.1.1).
     static let donationURL = URL(string: "https://ko-fi.com/coop207627")
+    #endif
 
     #if os(macOS)
     /// Shows the standard About panel with the notice as its credits.
@@ -43,12 +46,12 @@ enum AboutInfo {
 
 /// The notice with links to Paizo's policy and, on the Mac, to the donation page.
 struct AboutView: View {
-    #if os(macOS)
+    #if os(macOS) && !APP_STORE
     @AppStorage(SettingsStore.updateCheckAtLaunchKey) private var checksForUpdatesAtLaunch = true
     #endif
 
     var body: some View {
-        #if os(macOS)
+        #if os(macOS) && !APP_STORE
         Section {
             Toggle("Check for updates when Scrollkeeper opens", isOn: $checksForUpdatesAtLaunch)
         } header: {
@@ -75,7 +78,7 @@ struct AboutView: View {
         }
         // The donation link is left out of the iPad app: Apple restricts links to outside
         // payment pages in apps distributed through the App Store or TestFlight.
-        #if os(macOS)
+        #if os(macOS) && !APP_STORE
         Section {
             if let donation = AboutInfo.donationURL {
                 Link("Support Development on Ko-fi", destination: donation)
