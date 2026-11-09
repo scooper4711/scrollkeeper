@@ -5,7 +5,7 @@ import Testing
 @MainActor
 @Suite struct DemoModeTests {
     private func makeStore() async -> LibraryStore {
-        let store = LibraryStore(environment: .demo(downloadDuration: 0.04))
+        let store = LibraryStore(environment: .demo(downloadDuration: 0.04, outside: StubHTTPClient()))
         await store.start()
         await store.waitUntilIdle()
         return store
@@ -15,7 +15,7 @@ import Testing
         let store = await makeStore()
 
         #expect(store.account == .signedIn(email: "demo@example.com"))
-        #expect(store.items.count == DemoCatalog.titles.count)
+        #expect(store.items.count == DemoCatalog.titles.count + BuiltInTitles.all.count)
         #expect(store.sync.failure.isEmpty)
         let lines = Set(store.items.map(\.classification.productLine))
         let expected: Set<ProductLine> = [
@@ -43,11 +43,12 @@ import Testing
         await store.waitForDownloads()
 
         #expect(store.isDownloaded(target))
-        #expect(try String(contentsOf: target.localURL, encoding: .utf8).hasPrefix("%PDF-1.4"))
+        let bundled = try #require(DemoFiles.bundled("rulebook.pdf"))
+        #expect(try Data(contentsOf: target.localURL) == Data(contentsOf: bundled))
     }
 
     @Test func demoDownloadCanBeCanceled() async throws {
-        let store = LibraryStore(environment: .demo(downloadDuration: 30))
+        let store = LibraryStore(environment: .demo(downloadDuration: 30, outside: StubHTTPClient()))
         await store.start()
         await store.waitUntilIdle()
         let item = try #require(store.item(id: "DEMO1003E"))

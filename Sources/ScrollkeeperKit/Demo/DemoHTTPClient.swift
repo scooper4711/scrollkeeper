@@ -1,19 +1,27 @@
 import Foundation
 
-/// Stands in for Paizo's store and library in demo mode: an invented library, instant sign-in
-/// and unhurried downloads, without touching the network. The app's UI tests run against it,
-/// and it lets the app be shown without a real account.
+/// Stands in for Paizo's store and library in demo mode: an invented library, instant sign-in and unhurried
+/// downloads of real demo PDFs (`DemoFiles`). The app's UI tests run against it, and it lets the app be shown, and
+/// the toolkit's apps tried together, without a real account. Only the free titles every library has download from
+/// outside, from Paizo's public addresses, as in a real library.
 public struct DemoHTTPClient: HTTPClient {
     /// How long each download takes, so that progress, waiting and canceling can be seen.
     private let downloadDuration: TimeInterval
+    /// Where downloads from addresses outside the demo go: the free titles' files on `downloads.paizo.com`.
+    private let outside: HTTPClient
 
-    public init(downloadDuration: TimeInterval = 8) {
+    public init(downloadDuration: TimeInterval = 8, outside: HTTPClient = URLSessionHTTPClient()) {
         self.downloadDuration = downloadDuration
+        self.outside = outside
     }
 
     public func send(_ request: URLRequest) async throws -> HTTPResponse {
         let path = request.url?.path ?? ""
         switch (request.url?.host ?? "", path) {
+        case (DemoFiles.coversHost, _):
+            let sku = request.url?.deletingPathExtension().lastPathComponent ?? ""
+            return HTTPResponse(data: DemoFiles.cover(sku: sku) ?? Data(),
+                                statusCode: DemoFiles.cover(sku: sku) == nil ? 404 : 200, finalURL: request.url)
         case (_, "/login.php"):
             return reply("", finalPath: request.httpMethod == "POST" ? "/account.php" : path, to: request)
         case (_, "/customer/current.jwt"):
@@ -21,9 +29,11 @@ public struct DemoHTTPClient: HTTPClient {
         case (_, "/customer-library"):
             return reply(Self.libraryPage(number: Self.queryValue("page", in: request) ?? "1"), to: request)
         case (_, "/api/library/download"):
-            return reply(#"{"data":"demo-ticket"}"#, to: request)
-        case (_, "/api/library/download/demo-ticket"):
-            return reply(#"{"data":"https://files.demo.invalid/download"}"#, to: request)
+            // The ticket is the file's name, the `key` Scrollkeeper asks for.
+            return reply(Self.json(["data": Self.requestedKey(in: request)]), to: request)
+        case (_, let ticket) where ticket.hasPrefix("/api/library/download/"):
+            return reply(Self.json(["data": DemoFiles.address(of: request.url?.lastPathComponent ?? "")]),
+                         to: request)
         case (_, let lookup) where lookup.hasPrefix("/api/library/entitlement/customer/"):
             return reply(Self.record(packageID: request.url?.lastPathComponent ?? ""), to: request)
         case (_, "/graphql"):
@@ -36,6 +46,9 @@ public struct DemoHTTPClient: HTTPClient {
     }
 
     public func download(_ request: URLRequest, to destination: URL, progress: @escaping ProgressHandler) async throws {
+        guard request.url?.host == DemoFiles.filesHost else {
+            return try await outside.download(request, to: destination, progress: progress)
+        }
         let steps = 40
         for step in 1...steps {
             try await Task.sleep(for: .seconds(downloadDuration / Double(steps)))
@@ -44,7 +57,17 @@ public struct DemoHTTPClient: HTTPClient {
         try FileManager.default.createDirectory(
             at: destination.deletingLastPathComponent(), withIntermediateDirectories: true
         )
-        try Data(Self.samplePDF.utf8).write(to: destination)
+        if let file = request.url.flatMap({ DemoFiles.bundled($0.lastPathComponent) }) {
+            try FileManager.default.copyItem(at: file, to: destination)
+        } else {
+            try DemoFiles.placeholderPDF.write(to: destination)
+        }
+    }
+
+    /// The `key` field of a download ticket request: the file's name.
+    private static func requestedKey(in request: URLRequest) -> String {
+        let body = (try? JSONSerialization.jsonObject(with: request.httpBody ?? Data())) as? [String: Any]
+        return body?["key"] as? String ?? ""
     }
 
     private func reply(_ text: String, finalPath: String = "", to request: URLRequest) -> HTTPResponse {
@@ -100,19 +123,4 @@ public struct DemoHTTPClient: HTTPClient {
         let components = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }
         return components?.queryItems?.first(where: { $0.name == name })?.value
     }
-
-    /// A one-page PDF, so that a demo download can be opened.
-    private static let samplePDF = """
-    %PDF-1.4
-    1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj
-    2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj
-    3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] /Contents 4 0 R
-    /Resources << /Font << /F1 5 0 R >> >> >> endobj
-    4 0 obj << /Length 58 >> stream
-    BT /F1 18 Tf 40 100 Td (Scrollkeeper demo file) Tj ET
-    endstream endobj
-    5 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj
-    trailer << /Root 1 0 R >>
-    %%EOF
-    """
 }

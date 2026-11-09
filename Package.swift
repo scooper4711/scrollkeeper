@@ -19,7 +19,9 @@ let package = Package(
             dependencies: [
                 .product(name: "ZIPFoundation", package: "ZIPFoundation"),
                 .product(name: "TablesideShared", package: "tabletop-kit")
-            ]
+            ],
+            // The demo library's PDFs (`make demo-pdfs`).
+            resources: [.copy("Demo/Files")]
         ),
         .target(name: "ScrollkeeperUI", dependencies: [
             "ScrollkeeperKit", .product(name: "TablesideShared", package: "tabletop-kit")

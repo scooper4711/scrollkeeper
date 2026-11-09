@@ -53,6 +53,7 @@ public struct LibraryEnvironment: Sendable {
         environment.builtInTitles = BuiltInTitles.all
         #if os(macOS)
         if let toolkit = ToolkitGroup.scrollkeeperFolder() {
+            DemoSharing.removeDemo(from: toolkit)
             environment.useToolkitFolder(toolkit)
         }
         #endif
@@ -66,6 +67,15 @@ public struct LibraryEnvironment: Sendable {
 
     /// Keeps the downloads and covers in `folder` from now on, moving those in the data folder there the first
     /// time.
+    /// Shares the demo's downloads, covers and library list through `folder` when no real library is there
+    /// (library-manager 13.7).
+    mutating func useDemoToolkitFolder(_ folder: URL) {
+        guard DemoSharing.canShare(in: folder), (try? DemoSharing.claim(folder)) != nil else { return }
+        toolkitFolder = folder
+        defaultDownloadDirectory = folder.appending(path: "Files", directoryHint: .isDirectory)
+        coversDirectory = folder.appending(path: "Covers", directoryHint: .isDirectory)
+    }
+
     mutating func useToolkitFolder(_ folder: URL) {
         let move = FolderMove()
         toolkitFolder = folder
@@ -87,16 +97,26 @@ extension LibraryEnvironment {
         arguments.contains(demoArgument) ? demo() : live()
     }
 
-    /// An invented library served from inside the app, already signed in, kept in a temporary
-    /// folder that starts empty on every launch. Nothing reaches the network or the Keychain.
-    public static func demo(downloadDuration: TimeInterval = 8) -> LibraryEnvironment {
+    /// An invented library served from inside the app, already signed in, kept in a temporary folder that starts
+    /// empty on every launch. Only the free titles' downloads reach the network, and nothing the Keychain. On the Mac
+    /// it shares through the App Group when no real library is there (library-manager 13.7).
+    public static func demo(downloadDuration: TimeInterval = 8,
+                            outside: HTTPClient = URLSessionHTTPClient()) -> LibraryEnvironment {
         let run = UUID().uuidString
-        return LibraryEnvironment(
-            http: DemoHTTPClient(downloadDuration: downloadDuration),
+        var environment = LibraryEnvironment(
+            http: DemoHTTPClient(downloadDuration: downloadDuration, outside: outside),
             credentials: InMemoryCredentialStore(Credentials(email: "demo@example.com", password: "demo")),
             dataDirectory: FileManager.default.temporaryDirectory.appending(path: "ScrollkeeperDemo-" + run),
             settings: SettingsStore(suiteName: "ScrollkeeperDemo-" + run)
         )
+        // The free titles every library has, downloaded from Paizo as in a real one (13.6).
+        environment.builtInTitles = BuiltInTitles.all
+        #if os(macOS)
+        if let toolkit = ToolkitGroup.scrollkeeperFolder() {
+            environment.useDemoToolkitFolder(toolkit)
+        }
+        #endif
+        return environment
     }
 }
 
