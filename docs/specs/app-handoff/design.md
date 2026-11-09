@@ -59,7 +59,7 @@ to open the files with and the file types it accepts.
 | Key | Bundle identifier | Accepts |
 |---|---|---|
 | `mapsmith` | `io.github.scooper4711.Mapsmith` | PDF, images |
-| `pluck` | `io.github.scooper4711.pluck` | PDF |
+| `pluck` | `io.github.scooper4711.Pluck` | PDF |
 | `fieldguide` | `io.github.scooper4711.FieldGuide` | PDF |
 
 `HandoffApp.canOpen(_:)` says whether an edition's download suits the app: a
