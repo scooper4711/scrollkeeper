@@ -26,6 +26,11 @@ fi
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BINARY" "$APP/Contents/MacOS/$EXECUTABLE"
+# The packages' resources, such as the demo library's PDFs, are bundles beside the executable; Bundle.module looks
+# for them in the app's Resources.
+for bundle in "$(dirname "$BINARY")"/*.bundle; do
+    [ -d "$bundle" ] && cp -R "$bundle" "$APP/Contents/Resources/"
+done
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp Resources/container-migration.plist "$APP/Contents/Resources/"
 
