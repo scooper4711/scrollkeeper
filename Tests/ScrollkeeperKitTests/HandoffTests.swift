@@ -35,7 +35,7 @@ import Testing
         let app = HandoffApp.pluck
         #expect(app.accepts(URL(filePath: "/books/core.pdf")))
         #expect(!app.accepts(URL(filePath: "/books/core.png")))
-        #expect(app.bundleIdentifier == "io.github.scooper4711.pluck")
+        #expect(app.bundleIdentifier == "io.github.scooper4711.Pluck")
         #expect(app.name == "Pluck")
     }
 
