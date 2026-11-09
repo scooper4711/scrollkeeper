@@ -169,7 +169,7 @@ import Testing
 
     @Test func theDemoLibraryAnswersLookups() async throws {
         let url = try #require(URL(string: "https://app.paizo.com/api/library/entitlement/customer/demo-DEMO1003E-0"))
-        let answer = try await DemoHTTPClient().send(URLRequest(url: url))
-        #expect(answer.text.contains(#""File":"book.pdf""#))
+        let answer = try await DemoHTTPClient(outside: StubHTTPClient()).send(URLRequest(url: url))
+        #expect(answer.text.contains(#""File":"rulebook.pdf""#))
     }
 }
