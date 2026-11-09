@@ -1,4 +1,4 @@
-.PHONY: build test lint coverage app run install dmg icon ipad-simulator ipad-install ipad-uitest clean
+.PHONY: build test lint coverage app run install dmg icon demo-pdfs ipad-simulator ipad-install ipad-uitest clean
 
 build:
 	swift build
@@ -25,6 +25,10 @@ install: app
 
 dmg: app
 	scripts/make-dmg.sh
+
+# Rewrites the demo library's PDFs from tabletop-kit's DemoLibraryTool (checkouts beside this one).
+demo-pdfs:
+	scripts/make-demo-pdfs.sh
 
 # Redraws Resources/AppIcon.icns from scripts/make-icon.swift.
 icon:
