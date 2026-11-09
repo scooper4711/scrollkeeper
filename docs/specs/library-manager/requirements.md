@@ -278,10 +278,31 @@ once, online or off.
      start, contacts neither Paizo nor the Keychain, and keeps its data in a
      temporary folder that is empty at every launch.
 13.2 The demo library covers the product types and both second-edition games,
-     with made-up titles and no artwork.
+     with made-up titles, and each title has a cover drawn for it.
 13.3 Demo downloads take several seconds, so that progress, waiting and
      canceling can be seen and tested.
 13.4 The iPad UI tests run against demo mode.
+13.5 Each demo download is a real PDF of its kind, so the other Tableside
+     Toolkit apps can be tried with it (App Review included): placeholder
+     lorem ipsum under real creature names, with drawn art and art from
+     Paizo's Community Use Package (tabletop-kit's demo library):
+     - maps on a one-inch grid, for Mapsmith;
+     - adventures, scenarios and rulebooks with pictures and stat blocks,
+       for Pluck;
+     - monster pawns, Iconic hero pawns, tokens and Battle Cards, for Pawn
+       Shop, Turnkeeper and Field Guide;
+     - Field Guide's sample sourcebook, with deities' and creatures' lore.
+     Every file ends with a page saying it is a demo, and Paizo's Community
+     Use notice.
+13.6 The demo library also has the free titles every library gets (6.x), and
+     downloads them from Paizo as a real library does: the only requests the
+     demo sends outside the app.
+13.7 On the Mac, the demo shares its downloads, covers and library list
+     through the Tableside Toolkit's App Group, as a real library does (app
+     handoff 5 and 6), but only when no real library is there, as on a
+     reviewer's new Mac. It marks what it shares as the demo's, and the next
+     launch with a real account removes it before using the folder. A real
+     library is never touched.
 
 ## 14. Checking for updated files
 

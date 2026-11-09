@@ -353,6 +353,25 @@ an alert on the Mac.
 - `SyncStatusBar` — progress bars for catalog and artwork.
 - `SettingsView` — credentials and download folder.
 
+## Demo library
+
+- **Catalog** (`DemoCatalog`): the invented titles, each edition naming the file it serves, plus the PDFs' own
+  titles (pawn collections, token set, Battle Cards, Field Guide's sample sourcebook). `LibraryEnvironment.demo()`
+  adds `BuiltInTitles.all`.
+- **Files** (`Demo/Files`, a resource of `ScrollkeeperKit`): written by tabletop-kit's `DemoLibraryTool` from a
+  checkout beside this one, with the Community Use art from `../community-use-artwork`, plus
+  `../field-guide/Resources/Review/Field Guide Sample Monster Core.pdf`; `make demo-pdfs` (`scripts/
+  make-demo-pdfs.sh`) rewrites them, and they are committed, so CI and the iPad build need neither checkout.
+- **Server** (`DemoHTTPClient`): a download ticket carries the requested file's name (`downloadKey`), its signed
+  address is `https://files.demo.invalid/<file>`, and the download copies that bundled file, or a one-page PDF for
+  a file it doesn't have (the ePubs). Addresses outside the demo (the free titles' `downloads.paizo.com`) go to
+  a real `HTTPClient`, which tests replace. Covers: each product's `defaultImage` is
+  `https://covers.demo.invalid/<SKU>.jpg`, answered with `DemoCover`, the title's name on a band of color.
+- **Sharing** (13.7, `DemoSharing`): on the Mac, `demo()` uses `ToolkitGroup.scrollkeeperFolder()` when it holds
+  no `library.json`, or one the demo wrote, which `.demo-library` beside it marks. Downloads and covers then go to
+  its `Files` and `Covers`, and `library.json` is written as for a real library. `live()` removes the demo's
+  `Files`, `Covers`, `library.json` and mark before moving a real library in (`DemoSharing.removeDemo(from:)`).
+
 ## Testing
 
 `ios/UITests` holds XCUITest cases that drive the iPad app in a simulator. They
