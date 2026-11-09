@@ -33,6 +33,39 @@ import Testing
         #expect(harness.paizo.http.count(of: BuiltInTitles.webSupplementSKU) == 0)
     }
 
+    @Test func showsTheCoverOfTheBookItSupplementsFetchedOnce() async throws {
+        let harness = harness()
+        for title in BuiltInTitles.all { harness.paizo.http.on(title.metadata.coverURL, data: Data([0xFF, 0xD8])) }
+        let store = await harness.makeSyncedStore()
+        let item = try #require(store.item(id: BuiltInTitles.webSupplementSKU))
+        let cover = try #require(store.coverURL(for: item))
+        #expect(try Data(contentsOf: cover) == Data([0xFF, 0xD8]))
+        #expect(supplement.metadata.coverURL.contains("Divine_Mysteries"))
+
+        store.downloadMissingBuiltInCovers()
+        await store.waitUntilIdle()
+
+        #expect(harness.paizo.http.count(of: supplement.metadata.coverURL) == 1)
+        // Its metadata still comes from the app, never from the storefront.
+        #expect(harness.paizo.http.requests.allSatisfy { request in
+            !(String(bytes: request.httpBody ?? Data(), encoding: .utf8) ?? "").contains(BuiltInTitles.webSupplementSKU)
+        })
+    }
+
+    @Test func aFailedCoverDownloadLeavesThePlaceholderAndTriesAgainNextTime() async throws {
+        let harness = harness()
+        harness.paizo.http.on(supplement.metadata.coverURL, text: "", status: 500)
+        let store = await harness.makeSyncedStore()
+        #expect(store.isLoaded)
+        #expect(try store.coverURL(for: #require(store.item(id: BuiltInTitles.webSupplementSKU))) == nil)
+
+        harness.paizo.http.on(supplement.metadata.coverURL, data: Data([0xFF, 0xD8]))
+        store.downloadMissingBuiltInCovers()
+        await store.waitUntilIdle()
+
+        #expect(try store.coverURL(for: #require(store.item(id: BuiltInTitles.webSupplementSKU))) != nil)
+    }
+
     @Test func staysOutOfALibraryNotReadYet() async {
         let store = harness().makeStore()
         #expect(store.items.isEmpty)

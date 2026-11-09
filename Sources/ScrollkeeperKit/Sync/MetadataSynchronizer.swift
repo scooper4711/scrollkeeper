@@ -48,7 +48,8 @@ public struct MetadataSynchronizer: Sendable {
         }
     }
 
-    private func downloadCover(for product: ProductMetadata) async {
+    /// Downloads and stores the product's cover; does nothing when it has no cover or the download fails.
+    func downloadCover(for product: ProductMetadata) async {
         guard let url = URL(string: product.coverURL),
               let response = try? await http.send(.get(url)),
               response.isSuccess, !response.data.isEmpty

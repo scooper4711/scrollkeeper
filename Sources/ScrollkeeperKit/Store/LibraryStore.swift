@@ -113,6 +113,7 @@ public final class LibraryStore {
     var snapshot = CatalogSnapshot()
     var syncTask: Task<Void, Never>?
     var metadataTask: Task<Void, Never>?
+    var builtInCoverTask: Task<Void, Never>?
     var pendingSKUs: [String] = []
     var requestedSKUs: Set<String> = []
     var downloadTasks: [String: Task<Void, Never>] = [:]
@@ -151,6 +152,7 @@ public final class LibraryStore {
         }
         isLoaded = true
         enqueueMissingMetadata()
+        downloadMissingBuiltInCovers()
         if account != .signedOut, !environment.settings.hasCompletedFullSync {
             startFullSync()
         } else {
