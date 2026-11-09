@@ -131,6 +131,10 @@ else
     cp Resources/Scrollkeeper.entitlements "$ENTITLEMENTS"
     /usr/libexec/PlistBuddy -c "Delete :com.apple.security.application-groups" "$ENTITLEMENTS"
 fi
+if [ "${CHANNEL:-}" = "appstore" ]; then
+    # Only the updater saves into Downloads, and the App Store build has none: review asks what each entitlement is for.
+    /usr/libexec/PlistBuddy -c "Delete :com.apple.security.files.downloads.read-write" "$ENTITLEMENTS"
+fi
 scripts/sign-app.sh "$APP" "$ENTITLEMENTS"
 echo "Built $APP ($VERSION)"
 
