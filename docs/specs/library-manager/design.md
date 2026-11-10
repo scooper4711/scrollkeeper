@@ -359,8 +359,9 @@ an alert on the Mac.
   titles (pawn collections, token set, Battle Cards, Field Guide's sample sourcebook). `LibraryEnvironment.demo()`
   adds `BuiltInTitles.all`.
 - **Files** (`Demo/Files`, a resource of `ScrollkeeperKit`): written by tabletop-kit's `DemoLibraryTool` from a
-  checkout beside this one, with the Community Use art from `../community-use-artwork`, plus
-  `../field-guide/Resources/Review/Field Guide Sample Monster Core.pdf`; `make demo-pdfs` (`scripts/
+  checkout beside this one (the battle maps at Flip-Mat size, 24 by 30 inches), with the Community Use art from
+  `../community-use-artwork`, plus `../field-guide/Resources/Review/Field Guide Sample Monster Core.pdf` (Monster
+  Core's ORC stat blocks beside Paizo blog art, with placeholder lore); `make demo-pdfs` (`scripts/
   make-demo-pdfs.sh`) rewrites them, and they are committed, so CI and the iPad build need neither checkout.
 - **Server** (`DemoHTTPClient`): a download ticket carries the requested file's name (`downloadKey`), its signed
   address is `https://files.demo.invalid/<file>`, and the download copies that bundled file, or a one-page PDF for
