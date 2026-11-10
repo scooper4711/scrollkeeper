@@ -23,6 +23,7 @@ enum AboutInfo {
 
     static let policyURL = URL(string: "https://paizo.com/licenses/communityuse")
     static let paizoURL = URL(string: "https://paizo.com")
+    static let privacyURL = URL(string: "https://github.com/scooper4711/scrollkeeper/blob/main/PRIVACY.md")
     #if !APP_STORE
     /// Donations are optional; nothing in the app depends on them. The App Store build leaves the link out:
     /// Apple restricts links to outside payment pages (guideline 3.1.1).
@@ -72,6 +73,9 @@ struct AboutView: View {
             }
             if let paizo = AboutInfo.paizoURL {
                 Link("paizo.com", destination: paizo)
+            }
+            if let privacy = AboutInfo.privacyURL {
+                Link("Scrollkeeper Privacy Policy", destination: privacy)
             }
         } header: {
             Text("About")

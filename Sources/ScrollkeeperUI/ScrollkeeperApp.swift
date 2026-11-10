@@ -104,6 +104,9 @@ struct AboutCommands: Commands {
             if let policy = AboutInfo.policyURL {
                 Button("Paizo's Community Use Policy") { openURL(policy) }
             }
+            if let privacy = AboutInfo.privacyURL {
+                Button("Scrollkeeper Privacy Policy") { openURL(privacy) }
+            }
             #if !APP_STORE
             if let donation = AboutInfo.donationURL {
                 Button("Support Development on Ko-fi") { openURL(donation) }

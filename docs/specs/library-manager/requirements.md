@@ -366,3 +366,4 @@ library listing. Field Guide reads two of them for deities' lore.
      (`BUILD_NUMBER`) is separate from the version and increases with every upload.
 16.5 The App Store build's entitlements leave out the Downloads folder, which only the updater used; the sandbox,
      network client, chosen download folder, its bookmark and the App Group remain, each with a use to name in review.
+16.6 `PRIVACY.md` is the privacy policy, linked from the Help menu on the Mac and from About on both platforms.
