@@ -103,7 +103,8 @@ import Testing
         store.startFullSync()
         await store.waitUntilIdle()
 
-        #expect(store.sync.failure == "Loading library page 1 failed: Paizo answered with status 502.")
+        #expect(store.sync.failure
+            == "Loading library page 1 failed: Paizo's website is not working right now (status 502). Try again later.")
         #expect(!store.sync.isRunning)
         #expect(store.items.count == 2)
     }

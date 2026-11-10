@@ -63,7 +63,7 @@ extension LibraryStore {
             } catch is CancellationError {
                 failure = ""
             } catch {
-                failure = error.localizedDescription
+                failure = FailureMessage.text(for: error)
             }
             finishSync(failure: failure)
             // Only after a sync that ran to its end, so that canceling one does not start another.

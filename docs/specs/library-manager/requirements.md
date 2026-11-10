@@ -39,6 +39,13 @@ once, online or off.
     sign-in, with any account, starts a full sync. The user's tags and
     downloaded files are kept, and the confirmation says so.
 
+1.6 Each way signing in or loading the library can fail has its own
+    message, and none leaves a spinner running: a wrong password, no internet
+    connection, Paizo's website not answering or being down, and Paizo's
+    website having changed so that a page or answer can't be read. The last
+    says that the website has changed and where to look for a newer version
+    (Check for Updates in the disk image build, the App Store otherwise).
+
 ## 2. Catalog sync
 
 2.1 When valid credentials exist and the library has never been fetched to the

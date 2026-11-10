@@ -20,7 +20,7 @@ extension LibraryStore {
                 startFullSync()
             }
         } catch {
-            account = .failed(message: error.localizedDescription)
+            account = .failed(message: FailureMessage.text(for: error))
         }
     }
 

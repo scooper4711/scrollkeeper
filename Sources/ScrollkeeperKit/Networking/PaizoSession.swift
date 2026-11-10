@@ -53,10 +53,10 @@ public actor PaizoSession {
     /// Signs in with the given account. Throws `PaizoError.signInRejected` when Paizo refuses it.
     public func signIn(with account: Credentials) async throws {
         let loginPage = endpoints.storeURL("/login.php")
-        _ = try await http.send(.get(loginPage))
+        _ = try await http.send(.get(loginPage)).validated(operation: "Opening Paizo's sign-in page")
         let checkLogin = endpoints.storeURL("/login.php", query: [URLQueryItem(name: "action", value: "check_login")])
         let fields = [(name: "login_email", value: account.email), (name: "login_pass", value: account.password)]
-        let response = try await http.send(.postForm(checkLogin, fields: fields))
+        let response = try await http.send(.postForm(checkLogin, fields: fields)).validated(operation: "Signing in")
         guard response.finalURL?.path.contains("account.php") == true else {
             throw PaizoError.signInRejected
         }
