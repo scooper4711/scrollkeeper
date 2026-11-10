@@ -13,7 +13,7 @@ final class DownloadsListUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-ScrollkeeperDemo", "-viewMode", "list"]
         app.launch()
-        XCTAssertTrue(app.staticTexts["Sample Creature Rulebook"].waitForExistence(timeout: 30), "library did not load")
+        XCTAssertTrue(app.titleRow("Sample Creature Rulebook").exists, "library did not load")
         return app
     }
 
@@ -69,9 +69,22 @@ final class DownloadsListUITests: XCTestCase {
     /// Starts a download through the long-press menu of a title in the list.
     @MainActor
     private func startDownload(of title: String, in app: XCUIApplication) {
-        app.staticTexts[title].press(forDuration: 1.2)
+        app.titleRow(title).press(forDuration: 1.2)
         let download = app.buttons["Download"].firstMatch
         XCTAssertTrue(download.waitForExistence(timeout: 5), "the quick-action menu did not appear")
         download.tap()
+    }
+}
+
+extension XCUIApplication {
+    /// The row of a title in the library list, scrolled into view: the list builds only the rows on screen, and
+    /// the demo library has more titles than fit on an iPad. Gives up after `timeout` seconds.
+    func titleRow(_ title: String, timeout: TimeInterval = 30) -> XCUIElement {
+        let row = staticTexts[title]
+        let deadline = Date().addingTimeInterval(timeout)
+        while !row.waitForExistence(timeout: 1), Date() < deadline {
+            swipeUp()
+        }
+        return row
     }
 }

@@ -15,10 +15,9 @@ final class DemoLibraryUITests: XCTestCase {
 
         tryDemo.tap()
 
-        XCTAssertTrue(app.staticTexts["Sample Creature Rulebook"].waitForExistence(timeout: 30),
-                      "the demo library didn't load")
-        XCTAssertTrue(app.staticTexts["Field Guide Sample Monster Core"].exists,
-                      "the toolkit's demo titles are missing")
+        // The toolkit's titles come first in the list; the rulebook is further down.
+        XCTAssertTrue(app.titleRow("Field Guide Sample Monster Core").exists, "the toolkit's demo titles are missing")
+        XCTAssertTrue(app.titleRow("Sample Creature Rulebook").exists, "the demo library didn't load")
         app.buttons["Leave Demo"].tap()
         XCTAssertTrue(app.buttons["Try the Demo Library"].waitForExistence(timeout: 30),
                       "leaving the demo didn't return to signing in")
