@@ -12,7 +12,8 @@ own and download them. Your email address and password are kept in the Keychain 
 Paizo. The sign-in session is kept in memory and ends when the app closes. Paizo learns what any sign-in and
 download tells it, under Paizo's own privacy policy; the developer sees none of it.
 
-Remove Account, in Settings, removes your email address and password from the Keychain. The demo library needs no
+Remove Account, in Settings, removes your email address and password from the Keychain, and your library list,
+cover pictures and descriptions from your device. Your tags stay, and so do the files you downloaded. The demo library needs no
 account and contacts no one.
 
 ## What stays on your device

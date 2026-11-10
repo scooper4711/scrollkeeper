@@ -33,7 +33,11 @@ once, online or off.
     that Password AutoFill from the Passwords app can fill them.
 1.4 Settings offers a "Sign In" action that verifies the credentials against
     Paizo and reports success or the reason for failure.
-1.5 The user can remove the stored credentials.
+1.5 The user can remove the stored credentials. Removing them, after a
+    confirmation, also removes the account's library from the device (the
+    library list, covers, descriptions and update checks), so that the next
+    sign-in, with any account, starts a full sync. The user's tags and
+    downloaded files are kept, and the confirmation says so.
 
 ## 2. Catalog sync
 

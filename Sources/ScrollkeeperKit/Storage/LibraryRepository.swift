@@ -38,6 +38,19 @@ public actor LibraryRepository {
         try write(tags, to: "userdata.json")
     }
 
+    /// Deletes what was fetched from the account: the catalog, the metadata and the update checks.
+    /// The user's tags stay.
+    public func removeAccountData() throws {
+        for name in Self.accountFileNames {
+            let url = directory.appending(path: name)
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.removeItem(at: url)
+            }
+        }
+    }
+
+    private static let accountFileNames = ["catalog.json", "metadata.json", "updatechecks.json"]
+
     private func read<Value: Decodable>(_ name: String) -> Value? {
         guard let data = try? Data(contentsOf: directory.appending(path: name)) else { return nil }
         return try? JSONDecoder().decode(Value.self, from: data)
