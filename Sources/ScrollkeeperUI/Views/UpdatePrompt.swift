@@ -1,3 +1,4 @@
+#if !APP_STORE
 #if os(macOS)
 import AppKit
 import ScrollkeeperKit
@@ -67,4 +68,5 @@ struct UpdatePrompt: ViewModifier {
         }
     }
 }
+#endif
 #endif

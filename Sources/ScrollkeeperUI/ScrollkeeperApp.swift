@@ -5,7 +5,9 @@ import SwiftUI
 public struct ScrollkeeperApp: App {
     #if os(macOS)
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
+    #if !APP_STORE
     @State private var updater = AppUpdater.live()
+    #endif
     private var session: LibrarySession { appDelegate.session }
     #else
     @State private var session = LibrarySession()
@@ -24,7 +26,11 @@ public struct ScrollkeeperApp: App {
         .commands {
             LibraryCommands(session: session)
             #if os(macOS)
+            #if APP_STORE
+            AboutCommands()
+            #else
             AboutCommands(updater: updater)
+            #endif
             #endif
         }
 
@@ -43,6 +49,7 @@ public struct ScrollkeeperApp: App {
         #if os(macOS)
             .environment(appDelegate.handoff)
             .frame(minWidth: 900, minHeight: 520)
+        #if !APP_STORE
             .modifier(UpdatePrompt())
             .environment(updater)
             .task {
@@ -50,6 +57,7 @@ public struct ScrollkeeperApp: App {
                     await updater.checkForUpdateQuietly()
                 }
             }
+        #endif
         #else
             .task { await session.start() }
         #endif
@@ -78,23 +86,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// The About panel with Paizo's required notice, and Help menu links.
 struct AboutCommands: Commands {
     @Environment(\.openURL) private var openURL
+    #if !APP_STORE
     let updater: AppUpdater
+    #endif
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
             Button("About \(AboutInfo.appName)") { AboutInfo.showAboutPanel() }
+            #if !APP_STORE
             Button("Check for Updates…") {
                 Task { await updater.checkForUpdate() }
             }
             .disabled(updater.state.isBusy)
+            #endif
         }
         CommandGroup(replacing: .help) {
             if let policy = AboutInfo.policyURL {
                 Button("Paizo's Community Use Policy") { openURL(policy) }
             }
+            if let privacy = AboutInfo.privacyURL {
+                Button("Scrollkeeper Privacy Policy") { openURL(privacy) }
+            }
+            #if !APP_STORE
             if let donation = AboutInfo.donationURL {
                 Button("Support Development on Ko-fi") { openURL(donation) }
             }
+            #endif
         }
     }
 }

@@ -353,3 +353,17 @@ library listing. Field Guide reads two of them for deities' lore.
      drops them, and they're never looked up in the store or checked for
      updates (14).
 15.4 A library that hasn't been read yet still lists nothing.
+
+## 16. The Mac App Store build
+16.1 `CHANNEL=appstore scripts/build-app.sh` builds the Mac App Store package from the same sources as the disk image,
+     compiled with `-DAPP_STORE`, using tabletop-kit's `package-appstore.sh`.
+16.2 That build has no updater (12) and no Ko-fi link: not the Check for Updates command, the launch-time check, its
+     setting, nor the Help menu and About links (guidelines 2.4.5(vii) and 3.1.1). The build script fails if the
+     binary still names `AppUpdater` or `ko-fi.com`.
+16.3 Both channels carry a privacy manifest (`PrivacyInfo.xcprivacy`) that declares no tracking and no collected
+     data, and the two required-reason APIs the app uses: user defaults (`CA92.1`) and file timestamps (`C617.1`).
+16.4 Both declare `ITSAppUsesNonExemptEncryption` as false, a copyright line, and the real version; the build number
+     (`BUILD_NUMBER`) is separate from the version and increases with every upload.
+16.5 The App Store build's entitlements leave out the Downloads folder, which only the updater used; the sandbox,
+     network client, chosen download folder, its bookmark and the App Group remain, each with a use to name in review.
+16.6 `PRIVACY.md` is the privacy policy, linked from the Help menu on the Mac and from About on both platforms.
