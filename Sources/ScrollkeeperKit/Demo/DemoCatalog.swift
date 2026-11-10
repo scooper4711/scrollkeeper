@@ -127,12 +127,12 @@ enum DemoCatalog {
     ]
 
     private static let accessories = [
-        Title(sku: "DEMO5001E", name: "Sample Map Pack: Forest Trails",
+        Title(sku: "DEMO5001E", name: "Sample Battle Map: Forest Trails",
               editions: pdf("map-forest.pdf"), brand: "Pathfinder",
-              category: ["Demo", "Maps"], summary: "Eighteen map tiles of woodland paths."),
-        Title(sku: "DEMO5002E", name: "Sample Map Pack: Starship Decks",
+              category: ["Demo", "Maps"], summary: "A 24-by-30-inch battle map of woodland paths."),
+        Title(sku: "DEMO5002E", name: "Sample Battle Map: Starship Decks",
               editions: pdf("map-starship.pdf"), brand: "Starfinder",
-              category: ["Demo", "Maps"], summary: "Eighteen map tiles of corridors and bays."),
+              category: ["Demo", "Maps"], summary: "A 24-by-30-inch battle map of corridors and bays."),
         Title(sku: "DEMO6001E", name: "Sample Tales: The Quiet Harbor",
               editions: [(suffix: "ePub", file: "novel.epub")], brand: "Pathfinder",
               category: ["Demo", "Fiction"], summary: "A novel of intrigue.", pages: 380)
@@ -152,6 +152,6 @@ enum DemoCatalog {
               brand: "Pathfinder 2E", category: ["Demo", "Cards"], summary: "Twelve monsters as Battle Cards."),
         Title(sku: "DEMO7005E", name: "Field Guide Sample Monster Core", editions: pdf("sample-monster-core.pdf"),
               brand: "Pathfinder 2E", category: ["Demo", "Rulebooks"],
-              summary: "Placeholder text under real creatures' and deities' names, for Field Guide's lore.", pages: 40)
+              summary: "Monster Core stat blocks and art with placeholder lore, for Field Guide and Pluck.", pages: 40)
     ]
 }
