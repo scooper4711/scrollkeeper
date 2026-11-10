@@ -12,8 +12,8 @@ own and download them. Your email address and password are kept in the Keychain 
 Paizo. The sign-in session is kept in memory and ends when the app closes. Paizo learns what any sign-in and
 download tells it, under Paizo's own privacy policy; the developer sees none of it.
 
-Remove Account, in Settings, removes your email address and password from the Keychain. The demo library needs no account and
-contacts no one.
+Remove Account, in Settings, removes your email address and password from the Keychain. The demo library needs no
+account and contacts no one.
 
 ## What stays on your device
 
@@ -21,7 +21,10 @@ contacts no one.
 - **The files you download** are saved on your device, in the folder you choose. They are never uploaded.
 - **Your settings**, such as the view you last used, are saved on your device.
 
-Deleting the app deletes what it keeps in its own storage. Files in a folder you chose stay there.
+Use Remove Account before you delete the app: deleting it can leave your email address and password in the
+Keychain. Deleting the app from an iPad deletes the rest. On a Mac, macOS keeps the app's saved data in the
+Containers folder of your Library folder until you delete the folder named Scrollkeeper there, and your downloads
+stay in the folder they were saved to.
 
 ## Network
 
