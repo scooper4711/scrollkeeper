@@ -40,6 +40,7 @@ private struct AccountSettings: View {
     @Environment(LibraryStore.self) private var store
     @State private var email = ""
     @State private var password = ""
+    @State private var isConfirmingRemoval = false
 
     var body: some View {
         Section {
@@ -68,17 +69,22 @@ private struct AccountSettings: View {
                 status
                 Spacer()
                 if store.account != .signedOut {
-                    Button("Remove Account", role: .destructive) {
-                        store.signOut()
-                        password = ""
-                    }
-                    .buttonStyle(.borderless)
+                    Button("Remove Account", role: .destructive) { isConfirmingRemoval = true }
+                        .buttonStyle(.borderless)
                 }
                 Button("Sign In", action: signIn)
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.borderedProminent)
                     .disabled(email.isEmpty || password.isEmpty || store.account == .verifying)
             }
+        }
+        .confirmationDialog("Remove your Paizo account?", isPresented: $isConfirmingRemoval) {
+            Button("Remove Account", role: .destructive, action: removeAccount)
+        } message: {
+            Text("""
+            Your email address and password, your library list and covers are removed from this device. \
+            Your tags, and the files you downloaded, stay.
+            """)
         }
     }
 
@@ -104,6 +110,11 @@ private struct AccountSettings: View {
 
     private func signIn() {
         Task { await store.signIn(email: email, password: password) }
+    }
+
+    private func removeAccount() {
+        password = ""
+        Task { await store.signOut() }
     }
 }
 

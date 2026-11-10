@@ -24,18 +24,46 @@ extension LibraryStore {
         }
     }
 
-    /// Forgets the stored account. The catalog and downloaded files are kept.
-    public func signOut() {
-        cancelSync()
+    /// Forgets the account and its library: the stored credentials, the catalog, the covers and the update
+    /// checks, so that nothing of the account stays on the device and the next sign-in starts a full sync.
+    /// The user's tags and downloaded files are kept, so removing the account and signing in again (after a
+    /// password change, say) loses nothing the user made.
+    public func signOut() async {
         do {
             try environment.credentials.delete()
-            account = .signedOut
         } catch {
             account = .failed(message: error.localizedDescription)
+            return
         }
+        account = .signedOut
+        await stopAccountWork()
+        forgetLibrary()
     }
 
     public var storedEmail: String {
         environment.credentials.load()?.email ?? ""
+    }
+
+    /// Stops everything that talks to Paizo and waits for it, so that no late page or cover lands afterwards.
+    private func stopAccountWork() async {
+        cancelSync()
+        metadataTask?.cancel()
+        updateCheckTask?.cancel()
+        cancelAllDownloads()
+        await waitUntilIdle()
+    }
+
+    private func forgetLibrary() {
+        snapshot = CatalogSnapshot(tags: snapshot.tags)
+        updateCheckLog = UpdateCheckLog()
+        lastUpdateCheck = nil
+        pendingSKUs = []
+        requestedSKUs = []
+        sync = SyncProgress()
+        artwork = ArtworkProgress()
+        environment.settings.hasCompletedFullSync = false
+        covers.removeAll()
+        persist { try await $0.removeAccountData() }
+        rebuildItems()
     }
 }

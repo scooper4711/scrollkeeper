@@ -31,4 +31,11 @@ public struct CoverStore: Sendable {
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try? data.write(to: url(sku: sku), options: .atomic)
     }
+
+    /// Deletes every cached cover.
+    public func removeAll() {
+        for name in storedFileNames() {
+            try? FileManager.default.removeItem(at: directory.appending(path: name))
+        }
+    }
 }

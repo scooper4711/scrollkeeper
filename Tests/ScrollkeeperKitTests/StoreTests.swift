@@ -194,14 +194,59 @@ import Testing
         #expect(harness.paizo.http.requests.isEmpty)
     }
 
-    @Test func signOutForgetsTheAccountButKeepsTheCatalog() async {
+    @Test func signOutForgetsTheAccountAndItsLibrary() async {
         let signedIn = StoreHarness()
         let store = await signedIn.makeSyncedStore()
+        let covers = CoverStore(directory: signedIn.environment.coversDirectory)
+        covers.store(Data("cover".utf8), sku: "PZO1E")
 
-        store.signOut()
+        await store.signOut()
+        await store.waitUntilIdle()
 
         #expect(store.account == .signedOut)
         #expect(signedIn.credentials.load() == nil)
+        #expect(store.items.isEmpty)
+        #expect(covers.storedFileNames().isEmpty)
+        #expect(!signedIn.environment.settings.hasCompletedFullSync)
+        let reopened = signedIn.makeStore()
+        await reopened.start()
+        #expect(reopened.items.isEmpty)
+    }
+
+    @Test func signOutKeepsTheTags() async {
+        let signedIn = StoreHarness()
+        let store = await signedIn.makeSyncedStore()
+        store.addTag("Favorite", to: "PZO1E")
+
+        await store.signOut()
+        await store.signIn(email: FakePaizo.account.email, password: FakePaizo.account.password)
+        await store.waitUntilIdle()
+
+        #expect(store.item(id: "PZO1E")?.tags == ["Favorite"])
+    }
+
+    @Test func signOutKeepsDownloadedFiles() async throws {
+        let signedIn = StoreHarness()
+        let store = await signedIn.makeSyncedStore()
+        let file = store.downloadDirectory.appending(path: "Kept.pdf")
+        try FileManager.default.createDirectory(at: store.downloadDirectory, withIntermediateDirectories: true)
+        try Data("pdf".utf8).write(to: file)
+
+        await store.signOut()
+
+        #expect(FileManager.default.fileExists(atPath: file.path))
+    }
+
+    @Test func signingInAfterSignOutStartsAFullSync() async {
+        let signedIn = StoreHarness()
+        let store = await signedIn.makeSyncedStore()
+        await store.signOut()
+
+        await store.signIn(email: FakePaizo.account.email, password: FakePaizo.account.password)
+        await store.waitUntilIdle()
+
+        #expect(store.account == .signedIn(email: FakePaizo.account.email))
         #expect(store.items.count == 2)
+        #expect(signedIn.environment.settings.hasCompletedFullSync)
     }
 }

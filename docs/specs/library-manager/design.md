@@ -204,6 +204,12 @@ background, so artwork fills in while the catalog is still loading.
 | `updatechecks.json` | when each edition was last checked for an update |
 | `Covers/<sku>.jpg` | cover artwork, in the toolkit folder instead when the app is in the App Group (app-handoff design, Sandboxing) |
 
+`LibraryStore.signOut()` (requirement 1.5) deletes the credentials, cancels
+the sync, the cover fetch, the update checks and the downloads and waits for
+them, so no late page lands afterwards; then it deletes these files except
+`userdata.json`, and the covers, and clears `hasCompletedFullSync`. Tags and
+the download folder are kept, so signing in again loses nothing the user made.
+
 Titles are derived from these at load time, so improving the classifier never
 needs a migration. Classifying a few thousand titles takes a few hundred
 milliseconds, so rebuilds reuse every title whose entitlements, metadata and
