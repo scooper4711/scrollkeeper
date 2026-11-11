@@ -93,7 +93,7 @@ struct EditionRow: View {
     private func savedElsewhereActions(target: DownloadTarget, isSaved: Bool) -> some View {
         #if os(macOS)
         if isSaved {
-            Button(PlatformText.showInFileBrowser) { FileOpener.reveal(target.localURL) }
+            Button("Show in Finder") { FileOpener.reveal(target.localURL) }
                 .controlSize(.small)
         }
         Button("Save As…", action: saveElsewhere)
@@ -126,7 +126,10 @@ struct EditionRow: View {
 
     private func downloadedMenu(target: DownloadTarget) -> some View {
         Menu {
-            Button(PlatformText.showInFileBrowser) { FileOpener.reveal(target.localURL) }
+            #if os(macOS)
+            // On an iPad the downloads are in the App Group, which the Files app doesn't show.
+            Button("Show in Finder") { FileOpener.reveal(target.localURL) }
+            #endif
             Button("Download Again") { store.download(target) }
             Divider()
             Button("Delete Download", role: .destructive) { store.deleteDownload(target) }
