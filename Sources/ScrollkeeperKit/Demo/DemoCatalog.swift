@@ -139,7 +139,7 @@ enum DemoCatalog {
     ]
 
     /// The demo PDFs the other toolkit apps read: pawns, tokens and cards for Pawn Shop, Turnkeeper and Field
-    /// Guide, and Field Guide's sample sourcebook, which it recognizes by this title.
+    /// Guide, and Field Guide's sample sourcebooks, one per game, which it recognizes by these titles.
     private static let toolkitProducts = [
         Title(sku: "DEMO7001E", name: "Sample Bestiary Pawn Collection", editions: pdf("pawn-collection.pdf"),
               brand: "Pathfinder 2E", category: ["Demo", "Pawns"], summary: "Twelve monsters as pawns."),
@@ -152,6 +152,9 @@ enum DemoCatalog {
               brand: "Pathfinder 2E", category: ["Demo", "Cards"], summary: "Twelve monsters as Battle Cards."),
         Title(sku: "DEMO7005E", name: "Field Guide Sample Monster Core", editions: pdf("sample-monster-core.pdf"),
               brand: "Pathfinder 2E", category: ["Demo", "Rulebooks"],
-              summary: "Monster Core stat blocks and art with placeholder lore, for Field Guide and Pluck.", pages: 40)
+              summary: "Monster Core stat blocks and art with placeholder lore, for Field Guide and Pluck.", pages: 11),
+        Title(sku: "DEMO7006E", name: "Field Guide Sample Alien Core", editions: pdf("sample-alien-core.pdf"),
+              brand: "Starfinder 2E", category: ["Demo", "Rulebooks"],
+              summary: "Alien Core stat blocks and art with placeholder lore, for Field Guide and Pluck.", pages: 10)
     ]
 }

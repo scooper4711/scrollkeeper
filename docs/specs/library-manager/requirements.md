@@ -302,12 +302,16 @@ once, online or off.
        for Pluck;
      - monster pawns, Iconic hero pawns, tokens and Battle Cards, for Pawn
        Shop, Turnkeeper and Field Guide;
-     - Field Guide's sample sourcebook, with deities' and creatures' lore.
-     Every file ends with a page saying it is a demo, and Paizo's Community
-     Use notice.
-13.6 The demo library also has the free titles every library gets (6.x), and
-     downloads them from Paizo as a real library does: the only requests the
-     demo sends outside the app.
+     - Field Guide's sample sourcebooks, Pathfinder's (Field Guide Sample
+       Monster Core) and Starfinder's (Field Guide Sample Alien Core):
+       placeholder lore for deities, creatures, ancestries and classes, with
+       the creatures' real stat blocks (ORC) and Paizo blog art.
+     Every file from tabletop-kit ends with a page saying it is from the demo
+     library and what it holds (only the prose files say their text is lorem
+     ipsum), and Paizo's Community Use notice.
+13.6 The demo library also has the free titles every library gets (15), and
+     downloads them and their covers (15.5) as a real library does: the only
+     requests the demo sends outside the app.
 13.7 On the Mac, the demo shares its downloads, covers and library list
      through the Tableside Toolkit's App Group, as a real library does (app
      handoff 5 and 6), but only when no real library is there, as on a
@@ -364,6 +368,11 @@ library listing. Field Guide reads two of them for deities' lore.
      drops them, and they're never looked up in the store or checked for
      updates (14).
 15.4 A library that hasn't been read yet still lists nothing.
+15.5 Each shows the cover of the book it supplements, unaltered: Lost Omens
+     Divine Mysteries for the Divine Mysteries Web Supplement, Lost Omens Gods
+     & Magic for the Gods & Magic Web Supplement. A cover is downloaded once;
+     one that fails to download leaves the placeholder until the next
+     launch.
 
 ## 16. The Mac App Store build
 16.1 `CHANNEL=appstore scripts/build-app.sh` builds the Mac App Store package from the same sources as the disk image,

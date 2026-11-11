@@ -32,6 +32,9 @@ public enum BuiltInTitles {
         metadata.summary = "A free table of every deity's title, areas of concern, edicts, anathema and devotee "
             + "benefits, from the gods of Lost Omens Divine Mysteries to those only named in it."
         metadata.pageCount = 23
+        // The cover of the book it supplements, Lost Omens Divine Mysteries (PZO13003E), unaltered.
+        metadata.coverURL = "https://cdn11.bigcommerce.com/s-e0sdfpgiwh/images/stencil/480w/products/14392/19239/"
+            + "PZO13003-HC_Divine_Mysteries_2D-Print_1__89498.1755128616.jpg"
         return BuiltInTitle(entitlement: entitlement, metadata: metadata)
     }()
 
@@ -56,6 +59,9 @@ public enum BuiltInTitles {
         metadata.summary = "Free divine intercessions, boons and curses, for twenty more deities of Lost Omens Gods "
             + "& Magic, with advice on creating new ones."
         metadata.pageCount = 10
+        // The cover of the book it supplements, Lost Omens Gods & Magic (PZO9303E), unaltered.
+        metadata.coverURL = "https://cdn11.bigcommerce.com/s-e0sdfpgiwh/images/stencil/480w/products/5912/18260/"
+            + "PZO9303__99639.1755531483.jpg"
         return BuiltInTitle(entitlement: entitlement, metadata: metadata)
     }()
 

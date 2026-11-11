@@ -44,6 +44,7 @@ extension LibraryStore {
             await updateCheckTask?.value
         } while awaited != syncTask
         await metadataTask?.value
+        await builtInCoverTask?.value
         await persistTask?.value
     }
 
@@ -124,6 +125,22 @@ extension LibraryStore {
         artwork.total += missing.count
         if metadataTask == nil {
             metadataTask = Task { [weak self] in await self?.drainMetadataQueue() }
+        }
+    }
+
+    /// Downloads the covers of the built-in titles that have none stored: each shows the cover of the book it
+    /// supplements (`BuiltInTitles`), which the storefront doesn't give it. A failed download leaves the placeholder
+    /// until the next launch.
+    func downloadMissingBuiltInCovers() {
+        let missing = environment.builtInTitles.map(\.metadata).filter { metadata in
+            !metadata.coverURL.isEmpty && !covers.hasCover(sku: metadata.sku)
+        }
+        guard !missing.isEmpty, builtInCoverTask == nil else { return }
+        let synchronizer = metadataSynchronizer
+        builtInCoverTask = Task { [weak self] in
+            for metadata in missing { await synchronizer.downloadCover(for: metadata) }
+            self?.builtInCoverTask = nil
+            self?.rebuildItems()
         }
     }
 

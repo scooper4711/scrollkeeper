@@ -2,13 +2,16 @@ import Foundation
 
 /// Stands in for Paizo's store and library in demo mode: an invented library, instant sign-in and unhurried
 /// downloads of real demo PDFs (`DemoFiles`). The app's UI tests run against it, and it lets the app be shown, and
-/// the toolkit's apps tried together, without a real account. Only the free titles every library has download from
-/// outside, from Paizo's public addresses, as in a real library.
+/// the toolkit's apps tried together, without a real account. Only the free titles every library has, and their
+/// covers, download from outside, from Paizo's public addresses, as in a real library.
 public struct DemoHTTPClient: HTTPClient {
     /// How long each download takes, so that progress, waiting and canceling can be seen.
     private let downloadDuration: TimeInterval
-    /// Where downloads from addresses outside the demo go: the free titles' files on `downloads.paizo.com`.
+    /// Where requests to addresses outside the demo go: the free titles' files on `downloads.paizo.com`, and their
+    /// covers.
     private let outside: HTTPClient
+    /// The hosts of the free titles' covers, which come from outside like their files (library-manager 13.6).
+    private static let outsideHosts = Set(BuiltInTitles.all.compactMap { URL(string: $0.metadata.coverURL)?.host })
 
     public init(downloadDuration: TimeInterval = 8, outside: HTTPClient = URLSessionHTTPClient()) {
         self.downloadDuration = downloadDuration
@@ -16,6 +19,14 @@ public struct DemoHTTPClient: HTTPClient {
     }
 
     public func send(_ request: URLRequest) async throws -> HTTPResponse {
+        if let host = request.url?.host, Self.outsideHosts.contains(host) {
+            return try await outside.send(request)
+        }
+        return answer(request)
+    }
+
+    /// What the demo's invented store and library say to a request.
+    private func answer(_ request: URLRequest) -> HTTPResponse {
         let path = request.url?.path ?? ""
         switch (request.url?.host ?? "", path) {
         case (DemoFiles.coversHost, _):

@@ -9,12 +9,12 @@ import Testing
 @Suite struct DemoLibraryTests {
     @Test func everyDemoPDFIsBundledAndEndsWithTheNotice() throws {
         let files = Set(DemoCatalog.titles.flatMap { $0.editions.map(\.file) }.filter { $0.hasSuffix(".pdf") })
-        #expect(files.count == 10)
+        #expect(files.count == 11)
         for file in files {
             let url = try #require(DemoFiles.bundled(file), "\(file) isn't bundled")
             let document = try #require(PDFDocument(url: url), "\(file) isn't a PDF")
             let last = document.page(at: document.pageCount - 1)?.string ?? ""
-            let isSample = file == "sample-monster-core.pdf"
+            let isSample = ["sample-monster-core.pdf", "sample-alien-core.pdf"].contains(file)
             #expect(isSample || last.contains("Community Use Policy"), "\(file) has no notice")
         }
         #expect(DemoFiles.bundled("book.epub") == nil)
@@ -60,6 +60,20 @@ import Testing
 
         #expect(try Data(contentsOf: target.localURL) == Data("%PDF-free".utf8))
         #expect(paizo.count(of: "downloads.paizo.com") == 1)
+    }
+
+    @Test func theFreeTitlesShowTheirParentBooksCoversFromOutside() async throws {
+        let outside = StubHTTPClient()
+        outside.on("cdn11.bigcommerce.com", data: Data([0xFF, 0xD8, 0xFF]))
+        let store = LibraryStore(environment: .demo(downloadDuration: 0.01, outside: outside))
+        await store.start()
+        await store.waitUntilIdle()
+        for sku in [BuiltInTitles.webSupplementSKU, BuiltInTitles.godsAndMagicSupplementSKU] {
+            #expect(store.item(id: sku).flatMap(store.coverURL(for:)) != nil, "\(sku)")
+        }
+        #expect(outside.count(of: "cdn11.bigcommerce.com") == 2)
+        // Everything else stays inside the demo.
+        #expect(outside.requests.count == 2)
     }
 }
 
