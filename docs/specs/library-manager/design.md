@@ -105,6 +105,15 @@ followed by a new sign-in.
   50 entitlements as the page, as JSON, and takes as long. It ignores requests
   for a larger page. The app does not use it.
 
+### Failure messages
+
+`FailureMessage.text(for:)` turns an error into the sentence Settings and the
+library show (requirement 1.6). A `PayloadError`, an unexpected answer or a
+404/410 from Paizo counts as a site change; a `URLError` for no connection or
+no answer, and a 5xx status, have their own wording; everything else keeps the
+error's own description. The remedy in the site-changed text depends on the
+build (`APP_STORE` or iOS: the App Store; otherwise Check for Updates).
+
 ### Downloads
 
 1. `POST /api/library/download` with JSON `{key, legacy, token, customer}`
