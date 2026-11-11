@@ -45,10 +45,8 @@ extension View {
 /// Names that differ between the Mac and the iPad.
 enum PlatformText {
     #if os(macOS)
-    static let showInFileBrowser = "Show in Finder"
     static let tagsNote = "Tags are also set as Finder tags on this title's downloaded files."
     #else
-    static let showInFileBrowser = "Show in Files"
     static let tagsNote = "Tags are kept in this app."
     #endif
 }

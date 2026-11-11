@@ -102,18 +102,19 @@ does the same for any title with a PDF.
 ## 5. Shared download folder
 
 The Mac app runs in the App Sandbox and keeps its downloads in a folder the
-Tableside Toolkit apps share (scrollkeeper#22). Mac only; the iPad app keeps
-its downloads in its Documents folder (10.3 of the library-manager
-requirements).
+Tableside Toolkit apps share (scrollkeeper#22). The iPad and iPhone app does
+the same in the iOS App Group (scrollkeeper#52, 10.3 of the library-manager
+requirements); there the download folder can't be changed, so 5.3 is Mac only.
 
 5.1 Scrollkeeper's default download folder is in a folder shared by the
     Tableside Toolkit apps, so that an app that imports many titles at once,
     such as Pawn Shop, Field Guide or Turnkeeper, can read the downloads
     without the user pointing it at them.
 5.2 The first time it runs in the sandbox, Scrollkeeper moves the downloads in
-    its old default folder into the shared folder. Nothing is downloaded
-    again, and the move takes no longer than renaming a folder. If the move
-    fails, the old folder stays the download folder.
+    its old default folder (on an iPad, its Documents folder) into the shared
+    folder. Nothing is downloaded again, and the move takes no longer than
+    renaming each title's folder. If the move fails, what had moved goes back
+    and the old folder stays the download folder.
 5.2a A build that is not signed by the toolkit's team, such as an ad hoc
     development build, cannot use the shared folder; it keeps its downloads
     in its own container.
@@ -133,7 +134,7 @@ requirements).
 
 So the other toolkit apps need not work out titles from folder names,
 Scrollkeeper shares what it knows about the library next to the downloads
-(scrollkeeper#51). Mac only, like 5.
+(scrollkeeper#51), on the Mac and the iPad alike.
 
 6.1 The cover artwork is kept in the shared folder, where any toolkit app can
     show it. Covers already fetched move there with the downloads (5.2).

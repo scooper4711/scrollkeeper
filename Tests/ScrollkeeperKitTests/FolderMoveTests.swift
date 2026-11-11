@@ -12,7 +12,18 @@ import Testing
 
         #expect(FolderMove().destination(legacy: legacy, shared: shared) == shared)
         #expect(try String(contentsOf: shared.appending(path: "Book/Book.pdf"), encoding: .utf8) == "Book/Book.pdf")
-        #expect(!FileManager.default.fileExists(atPath: legacy.path))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: legacy.path).isEmpty)
+    }
+
+    @Test func movesEveryItemAndLeavesTheOldFolderInPlace() throws {
+        let documents = directory.url.appending(path: "Documents")
+        try write("Book/Book.pdf", in: documents)
+        try write("Loose.pdf", in: documents)
+
+        #expect(FolderMove().destination(legacy: documents, shared: shared) == shared)
+        #expect(FileManager.default.fileExists(atPath: shared.appending(path: "Book/Book.pdf").path))
+        #expect(FileManager.default.fileExists(atPath: shared.appending(path: "Loose.pdf").path))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: documents.path).isEmpty)
     }
 
     @Test func replacesAnEmptySharedFolder() throws {
@@ -45,6 +56,20 @@ import Testing
 
         #expect(FolderMove().destination(legacy: legacy, shared: shared) == legacy)
         #expect(FileManager.default.fileExists(atPath: legacy.appending(path: "Book/Book.pdf").path))
+    }
+
+    @Test func putsBackWhatMovedWhenALaterItemCannotMove() throws {
+        try write("A/A.pdf", in: legacy)
+        try write("B/B.pdf", in: legacy)
+        // Moving a folder to another parent needs write access to it, to update its "..".
+        let stuck = legacy.appending(path: "B")
+        try FileManager.default.setAttributes([.posixPermissions: 0o555], ofItemAtPath: stuck.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: stuck.path) }
+
+        #expect(FolderMove().destination(legacy: legacy, shared: shared) == legacy)
+        #expect(FileManager.default.fileExists(atPath: legacy.appending(path: "A/A.pdf").path))
+        #expect(FileManager.default.fileExists(atPath: legacy.appending(path: "B/B.pdf").path))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: shared.path).isEmpty)
     }
 
     /// Writes a file holding its own relative path.

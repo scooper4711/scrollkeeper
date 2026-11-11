@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The iPad and iPhone app's entitlements: the Tableside Toolkit's App Group, where Scrollkeeper keeps its downloads,
+     covers and library list for Field Guide and Turnkeeper to read (library-manager 10.3). -->
+<plist version="1.0">
+<dict>
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.io.github.scooper4711.tableside</string>
+    </array>
+</dict>
+</plist>

@@ -138,14 +138,12 @@ private struct DownloadSettings: View {
             }
             HStack {
                 Spacer()
-                Button(PlatformText.showInFileBrowser) { showFolder() }
+                Button("Show in Finder") { showFolder() }
                 Button("Use Default") { store.resetDownloadDirectory() }
                 Button("Choose…") { chooseFolder() }
             }
             #else
-            // Files names the device's own storage after its kind: On My iPad, On My iPhone.
-            LabeledContent("Folder", value: "Files › On My \(UIDevice.current.model) › Scrollkeeper")
-            Button(PlatformText.showInFileBrowser) { showFolder() }
+            LabeledContent("Folder", value: "Shared with the Tableside Toolkit apps")
             #endif
         } header: {
             Text("Downloaded Files")
@@ -174,20 +172,19 @@ private struct DownloadSettings: View {
         #if os(macOS)
         "Files already downloaded stay where they are; move them yourself if you change the folder."
         #else
-        "Downloads are kept on this \(UIDevice.current.model) and also appear in the Files app."
-        #endif
-    }
-
-    private func showFolder() {
-        try? FileManager.default.createDirectory(at: store.downloadDirectory, withIntermediateDirectories: true)
-        #if os(macOS)
-        NSWorkspace.shared.open(store.downloadDirectory)
-        #else
-        FileOpener.reveal(store.downloadDirectory)
+        """
+        Downloads are kept on this \(UIDevice.current.model), where Field Guide and Turnkeeper find them. To put \
+        a copy in the Files app, use Share and choose Save to Files.
+        """
         #endif
     }
 
     #if os(macOS)
+    private func showFolder() {
+        try? FileManager.default.createDirectory(at: store.downloadDirectory, withIntermediateDirectories: true)
+        NSWorkspace.shared.open(store.downloadDirectory)
+    }
+
     private func chooseFolder() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true

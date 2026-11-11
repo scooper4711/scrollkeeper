@@ -152,8 +152,10 @@ it, and it is a way to look around without signing in.
 open build/Scrollkeeper.app --args -ScrollkeeperDemo
 ```
 
-On the iPad, downloads appear in the Files app under On My iPad. Opening a file
-shows a preview; the share button offers every app that accepts the file. The
+On the iPad, downloads go into a folder the Tableside Toolkit apps share, where
+Field Guide and Turnkeeper find them; the Files app doesn't show that folder.
+Opening a file shows a preview; the share button offers every app that accepts
+the file, and Save to Files puts a copy in the Files app. The
 Files app's tags cannot be set by an app, so tags stay inside the app. The Mac
 and the iPad each keep their own catalog, tags and downloads.
 
@@ -162,9 +164,9 @@ and the iPad each keep their own catalog, tags and downloads.
 | What | Where |
 |---|---|
 | Catalog, summaries, tags | `Library/Application Support/Scrollkeeper/` in the app's container: on the Mac `~/Library/Containers/io.github.scooper4711.Scrollkeeper/Data/` |
-| Cover artwork | Mac: `Covers/` in the shared folder below. iPad: `Covers/` in the app's data folder |
-| Downloaded files | Mac: `~/Library/Group Containers/<team ID>.io.github.scooper4711.tableside/Scrollkeeper/Files/`, shared with the other Tableside Toolkit apps (changeable in Settings). iPad: the app's Documents folder, shown in Files |
-| Library list for the toolkit apps | Mac: `library.json` in the shared folder (`…/Scrollkeeper/`) |
+| Cover artwork | `Covers/` in the shared folder below |
+| Downloaded files | Mac: `~/Library/Group Containers/<team ID>.io.github.scooper4711.tableside/Scrollkeeper/Files/`, shared with the other Tableside Toolkit apps (changeable in Settings). iPad: `Scrollkeeper/Files/` in the App Group `group.io.github.scooper4711.tableside`, shared the same way |
+| Library list for the toolkit apps | `library.json` in the shared folder (`…/Scrollkeeper/`) |
 | Password | macOS Keychain, service `store.paizo.com` |
 
 ## Documentation

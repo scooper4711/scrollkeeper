@@ -4,26 +4,17 @@ import SwiftUI
 import AppKit
 #else
 import QuickLook
-import UIKit
 #endif
 
 /// Opening downloaded files: with applications on the Mac, with a preview and the share sheet on the iPad.
 @MainActor
 enum FileOpener {
-    /// Shows the file or folder in the Finder, or in the Files app.
+    #if os(macOS)
+    /// Shows the file or folder in the Finder.
     static func reveal(_ url: URL) {
-        #if os(macOS)
         NSWorkspace.shared.activateFileViewerSelecting([url])
-        #else
-        // The Files app opens a folder given with its own URL scheme.
-        let folder = url.hasDirectoryPath ? url : url.deletingLastPathComponent()
-        if let files = URL(string: "shareddocuments://" + folder.path(percentEncoded: true)) {
-            UIApplication.shared.open(files)
-        }
-        #endif
     }
 
-    #if os(macOS)
     static func open(_ url: URL) {
         NSWorkspace.shared.open(url)
     }
