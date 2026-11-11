@@ -153,24 +153,26 @@ them. In the sandbox that needs a folder both sides may reach:
   reads the groups from the app's own entitlements
   (`SecTaskCopyValueForEntitlement`), so the code needs no team ID either,
   picks the one ending in `.io.github.scooper4711.tableside`, and returns
-  `~/Library/Group Containers/<group>/Scrollkeeper/`. `live()` asks for it on
-  the Mac only (the iPad is scrollkeeper#52) and keeps it as
-  `LibraryEnvironment.toolkitFolder`. Downloads go
+  `~/Library/Group Containers/<group>/Scrollkeeper/`. On iOS it takes the
+  fixed `group.io.github.scooper4711.tableside`, which the iOS app's
+  `ios/Scrollkeeper.entitlements` names (scrollkeeper#52). `live()` keeps it
+  as `LibraryEnvironment.toolkitFolder`. Downloads go
   to its `Files/` and covers to its `Covers/` (`coversDirectory`). With no
-  group (an ad hoc build, the tests, the iPad) it returns nil, and
-  `LibraryEnvironment.live()` keeps `<data folder>/Files` and
-  `<data folder>/Covers`. Demo mode has no toolkit folder.
+  group (an ad hoc build, the tests) it returns nil, and
+  `LibraryEnvironment.live()` keeps `<data folder>/Files` (on iOS, the
+  Documents folder) and `<data folder>/Covers`.
 - **Moving the downloads.** `container-migration.plist` moves
   `${ApplicationSupport}/Scrollkeeper` and the preferences into Scrollkeeper's
   own container at the first sandboxed launch. `live()` then calls
   `useToolkitFolder(_:)`, which asks `FolderMove.destination(legacy:shared:)`
   for the downloads and the covers in turn: when the old folder holds files
-  and the shared one holds none (hidden files aside), it renames the one to
-  the other with `FileManager.moveItem`.
-  Both moves are renames on the same volume, so a library of several
-  gigabytes moves at once. If the move fails, the old folder stays the
-  default download folder; once the shared folder has files, the old one is
-  left alone.
+  and the shared one holds none (hidden files aside), it moves each item of
+  the one into the other with `FileManager.moveItem`, leaving the old folder
+  empty (an iPad's Documents folder can't itself be moved).
+  The moves are renames on the same volume, so a library of several
+  gigabytes moves at once. If one fails, the items already moved go back and
+  the old folder stays the default download folder; once the shared folder
+  has files, the old one is left alone.
 - **Chosen folder.** A folder the user chose is kept as a security-scoped
   bookmark (`ChosenDownloadFolder`, 5.4a of the library-manager requirements),
   made while the app still runs outside the sandbox, so it stays reachable

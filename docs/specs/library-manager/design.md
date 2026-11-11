@@ -35,7 +35,7 @@ no command-line tools to call.
 
 | | Mac | iPad |
 |---|---|---|
-| Downloads folder | `~/Library/Group Containers/<team ID>.io.github.scooper4711.tableside/Scrollkeeper/Files`, shared with the toolkit apps, changeable | the app's Documents folder, shown in the Files app |
+| Downloads folder | `~/Library/Group Containers/<team ID>.io.github.scooper4711.tableside/Scrollkeeper/Files`, shared with the toolkit apps, changeable | the same folder in the iOS App Group (`group.io.github.scooper4711.tableside`), not changeable; the Files app doesn't show it |
 | Open | default application (`NSWorkspace`) | Quick Look preview in the app |
 | Space | Quick Look panel (`quickLookPreview`) of `previewFiles(for:)` | the same, with a keyboard |
 | Other applications | "Open With" menu | share sheet |

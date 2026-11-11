@@ -227,8 +227,12 @@ once, online or off.
      detail pane and tags as on the Mac.
 10.2 The account is kept in the iPad's Keychain and the sign-in fields support
      Password AutoFill.
-10.3 Downloaded files are kept in the app's Documents folder, so they also
-     appear in the Files app under "On My iPad".
+10.3 Downloaded files, covers and the library list are kept in the Tableside
+     Toolkit's App Group, as on the Mac (app handoff 5 and 6), so Field Guide
+     and Turnkeeper on the same iPad read them without a trip through the
+     Files app. The Files app does not show the App Group; Share (10.4) puts
+     a copy there. The first launch in the group moves the downloads that
+     earlier versions kept in the app's Documents folder (scrollkeeper#52).
 10.4 "Open" shows a downloaded file in a preview inside the app. "Share" hands
      it to the share sheet, which lists every app that accepts the file; this
      takes the place of "Open With" on the Mac.
