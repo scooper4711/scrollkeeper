@@ -40,9 +40,9 @@ public struct LibraryEnvironment: Sendable {
 
     /// The real thing: URLSession, the Keychain and the app's own folders.
     ///
-    /// On a Mac downloads and covers go into the toolkit folder the Tableside Toolkit apps share, unless the user
-    /// chooses another place for downloads; a build outside the App Group keeps them in the data folder. On an
-    /// iPad downloads go into the app's Documents folder, which the Files app shows.
+    /// Downloads and covers go into the toolkit folder the Tableside Toolkit apps share, unless the user chooses
+    /// another place for downloads (Mac only). A build outside the App Group keeps them where they were before: in
+    /// the data folder on a Mac, in the app's Documents folder on an iPad.
     public static func live() -> LibraryEnvironment {
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
@@ -53,22 +53,18 @@ public struct LibraryEnvironment: Sendable {
             settings: SettingsStore(suiteName: "")
         )
         environment.builtInTitles = BuiltInTitles.all
-        #if os(macOS)
-        if let toolkit = ToolkitGroup.scrollkeeperFolder() {
-            DemoSharing.removeDemo(from: toolkit)
-            environment.useToolkitFolder(toolkit)
-        }
-        #endif
         #if os(iOS)
         if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             environment.defaultDownloadDirectory = documents
         }
         #endif
+        if let toolkit = ToolkitGroup.scrollkeeperFolder() {
+            DemoSharing.removeDemo(from: toolkit)
+            environment.useToolkitFolder(toolkit)
+        }
         return environment
     }
 
-    /// Keeps the downloads and covers in `folder` from now on, moving those in the data folder there the first
-    /// time.
     /// Shares the demo's downloads, covers and library list through `folder` when no real library is there
     /// (library-manager 13.7).
     mutating func useDemoToolkitFolder(_ folder: URL) {
@@ -78,6 +74,8 @@ public struct LibraryEnvironment: Sendable {
         coversDirectory = folder.appending(path: "Covers", directoryHint: .isDirectory)
     }
 
+    /// Keeps the downloads and covers in `folder` from now on, moving those in the old default folders there the
+    /// first time.
     mutating func useToolkitFolder(_ folder: URL) {
         let move = FolderMove()
         toolkitFolder = folder
@@ -114,6 +112,7 @@ extension LibraryEnvironment {
         environment.isDemo = true
         // The free titles every library has, downloaded from Paizo as in a real one (13.6).
         environment.builtInTitles = BuiltInTitles.all
+        // Not on an iPad, where the UI tests need each demo launch to start with nothing downloaded.
         #if os(macOS)
         if let toolkit = ToolkitGroup.scrollkeeperFolder() {
             environment.useDemoToolkitFolder(toolkit)
