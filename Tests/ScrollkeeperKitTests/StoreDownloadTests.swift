@@ -135,6 +135,9 @@ import Testing
         #expect(store.downloads[target.id] == nil)
         #expect(store.downloadedItemIDs.isEmpty)
         #expect(store.locator.localFiles(for: item).isEmpty)
+        let besideIt = try FileManager.default.contentsOfDirectory(atPath: destination.deletingLastPathComponent().path)
+        #expect(besideIt == ["Runes.zip"])
+        #expect(!FileManager.default.fileExists(atPath: target.partialURL.path))
     }
 
     @Test func damagedArchiveIsReportedAndRemoved() async throws {
