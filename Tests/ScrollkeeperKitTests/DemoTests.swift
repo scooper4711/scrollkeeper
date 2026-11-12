@@ -71,6 +71,16 @@ import Testing
         #expect(live.dataDirectory.lastPathComponent == "Scrollkeeper")
     }
 
+    @Test func demoDownloadsTakeAsLongAsTheLaunchArgumentSays() {
+        let name = LibraryEnvironment.demoDownloadSecondsArgument
+
+        #expect(LibraryEnvironment.demoDownloadDuration(in: ["Scrollkeeper", name, "120"]) == 120)
+        #expect(LibraryEnvironment.demoDownloadDuration(in: ["Scrollkeeper"]) == 8)
+        #expect(LibraryEnvironment.demoDownloadDuration(in: ["Scrollkeeper", name]) == 8)
+        #expect(LibraryEnvironment.demoDownloadDuration(in: ["Scrollkeeper", name, "soon"]) == 8)
+        #expect(LibraryEnvironment.demoDownloadDuration(in: ["Scrollkeeper", name, "0"]) == 8)
+    }
+
     @Test func demoServerAnswersUnknownAddressesWithNotFound() async throws {
         let client = DemoHTTPClient()
         let unknown = try #require(URL(string: "https://store.paizo.com/nowhere"))

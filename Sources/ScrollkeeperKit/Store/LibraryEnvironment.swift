@@ -92,15 +92,31 @@ extension LibraryEnvironment {
     /// The launch argument that starts the app in demo mode.
     public static let demoArgument = "-ScrollkeeperDemo"
 
+    /// The launch argument followed by how many seconds each demo download takes. The UI tests ask for long ones,
+    /// so that a download is still running when a slow simulator gets around to looking.
+    public static let demoDownloadSecondsArgument = "-demoDownloadSeconds"
+
+    public static let defaultDemoDownloadDuration: TimeInterval = 8
+
     /// The environment the app should run in: demo mode when launched with `demoArgument`.
     public static func forLaunch(arguments: [String] = ProcessInfo.processInfo.arguments) -> LibraryEnvironment {
-        arguments.contains(demoArgument) ? demo() : live()
+        guard arguments.contains(demoArgument) else { return live() }
+        return demo(downloadDuration: demoDownloadDuration(in: arguments))
+    }
+
+    /// The seconds given after `demoDownloadSecondsArgument`, or the usual eight without a usable number.
+    static func demoDownloadDuration(in arguments: [String]) -> TimeInterval {
+        guard let name = arguments.firstIndex(of: demoDownloadSecondsArgument),
+              arguments.indices.contains(name + 1),
+              let seconds = TimeInterval(arguments[name + 1]), seconds > 0
+        else { return defaultDemoDownloadDuration }
+        return seconds
     }
 
     /// An invented library served from inside the app, already signed in, kept in a temporary folder that starts
     /// empty on every launch. Only the free titles' downloads reach the network, and nothing the Keychain. On the Mac
     /// it shares through the App Group when no real library is there (library-manager 13.7).
-    public static func demo(downloadDuration: TimeInterval = 8,
+    public static func demo(downloadDuration: TimeInterval = defaultDemoDownloadDuration,
                             outside: HTTPClient = URLSessionHTTPClient()) -> LibraryEnvironment {
         let run = UUID().uuidString
         var environment = LibraryEnvironment(
