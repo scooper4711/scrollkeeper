@@ -8,10 +8,14 @@ final class DownloadsListUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// Long enough that a download is still running whenever a slow simulator gets around to looking.
+    private let unhurried = 300
+
+    /// Launches the demo library, whose downloads take eight seconds unless told otherwise.
     @MainActor
-    private func launchDemo() -> XCUIApplication {
+    private func launchDemo(downloadSeconds: Int = 8) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-ScrollkeeperDemo", "-viewMode", "list"]
+        app.launchArguments = ["-ScrollkeeperDemo", "-viewMode", "list", "-demoDownloadSeconds", "\(downloadSeconds)"]
         app.launch()
         XCTAssertTrue(app.titleRow("Sample Creature Rulebook").exists, "library did not load")
         return app
@@ -29,7 +33,7 @@ final class DownloadsListUITests: XCTestCase {
 
     @MainActor
     func testDownloadsListOpensWhileADownloadIsRunning() {
-        let app = launchDemo()
+        let app = launchDemo(downloadSeconds: unhurried)
         startDownload(of: "Sample Creature Rulebook", in: app)
 
         let downloads = app.buttons["downloads-button"].firstMatch
@@ -56,7 +60,7 @@ final class DownloadsListUITests: XCTestCase {
 
     @MainActor
     func testRunningDownloadCanBeCanceledFromTheList() {
-        let app = launchDemo()
+        let app = launchDemo(downloadSeconds: unhurried)
         startDownload(of: "Sample Creature Rulebook", in: app)
         app.buttons["downloads-button"].firstMatch.tap()
         XCTAssertTrue(app.buttons["Cancel All"].waitForExistence(timeout: 5))
@@ -78,13 +82,22 @@ final class DownloadsListUITests: XCTestCase {
 
 extension XCUIApplication {
     /// The row of a title in the library list, scrolled into view: the list builds only the rows on screen, and
-    /// the demo library has more titles than fit on an iPad. Gives up after `timeout` seconds.
-    func titleRow(_ title: String, timeout: TimeInterval = 30) -> XCUIElement {
+    /// the demo library has more titles than fit on an iPad. Gives up after `timeout` seconds, which also have to
+    /// cover the library loading on a slow simulator.
+    func titleRow(_ title: String, timeout: TimeInterval = 90) -> XCUIElement {
         let row = staticTexts[title]
         let deadline = Date().addingTimeInterval(timeout)
         while !row.waitForExistence(timeout: 1), Date() < deadline {
-            swipeUp()
+            scrollDownWithoutCoasting()
         }
         return row
+    }
+
+    /// Moves the list on by a third of the screen and holds it there. A swipe lets the list coast, and a list
+    /// that coasts past the row has dropped it again by the time the row is looked for.
+    private func scrollDownWithoutCoasting() {
+        let lower = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+        let upper = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4))
+        lower.press(forDuration: 0.1, thenDragTo: upper, withVelocity: .default, thenHoldForDuration: 0.3)
     }
 }
