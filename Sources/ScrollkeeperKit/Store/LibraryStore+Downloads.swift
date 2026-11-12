@@ -172,6 +172,13 @@ extension LibraryStore {
             // Unpacking a large archive takes seconds; keep it off the main actor.
             try await Task.detached { try ArchiveExtractor().extract(partial, to: target.localURL) }.value
         } else {
+            // A file saved elsewhere is downloaded in the temporary folder, so its own folder may not exist yet.
+            // Not `try`: the sandbox may refuse this for a folder that is already there, and the move reports
+            // a folder that is really missing.
+            _ = try? FileManager.default.createDirectory(
+                at: target.localURL.deletingLastPathComponent(),
+                withIntermediateDirectories: true
+            )
             _ = try? FileManager.default.removeItem(at: target.localURL)
             try FileManager.default.moveItem(at: partial, to: target.localURL)
         }

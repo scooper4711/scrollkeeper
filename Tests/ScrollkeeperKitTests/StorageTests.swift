@@ -121,7 +121,19 @@ import Testing
         let target = locator.exportTarget(for: edition, in: item, destination: destination)
         #expect(target.localURL == destination)
         #expect(!target.isArchive)
-        #expect(target.partialURL.lastPathComponent == "Runes.zip.download")
+        #expect(target.isSavedElsewhere)
+    }
+
+    /// The sandbox grants the file chosen in the save panel, not its folder, so nothing else may be written there.
+    @Test func fileSavedElsewhereIsDownloadedInTheTemporaryFolder() {
+        let entitlement = Fixtures.entitlement("Community Use Package: Runes", sku: "PZOCUP1E", file: "runes.zip")
+        let item = EntitlementGrouper().makeItems(from: CatalogSnapshot(entitlements: [entitlement]))[0]
+        let destination = URL(filePath: "/Users/someone/Downloads/Runes.zip")
+
+        let partial = locator.exportTarget(for: item.editions[0], in: item, destination: destination).partialURL
+
+        #expect(partial.lastPathComponent == "Runes.zip.download")
+        #expect(partial.path.hasPrefix(FileManager.default.temporaryDirectory.path))
     }
 
     @Test func editionsSharingANameGetDistinctFiles() {

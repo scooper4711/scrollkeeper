@@ -11,13 +11,18 @@ public struct DownloadTarget: Sendable, Hashable, Identifiable {
     public let isArchive: Bool
     /// When Paizo last updated the file, where its library says so.
     public var remoteUpdated: Date?
+    /// Whether the file goes to a place the user chose in a save panel, outside the library folder.
+    public var isSavedElsewhere = false
 
     public var id: String { localURL.path }
 
-    /// Where the download is kept until it is complete.
+    /// Where the download is kept until it is complete: beside where it will live, or in the temporary folder
+    /// for a file saved elsewhere. The App Sandbox lets the app write the one file the user chose in the save
+    /// panel, and nothing else in its folder.
     public var partialURL: URL {
-        localURL.deletingLastPathComponent()
-            .appending(path: localURL.lastPathComponent + "." + FileLocator.partialExtension)
+        let name = localURL.lastPathComponent + "." + FileLocator.partialExtension
+        guard isSavedElsewhere else { return localURL.deletingLastPathComponent().appending(path: name) }
+        return FileManager.default.temporaryDirectory.appending(path: "Exports/" + name)
     }
 
     public static func == (lhs: DownloadTarget, rhs: DownloadTarget) -> Bool { lhs.id == rhs.id }
@@ -64,7 +69,8 @@ public struct FileLocator: Sendable {
             itemID: item.id,
             remote: RemoteFile(entitlement: edition.entitlement),
             localURL: destination,
-            isArchive: false
+            isArchive: false,
+            isSavedElsewhere: true
         )
     }
 
