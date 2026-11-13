@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-11-13
+
+### Added
+- Add Field Guide's Starfinder sample to the demo library
+- Show the free web supplements with their parent books' covers
+- Describe the shared download folder on the iPad
+- Put iPad downloads in the Tableside App Group
+- Make the demo maps Flip-Mat size and illustrate the sample
+- Add the privacy policy and link it from Help and About
+- Drop the Downloads entitlement from the App Store build
+- Build Scrollkeeper for the Mac App Store without its updater
+- Offer the demo library on the sign-in screen
+- Serve real PDFs in the demo library
+- Name the download folder in Settings
+- Share the library list and covers with the toolkit apps
+- Run Scrollkeeper in the App Sandbox
+- Let Field Guide ask Scrollkeeper for titles
+- Offer Paizo's free deity supplements in every library
+
+### Fixed
+- Make the iPad UI tests hold up on a slow simulator
+- Download a file saved elsewhere in the temporary folder
+- Open Device Hub after starting the iPad simulator
+- Say what went wrong when Paizo's site changed or is unreachable
+- Scroll to the demo title in the iPad UI tests
+- Forget the library when the account is removed
+- Open Pluck by its capitalized bundle ID
+- Put the packages' resources in the app
+
+### Changed
+- Move the iPad downloads to the App Group in the specs
+- Allow Community Use art and ORC rules text in the demo files
+- Say what deleting the app leaves on a Mac
+- Bump SonarSource/sonarqube-scan-action
+- Redraw the demo pawns
+- Specify the demo library on the sign-in screen
+- Add the demo library's PDFs
+- Specify the demo library's PDFs and sharing
+- Name the download folder in Settings
+- Use tabletop-kit 0.16.0
+- Use TablesideShared for the App Group and library list
+- Specify the sandboxed app and its shared download folder
+- Welcome signed commits without requiring them
+- Add a contributing guide
+- Bump SonarSource/sonarqube-scan-action
+
+[2.0.0]: https://github.com/scooper4711/scrollkeeper/releases/tag/v2.0.0
+
 ## [1.5.0] - 2026-10-20
 
 ### Added
