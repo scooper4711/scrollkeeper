@@ -48,7 +48,8 @@ struct SidebarView: View {
     /// The list needs an optional selection. An emptied selection means Back on an iPhone, which shows the sidebar;
     /// elsewhere it falls back to all titles.
     private var scopeSelection: Binding<LibraryScope?> {
-        Binding(get: { isShowingSidebarAlone ? nil : store.query.scope }, set: choose)
+        // A closure, not `set: choose`: Swift 6.3's compiler crashes generating the method reference's thunk.
+        Binding(get: { isShowingSidebarAlone ? nil : store.query.scope }, set: { choose($0) })
     }
 
     private func choose(_ scope: LibraryScope?) {
