@@ -34,6 +34,28 @@ final class PhoneLayoutUITests: XCTestCase {
         XCTAssertTrue(app.buttons["View on paizo.com"].waitForExistence(timeout: 5), app.debugDescription)
     }
 
+    /// Back from the library shows the sidebar and stays there, rather than bouncing back to All Titles.
+    @MainActor
+    func testBackFromTheLibraryStaysOnTheSidebar() {
+        launchDemo(viewMode: "covers")
+
+        goBackToTheSidebar(from: "All Titles")
+        app.staticTexts["Rulebooks"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Rulebooks"].waitForExistence(timeout: 5), app.debugDescription)
+        goBackToTheSidebar(from: "Rulebooks")
+    }
+
+    @MainActor
+    private func goBackToTheSidebar(from scope: String) {
+        let library = app.navigationBars[scope]
+        library.buttons["Back"].tap()
+        XCTAssertTrue(library.waitForNonExistence(timeout: 5), app.debugDescription)
+        // The bounce came a moment after the sidebar appeared, so check that the library does not come back.
+        XCTAssertFalse(app.navigationBars["All Titles"].waitForExistence(timeout: 3),
+                       "went back to the library: \(app.debugDescription)")
+        XCTAssertTrue(app.staticTexts["Downloaded"].firstMatch.isHittable, app.debugDescription)
+    }
+
     @MainActor
     private func launchDemo(viewMode: String?) {
         app = XCUIApplication()

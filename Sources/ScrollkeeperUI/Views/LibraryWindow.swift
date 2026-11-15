@@ -50,7 +50,7 @@ struct LibraryWindow: View {
     var body: some View {
         @Bindable var store = store
         NavigationSplitView {
-            SidebarView()
+            SidebarView(showsOneColumn: showsOneColumn)
                 .navigationSplitViewColumnWidth(min: 190, ideal: 220)
         } detail: {
             catalog
