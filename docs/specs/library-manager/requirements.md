@@ -256,8 +256,9 @@ once, online or off.
 
 11.1 The app is free. No feature depends on a payment.
 11.2 The notice that Paizo's Community Use Policy prescribes is shown, in the
-     policy's own wording, in the README, in the Mac app's About panel, and in
-     the settings of both apps.
+     policy's own wording, in the README, in the Mac app's About panel, in the
+     settings of both apps, and in the window About Scrollkeeper opens from the
+     iPad's menu bar, which otherwise opens an empty window.
 11.3 The Mac app and the README link to a page for optional donations. The
      iPad app does not, because Apple restricts links to outside payment pages.
 11.4 Cover images and product descriptions are shown unmodified. The app icon
