@@ -11,3 +11,4 @@ __pycache__/
 ios/build/
 *.xcworkspace/xcuserdata/
 ios/Local.xcconfig
+ios/Version.xcconfig
