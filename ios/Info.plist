@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- The keys Xcode can't generate for the iPad and iPhone app; the rest come from the build settings. The
+     `scrollkeeper` link lets another toolkit app see that Scrollkeeper is installed and bring it forward
+     (app-handoff 2.9). -->
+<plist version="1.0">
+<dict>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>io.github.scooper4711.Scrollkeeper.handoff</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>scrollkeeper</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>
