@@ -31,6 +31,8 @@ public struct ScrollkeeperApp: App {
             #else
             AboutCommands(updater: updater)
             #endif
+            #else
+            PadAboutCommands()
             #endif
         }
 
@@ -39,6 +41,8 @@ public struct ScrollkeeperApp: App {
             SettingsView()
                 .environment(store)
         }
+        #else
+        AboutWindow()
         #endif
     }
 
