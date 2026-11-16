@@ -106,8 +106,12 @@ the state of the download the request waits for. While `handoffFiles` waits,
 - `scripts/build-app.sh` declares the `scrollkeeper` URL scheme in
   `CFBundleURLTypes`.
 - The iPad app declares the same scheme in `ios/Info.plist`, which Xcode
-  merges into the Info.plist it generates (2.9). Nothing there reads the link:
-  the system brings the app forward and SwiftUI opens no window for it.
+  merges into the Info.plist it generates (2.9). `PadHandoffHandler`, on the
+  library window, reads it with `onOpenURL`; its
+  `handlesExternalEvents(preferring:allowing:)` has the open window take the
+  link, so none opens for it. It ignores an unrecognized link and an index
+  request, selects the requested title and awaits `handoffFiles`, discarding
+  the files, and shows a `HandoffError` in an alert.
 - The Mac `AppDelegate` owns the `LibraryStore`, starts it at launch and takes
   the links in `application(_:open:)`, so a request is answered whether or not
   a library window is open, including the one that launched the app. The
