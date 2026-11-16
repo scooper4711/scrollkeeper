@@ -1,19 +1,20 @@
 #!/bin/sh
 # Builds "build/Scrollkeeper.app" from the Swift package.
 #
-# VERSION    version written to the bundle (default 0.0.0)
+# VERSION    version written to the bundle (default: scripts/version.sh marketing)
 # UNIVERSAL  set to 1 to build for both Apple silicon and Intel
 # TEAM_ID    the team that owns the App Group (default: read from the Developer ID certificate)
 # SIGNING_IDENTITY  passed to scripts/sign-app.sh; "-" signs ad hoc, without the App Group
 # CHANNEL    "appstore" builds the Mac App Store package (build/appstore/Scrollkeeper.pkg) from the same sources,
 #            compiled with -DAPP_STORE so the updater and the Ko-fi link are left out; needs BUILD_NUMBER, TEAM_ID
 #            and the variables of tabletop-kit's scripts/package-appstore.sh (TRIAL=1 checks it without them)
-# BUILD_NUMBER  CFBundleVersion, which must increase with every upload (default: VERSION)
+# BUILD_NUMBER  CFBundleVersion, which must increase with every upload (default: scripts/version.sh build)
 set -eu
 
 cd "$(dirname "$0")/.."
 
-VERSION="${VERSION:-0.0.0}"
+VERSION="${VERSION:-$(scripts/version.sh marketing)}"
+BUILD_NUMBER="${BUILD_NUMBER:-$(scripts/version.sh build)}"
 APP="build/Scrollkeeper.app"
 EXECUTABLE="Scrollkeeper"
 
@@ -101,7 +102,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
     <key>CFBundleShortVersionString</key>
     <string>$VERSION</string>
     <key>CFBundleVersion</key>
-    <string>${BUILD_NUMBER:-$VERSION}</string>
+    <string>$BUILD_NUMBER</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
     <key>LSApplicationCategoryType</key>
@@ -136,7 +137,7 @@ if [ "${CHANNEL:-}" = "appstore" ]; then
     /usr/libexec/PlistBuddy -c "Delete :com.apple.security.files.downloads.read-write" "$ENTITLEMENTS"
 fi
 scripts/sign-app.sh "$APP" "$ENTITLEMENTS"
-echo "Built $APP ($VERSION)"
+echo "Built $APP ($VERSION, build $BUILD_NUMBER)"
 
 if [ "${CHANNEL:-}" = "appstore" ]; then
     # The App Store build has no updater and no outside payment link (guidelines 2.4.5(vii) and 3.1.1).

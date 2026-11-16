@@ -1,4 +1,4 @@
-// Signing settings for the iPad app.
+// Signing and version settings for the iPad app.
 //
 // Put your own Apple developer team in Local.xcconfig next to this file. That file is not
 // committed, so nobody's team ends up in the repository:
@@ -10,5 +10,12 @@
 //     PRODUCT_BUNDLE_IDENTIFIER = com.example.Scrollkeeper
 DEVELOPMENT_TEAM =
 PRODUCT_BUNDLE_IDENTIFIER = io.github.scooper4711.Scrollkeeper
+
+// The version and build number come from git (scripts/version.sh): the Scrollkeeper-iPad scheme's build
+// pre-action writes them to Version.xcconfig before every build, Product > Archive included. These are the
+// fallbacks for a build that skips the scheme.
+MARKETING_VERSION = 0.0.0
+CURRENT_PROJECT_VERSION = 1
+#include? "Version.xcconfig"
 
 #include? "Local.xcconfig"

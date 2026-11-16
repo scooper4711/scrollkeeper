@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme LastUpgradeVersion = "2600" version = "1.7">
    <BuildAction parallelizeBuildables = "YES" buildImplicitDependencies = "YES">
+      <PreActions>
+         <ExecutionAction ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent title = "Version from git" scriptText = "# Writes the version and build number from git, so every build (Product &gt; Archive included) carries them.&#10;cd &quot;$PROJECT_DIR/..&quot; &amp;&amp; scripts/version.sh xcconfig &gt; ios/Version.xcconfig&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "A10000000000000000000006" BuildableName = "Scrollkeeper.app" BlueprintName = "Scrollkeeper-iPad" ReferencedContainer = "container:Scrollkeeper.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PreActions>
       <BuildActionEntries>
          <BuildActionEntry buildForTesting = "YES" buildForRunning = "YES" buildForProfiling = "YES" buildForArchiving = "YES" buildForAnalyzing = "YES">
             <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "A10000000000000000000006" BuildableName = "Scrollkeeper.app" BlueprintName = "Scrollkeeper-iPad" ReferencedContainer = "container:Scrollkeeper.xcodeproj">
