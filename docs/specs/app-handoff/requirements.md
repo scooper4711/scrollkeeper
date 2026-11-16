@@ -58,7 +58,10 @@ does the same for any title with a PDF.
     to download, the download failed, the requesting app is not installed, or
     the download holds no file the requesting app can open.
 2.8 One request handles one title (5.3b).
-2.9 The iPad app does not handle open requests.
+2.9 The iPad app does not handle open requests. It does register the
+    `scrollkeeper` link, so another toolkit app can see that it is installed
+    and bring it forward for the user to download a title there; whatever the
+    link asks for, it only brings the app forward, in the window it has.
 2.10 The Mac app also handles `scrollkeeper://download?sku=<SKU>&app=<app key>`:
     the same as an open request, except that nothing is opened and the
     library window's selection is left alone. The requesting app learns that
