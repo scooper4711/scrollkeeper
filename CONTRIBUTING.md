@@ -97,9 +97,6 @@ with no real account data.
 3. Say what changes, why, and how you checked it (tests, what you tried, on which devices). Link the issue, and add
    screenshots for interface changes.
 
-Code written with AI tools is welcome: say so in the pull request, and submit only what you have read, understood
-and tested.
-
 ## Issues
 
 [Open an issue](https://github.com/scooper4711/scrollkeeper/issues) for a bug or an idea. For a bug, give the app's
