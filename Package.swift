@@ -11,7 +11,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", from: "0.9.19"),
-        .package(url: "https://github.com/scooper4711/tabletop-kit.git", from: "1.5.0")
+        .package(url: "https://github.com/scooper4711/tabletop-kit.git", from: "1.11.4")
     ],
     targets: [
         .target(
