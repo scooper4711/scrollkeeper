@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 @testable import ScrollkeeperKit
 import Testing
@@ -98,7 +99,9 @@ final class StubURLProtocol: URLProtocol {
     }
 }
 
-@Suite struct KeychainCredentialStoreTests {
+/// The login Keychain is unlocked only in a desktop session; CI runners without one get errSecInteractionNotAllowed.
+@Suite(.enabled(if: CGSessionCopyCurrentDictionary() != nil, "The login Keychain needs a desktop session"))
+struct KeychainCredentialStoreTests {
     @Test func savesReplacesAndDeletesTheAccount() throws {
         let store = KeychainCredentialStore(server: "test-\(UUID().uuidString).paizo-library-manager.invalid")
         defer { try? store.delete() }

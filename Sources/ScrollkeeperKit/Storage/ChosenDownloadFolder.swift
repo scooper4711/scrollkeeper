@@ -35,8 +35,9 @@ struct ChosenDownloadFolder {
     private func resolvedBookmark() -> URL? {
         guard let bookmark = settings.downloadDirectoryBookmark else { return nil }
         var isStale = false
-        guard let folder = try? URL(resolvingBookmarkData: bookmark, options: Self.resolutionOptions,
-                                    relativeTo: nil, bookmarkDataIsStale: &isStale)
+        guard let folder = Self.resolutionOptions.lazy.compactMap({
+            try? URL(resolvingBookmarkData: bookmark, options: $0, relativeTo: nil, bookmarkDataIsStale: &isStale)
+        }).first
         else { return nil }
         _ = folder.startAccessingSecurityScopedResource()
         if isStale {
@@ -47,15 +48,19 @@ struct ChosenDownloadFolder {
         return folder
     }
 
+    /// A security-scoped bookmark where the system makes one; otherwise a plain one, which still follows the
+    /// folder. The scoped kind comes from ScopedBookmarkAgent, which runs only in a desktop session.
     private static func bookmark(for folder: URL) -> Data? {
-        try? folder.bookmarkData(options: creationOptions, includingResourceValuesForKeys: nil, relativeTo: nil)
+        creationOptions.lazy.compactMap {
+            try? folder.bookmarkData(options: $0, includingResourceValuesForKeys: nil, relativeTo: nil)
+        }.first
     }
 
     #if os(macOS)
-    private static let creationOptions: URL.BookmarkCreationOptions = .withSecurityScope
-    private static let resolutionOptions: URL.BookmarkResolutionOptions = .withSecurityScope
+    private static let creationOptions: [URL.BookmarkCreationOptions] = [.withSecurityScope, []]
+    private static let resolutionOptions: [URL.BookmarkResolutionOptions] = [.withSecurityScope, []]
     #else
-    private static let creationOptions: URL.BookmarkCreationOptions = []
-    private static let resolutionOptions: URL.BookmarkResolutionOptions = []
+    private static let creationOptions: [URL.BookmarkCreationOptions] = [[]]
+    private static let resolutionOptions: [URL.BookmarkResolutionOptions] = [[]]
     #endif
 }
