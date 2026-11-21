@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-11-21
+
+### Fixed
+- Run the iPad UI tests on a fresh simulator
+- Keep a plain bookmark of the download folder when a scoped one can't be made
+- Download the title another app asks for on the iPad
+- Show the About screen from the iPad's menu bar
+- Register the scrollkeeper link in the iPad app
+- Work around a Swift 6.3 compiler crash in the sidebar
+- Keep the iPhone on the sidebar after Back from the library
+
+### Changed
+- Run the real Keychain test only in a desktop session
+- Update tabletop-kit to 1.11.4
+- Time out CI jobs instead of waiting 6 hours
+- Pin the GitHub actions to commit hashes
+- Run the tests on the self-hosted Mac mini
+- Require tabletop-kit 1.5.0
+- Require tabletop-kit 1.4.1
+- Require tabletop-kit 1.4.0
+- Drop the AI disclosure rule from CONTRIBUTING
+- Number every build by the commits on main
+- Number every build by the commits on main
+- Have the iPad app download requested titles
+- Use tabletop-kit 1.3.0
+- Specify About in the iPad's menu bar
+- Specify the scrollkeeper link on the iPad
+
+[2.0.1]: https://github.com/scooper4711/scrollkeeper/releases/tag/v2.0.1
+
 ## [2.0.0] - 2026-11-13
 
 ### Added
