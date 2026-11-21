@@ -81,6 +81,8 @@ Starfinder games in person. Like any good toolkit, each one grants a +1 item bon
   the battle card of whoever's turn it is.
 - [Field Guide](https://github.com/scooper4711/field-guide) carries the Pathfinder and Starfinder compendium,
   offline.
+- [Chronicle Keeper](https://github.com/scooper4711/chronicle-keeper) keeps a record of your Organized Play
+  characters: their sessions, XP, level, reputation and Fame.
 
 On the Mac, Mapsmith's File › Open from Scrollkeeper… searches the maps you own. Scrollkeeper downloads the one you
 pick, if it is not on disk already, and opens it in Mapsmith. Mapsmith finds your maps in a list Scrollkeeper keeps
