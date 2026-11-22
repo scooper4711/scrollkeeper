@@ -29,6 +29,16 @@ final class StoreScreenshots: XCTestCase {
         try save("2-details")
     }
 
+    /// The library as a list, which has room for a title's author and type beside its name.
+    @MainActor
+    func testList() throws {
+        app.launchArguments = ["-ScrollkeeperDemo", "-viewMode", "list"]
+        app.launch()
+        let title = app.staticTexts["Sample Adventure: The Lighthouse"].firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 30), app.debugDescription)
+        try save("3-list")
+    }
+
     private func save(_ name: String) throws {
         Thread.sleep(forTimeInterval: 1.5)
         let file = folder.appendingPathComponent("\(name).png")
