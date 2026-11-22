@@ -79,11 +79,9 @@ final class StubURLProtocol: URLProtocol {
         #expect(configuration.requestCachePolicy == .reloadIgnoringLocalCacheData)
     }
 
-    @Test func userAgentNamesTheAppItsVersionAndItsProjectAfterSafari() {
+    @Test func userAgentNamesOnlyTheAppItsVersionAndItsProject() {
         let agent = URLSessionHTTPClient.userAgent(version: "1.4.2")
-        #expect(agent.hasPrefix("Mozilla/5.0 "))
-        #expect(agent.contains(" Safari/"))
-        #expect(agent.hasSuffix(" Scrollkeeper/1.4.2 (+https://github.com/scooper4711/scrollkeeper)"))
+        #expect(agent == "Scrollkeeper/1.4.2 (+https://github.com/scooper4711/scrollkeeper)")
     }
 }
 
