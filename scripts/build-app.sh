@@ -43,6 +43,14 @@ cp "$BINARY" "$APP/Contents/MacOS/$EXECUTABLE"
 for bundle in "$(dirname "$BINARY")"/*.bundle; do
     [ -d "$bundle" ] && cp -R "$bundle" "$APP/Contents/Resources/"
 done
+if [ "${CHANNEL:-}" = "appstore" ]; then
+    # Some toolchains name an executable in these resource-only bundles, which App Store validation rejects (90261).
+    for info in "$APP"/Contents/Resources/*.bundle/Contents/Info.plist "$APP"/Contents/Resources/*.bundle/Info.plist; do
+        if [ -f "$info" ]; then
+            /usr/libexec/PlistBuddy -c "Delete :CFBundleExecutable" "$info" 2>/dev/null || true
+        fi
+    done
+fi
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp Resources/container-migration.plist "$APP/Contents/Resources/"
 cp Resources/PrivacyInfo.xcprivacy "$APP/Contents/Resources/"
