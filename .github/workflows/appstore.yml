@@ -1,7 +1,8 @@
 name: App Store
 
-# Builds the Mac package and iPad app on a GitHub-hosted runner. By default it only validates with App Store Connect.
-# It never distributes to testers or submits for review. Specified in docs/specs/app-store-pipeline.
+# Builds the Mac package and iPad app on a GitHub-hosted runner, using tabletop-kit's pipeline scripts at a pinned
+# commit. By default it only validates. It can upload, and deliver to internal TestFlight groups, but never to an
+# external group or for review. Specified in tabletop-kit's docs/specs/app-store-pipeline.
 on:
   workflow_dispatch:
     inputs:
@@ -9,28 +10,57 @@ on:
         description: Upload the Mac and iPad builds to App Store Connect
         type: boolean
         default: false
+      internal_testers:
+        description: After uploading, deliver the builds to internal TestFlight groups
+        type: boolean
+        default: false
+      notes:
+        description: What to Test note, required for internal testers
+        type: string
+        default: ""
 
 permissions:
   contents: read
 
 jobs:
   package:
-    name: Build, validate and upload
+    name: Build, validate and deliver
     runs-on: macos-26
-    timeout-minutes: 45
+    timeout-minutes: 180
     environment: app-store
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
       ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
       ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      BUNDLE_ID: io.github.scooper4711.Scrollkeeper
+      PACKAGER: .store-tools/scripts/package-appstore.sh
+      REQUIRE_ICLOUD: "0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # scripts/version.sh counts every commit for the build number.
           fetch-depth: 0
 
+      - name: Fetch the pipeline scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: scooper4711/tabletop-kit
+          ref: 7dd3f3849645de630582ddfe190e07d178494a11 # tabletop-kit main
+          path: .store-tools
+          persist-credentials: false
+
       - name: Check the source
-        run: scripts/check-store-release.sh source
+        env:
+          INTERNAL_TESTERS: ${{ inputs.internal_testers }}
+          UPLOAD: ${{ inputs.upload }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          echo .store-tools >> .git/info/exclude
+          if [[ "$INTERNAL_TESTERS" == "true" && ( "$UPLOAD" != "true" || -z "$NOTES" ) ]]; then
+            echo "Delivering to internal testers needs upload and a What to Test note." >&2
+            exit 1
+          fi
+          .store-tools/scripts/check-store-release.sh source
 
       - name: Test
         run: scripts/coverage.sh
@@ -43,17 +73,19 @@ jobs:
           MAC_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.MAC_INSTALLER_CERTIFICATE_PASSWORD }}
           MAS_PROVISIONING_PROFILE: ${{ secrets.MAS_PROVISIONING_PROFILE }}
           ASC_KEY: ${{ secrets.ASC_KEY }}
-        run: scripts/add-store-signing.sh
+        run: .store-tools/scripts/add-store-signing.sh "$BUNDLE_ID"
 
       - name: Build and validate the package
         env:
-          SIGNING_IDENTITY: "-"
           UNIVERSAL: "1"
           VALIDATE: "1"
         run: BUILD_NUMBER="$(scripts/version.sh build)" make appstore
 
       - name: Check the package
-        run: scripts/check-store-release.sh package
+        run: |
+          .store-tools/scripts/check-store-release.sh package "$BUNDLE_ID"
+          pkgs=(build/appstore/*.pkg)
+          echo "PKG=${pkgs[0]}" >> "$GITHUB_ENV"
 
       - name: Archive the iPad app
         run: |
@@ -74,19 +106,31 @@ jobs:
         if: inputs.upload
         run: |
           export API_PRIVATE_KEYS_DIR="${RUNNER_TEMP:?}/private_keys"
-          xcrun altool --upload-package build/appstore/Scrollkeeper.pkg -t macos \
-            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          xcrun altool --upload-package "$PKG" -t macos --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
           xcrun altool --upload-package "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
 
+      - name: Deliver to internal testers
+        if: inputs.upload && inputs.internal_testers
+        env:
+          NOTES: ${{ inputs.notes }}
+        run: |
+          printf '%s' "$NOTES" > "${RUNNER_TEMP:?}/what-to-test.txt"
+          ruby .store-tools/scripts/testflight-internal.rb "$BUNDLE_ID" "$(scripts/version.sh build)" \
+            "${RUNNER_TEMP:?}/what-to-test.txt" IOS,MAC_OS
+
       - name: Record the build
+        env:
+          UPLOADED: ${{ inputs.upload }}
+          INTERNAL_TESTERS: ${{ inputs.internal_testers }}
         run: |
           {
             echo "- Commit: $GITHUB_SHA"
             echo "- Xcode: $(xcodebuild -version | head -n 1)"
             echo "- Version: $(scripts/version.sh marketing), build $(scripts/version.sh build)"
-            echo "- Package SHA-256: $(shasum -a 256 build/appstore/Scrollkeeper.pkg | cut -d' ' -f1)"
+            echo "- Package SHA-256: $(shasum -a 256 "$PKG" | cut -d' ' -f1)"
             echo "- iPad app SHA-256: $(shasum -a 256 "$IPA" | cut -d' ' -f1)"
-            echo "- Uploaded: ${{ inputs.upload }}"
+            echo "- Uploaded: $UPLOADED"
+            echo "- Internal testers: $INTERNAL_TESTERS"
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Remove the signing material
