@@ -50,7 +50,7 @@ jobs:
           SIGNING_IDENTITY: "-"
           UNIVERSAL: "1"
           VALIDATE: "1"
-        run: make appstore
+        run: BUILD_NUMBER="$(scripts/version.sh build)" make appstore
 
       - name: Check the package
         run: scripts/check-store-release.sh package
