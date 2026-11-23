@@ -1,0 +1,80 @@
+name: Mac App Store
+
+# Builds the Mac package on a GitHub-hosted runner. By default it only validates with App Store Connect. It never
+# distributes to testers or submits for review. Specified in docs/specs/app-store-pipeline.
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: Upload the package to App Store Connect
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Build, validate and upload
+    runs-on: macos-26
+    timeout-minutes: 45
+    environment: app-store
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # scripts/version.sh counts every commit for the build number.
+          fetch-depth: 0
+
+      - name: Check the source
+        run: scripts/check-store-release.sh source
+
+      - name: Test
+        run: scripts/coverage.sh
+
+      - name: Add the signing material
+        env:
+          APPLE_DISTRIBUTION_CERTIFICATE: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE }}
+          APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          MAC_INSTALLER_CERTIFICATE: ${{ secrets.MAC_INSTALLER_CERTIFICATE }}
+          MAC_INSTALLER_CERTIFICATE_PASSWORD: ${{ secrets.MAC_INSTALLER_CERTIFICATE_PASSWORD }}
+          MAS_PROVISIONING_PROFILE: ${{ secrets.MAS_PROVISIONING_PROFILE }}
+          ASC_KEY: ${{ secrets.ASC_KEY }}
+        run: scripts/add-store-signing.sh
+
+      - name: Build and validate the package
+        env:
+          SIGNING_IDENTITY: "-"
+          UNIVERSAL: "1"
+          VALIDATE: "1"
+        run: make appstore
+
+      - name: Check the package
+        run: scripts/check-store-release.sh package
+
+      - name: Upload the package built in this run
+        if: inputs.upload
+        run: |
+          mkdir -p "${RUNNER_TEMP:?}/private_keys"
+          cp "$ASC_KEY_FILE" "${RUNNER_TEMP:?}/private_keys/AuthKey_$ASC_KEY_ID.p8"
+          API_PRIVATE_KEYS_DIR="${RUNNER_TEMP:?}/private_keys" xcrun altool --upload-package \
+            build/appstore/Scrollkeeper.pkg -t macos --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Record the build
+        run: |
+          {
+            echo "- Commit: $GITHUB_SHA"
+            echo "- Xcode: $(xcodebuild -version | head -n 1)"
+            echo "- Version: $(scripts/version.sh marketing), build $(scripts/version.sh build)"
+            echo "- Package SHA-256: $(shasum -a 256 build/appstore/Scrollkeeper.pkg | cut -d' ' -f1)"
+            echo "- Uploaded: ${{ inputs.upload }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove the signing material
+        if: always()
+        run: |
+          security delete-keychain "${RUNNER_TEMP:?}/store-signing.keychain-db" 2>/dev/null || true
+          rm -rf "${RUNNER_TEMP:?}/private_keys" "${RUNNER_TEMP:?}"/AuthKey_*.p8 "${RUNNER_TEMP:?}"/*.provisionprofile
