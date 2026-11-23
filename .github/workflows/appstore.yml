@@ -1,12 +1,12 @@
-name: Mac App Store
+name: App Store
 
-# Builds the Mac package on a GitHub-hosted runner. By default it only validates with App Store Connect. It never
-# distributes to testers or submits for review. Specified in docs/specs/app-store-pipeline.
+# Builds the Mac package and iPad app on a GitHub-hosted runner. By default it only validates with App Store Connect.
+# It never distributes to testers or submits for review. Specified in docs/specs/app-store-pipeline.
 on:
   workflow_dispatch:
     inputs:
       upload:
-        description: Upload the package to App Store Connect
+        description: Upload the Mac and iPad builds to App Store Connect
         type: boolean
         default: false
 
@@ -55,13 +55,28 @@ jobs:
       - name: Check the package
         run: scripts/check-store-release.sh package
 
-      - name: Upload the package built in this run
-        if: inputs.upload
+      - name: Archive the iPad app
+        run: |
+          printf 'DEVELOPMENT_TEAM = %s\n' "$TEAM_ID" > ios/Local.xcconfig
+          make ipad-archive
+          ipas=(build/ipad/export/*.ipa)
+          [[ ${#ipas[@]} -eq 1 && -f "${ipas[0]}" ]] || { echo "expected one .ipa, found: ${ipas[*]}" >&2; exit 1; }
+          echo "IPA=${ipas[0]}" >> "$GITHUB_ENV"
+
+      - name: Validate the iPad app
         run: |
           mkdir -p "${RUNNER_TEMP:?}/private_keys"
           cp "$ASC_KEY_FILE" "${RUNNER_TEMP:?}/private_keys/AuthKey_$ASC_KEY_ID.p8"
-          API_PRIVATE_KEYS_DIR="${RUNNER_TEMP:?}/private_keys" xcrun altool --upload-package \
-            build/appstore/Scrollkeeper.pkg -t macos --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          API_PRIVATE_KEYS_DIR="${RUNNER_TEMP:?}/private_keys" xcrun altool --validate-app \
+            -f "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Upload the builds made in this run
+        if: inputs.upload
+        run: |
+          export API_PRIVATE_KEYS_DIR="${RUNNER_TEMP:?}/private_keys"
+          xcrun altool --upload-package build/appstore/Scrollkeeper.pkg -t macos \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+          xcrun altool --upload-package "$IPA" -t ios --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
 
       - name: Record the build
         run: |
@@ -70,6 +85,7 @@ jobs:
             echo "- Xcode: $(xcodebuild -version | head -n 1)"
             echo "- Version: $(scripts/version.sh marketing), build $(scripts/version.sh build)"
             echo "- Package SHA-256: $(shasum -a 256 build/appstore/Scrollkeeper.pkg | cut -d' ' -f1)"
+            echo "- iPad app SHA-256: $(shasum -a 256 "$IPA" | cut -d' ' -f1)"
             echo "- Uploaded: ${{ inputs.upload }}"
           } >> "$GITHUB_STEP_SUMMARY"
 

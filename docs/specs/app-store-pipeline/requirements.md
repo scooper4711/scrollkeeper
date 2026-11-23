@@ -9,3 +9,6 @@
   that run.
 - R6 The run never distributes to testers or submits for review. Those stay manual in App Store Connect.
 - R7 The run summary records the commit, Xcode version, version, build number and package SHA-256.
+- R8 The same run archives the iPad app from the same commit with the same version and build number, signs it with the
+  App Store Connect API key, and validates it. `upload: true` uploads that `.ipa` too, only if both builds validated.
+- R9 The signing secrets are `app-store` Environment secrets, so only `main` and `v*` tags can read them.

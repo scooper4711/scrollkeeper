@@ -9,4 +9,8 @@
 - `make appstore` packages through tabletop-kit's `package-appstore.sh`. `VALIDATE=1` validates, and a separate step
   uploads that same file. Neither adds the build to a TestFlight group (R6).
 
+- `make ipad-archive` archives through tabletop-kit's `archive-ios.sh` (R8). The team comes from the Apple Distribution
+  certificate and goes in the ignored `ios/Local.xcconfig`. Xcode's automatic signing needs an Admin API key, because
+  the hosted runner has no Xcode account. `altool` validates the `.ipa` before any upload starts.
+
 These scripts live here for the pilot. They move to tabletop-kit when a second app adopts them.
