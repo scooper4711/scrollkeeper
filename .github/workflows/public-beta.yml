@@ -1,0 +1,56 @@
+name: Public beta
+
+# Promotes an uploaded build, iPad and Mac together, to the external "Public beta" TestFlight group, and sends it to
+# Beta App Review when Apple wants one. It uses tabletop-kit's promotion script at a pinned commit, and never builds
+# or uploads. Specified in tabletop-kit's docs/specs/release-train (R4).
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: Build number of an upload that has its testflight/<version>-<build> tag
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    name: Promote to Public beta
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: app-store
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      BUNDLE_ID: io.github.scooper4711.Scrollkeeper
+    steps:
+      # The promotion script asks this checkout's origin whether the build has its tag.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Fetch the pipeline scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: scooper4711/tabletop-kit
+          ref: 67efcbb666d60552bb0dd3dc0ae40d4aeaa29eac # tabletop-kit v1.20.0
+          path: .store-tools
+          persist-credentials: false
+
+      - name: Promote the build
+        env:
+          ASC_KEY: ${{ secrets.ASC_KEY }}
+          BUILD: ${{ inputs.build }}
+        run: |
+          umask 077
+          export ASC_KEY_FILE="${RUNNER_TEMP:?}/AuthKey_$ASC_KEY_ID.p8"
+          # The secret is the key's text or its base64 form, as in add-store-signing.sh.
+          if [[ "$ASC_KEY" == *"BEGIN PRIVATE KEY"* ]]; then
+            printf '%s\n' "$ASC_KEY" > "$ASC_KEY_FILE"
+          else
+            printf '%s' "$ASC_KEY" | base64 --decode > "$ASC_KEY_FILE"
+          fi
+          ruby .store-tools/scripts/public-beta.rb "$BUNDLE_ID" "$BUILD"
+
+      - name: Remove the key
+        if: always()
+        run: rm -f "${RUNNER_TEMP:?}"/AuthKey_*.p8
