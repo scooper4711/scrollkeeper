@@ -3,9 +3,10 @@ name: Release
 # Builds the app and attaches a disk image to the GitHub release for a version tag, creating a draft release if
 # none exists yet. Run by hand, it builds the branch and keeps the disk image as a workflow artifact instead, to
 # try the build without releasing.
+#
+# It no longer runs when a tag is pushed: a v* tag now marks the build Apple accepted, and that build ships
+# through the App Store.
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:

@@ -1,0 +1,2 @@
+# Two pull requests that each add a line under Unreleased merge without a conflict.
+CHANGELOG.md merge=union
