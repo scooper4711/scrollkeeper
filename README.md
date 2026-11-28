@@ -69,9 +69,8 @@ and choose Open; from macOS 15 on, that shortcut no longer works.
 
 ## Tableside Toolkit
 
-Scrollkeeper is part of the Tableside Toolkit, free Mac apps for running Pathfinder and Starfinder games in person;
-Turnkeeper and Field Guide run on the iPad too. Like any good toolkit, each one grants a +1 item bonus to game
-prep.
+Scrollkeeper is part of the Tableside Toolkit, free apps for the Mac, iPad and iPhone for running Pathfinder and
+Starfinder games in person. Like any good toolkit, each one grants a +1 item bonus to game prep.
 
 - **Scrollkeeper** keeps your Paizo library in order and downloads your purchases.
 - [Pluck](https://github.com/scooper4711/pluck) gets the art, text and stat blocks out of a PDF.
@@ -79,9 +78,11 @@ prep.
   pawn PDFs.
 - [Mapsmith](https://github.com/scooper4711/mapsmith) prints battle maps at true scale on ordinary paper.
 - [Turnkeeper](https://github.com/scooper4711/turnkeeper) builds encounters and runs initiative at the table, with
-  the battle card of whoever's turn it is, on the iPad and the Mac.
+  the battle card of whoever's turn it is.
 - [Field Guide](https://github.com/scooper4711/field-guide) carries the Pathfinder and Starfinder compendium,
-  offline, on the iPad and the Mac.
+  offline.
+- [Chronicle Keeper](https://github.com/scooper4711/chronicle-keeper) keeps a record of your Organized Play
+  characters: their sessions, XP, level, reputation and Fame.
 
 On the Mac, Mapsmith's File › Open from Scrollkeeper… searches the maps you own. Scrollkeeper downloads the one you
 pick, if it is not on disk already, and opens it in Mapsmith. Mapsmith finds your maps in a list Scrollkeeper keeps
